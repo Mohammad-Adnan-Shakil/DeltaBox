@@ -1,70 +1,57 @@
-# F1 Pulse
+🚀 F1 Pulse — Formula 1 Analytics Dashboard
 
-A modern Formula 1 dashboard application built with React, Vite, and Tailwind CSS.
+F1 Pulse is a modern, full-stack analytics dashboard built to visualize and analyze Formula 1 data with a clean, high-performance UI and future-ready AI integration.
 
-## Features
+🧠 Overview
 
-- **Dashboard** - Overview of current season statistics
-- **Driver Standings** - Real-time driver rankings and points
-- **Team Standings** - Constructor championship standings
-- **Race Schedule** - Upcoming and past races with results
-- **AI Predictions** - Machine learning-powered race predictions
+F1 Pulse provides an interactive platform to explore:
 
-## Tech Stack
+Driver and constructor standings
+Race performance trends
+Real-time data visualization
+Predictive insights (upcoming feature)
 
-- React 19
-- Vite
-- Tailwind CSS
-- React Router v7
-- Recharts
-- Lucide React Icons
+The project is designed with a scalable architecture, combining frontend performance with backend intelligence.
 
-## Project Structure
+⚙️ Tech Stack
+Frontend
+React (Vite)
+Tailwind CSS
+Recharts (data visualization)
+Backend (planned / in-progress)
+Spring Boot
+PostgreSQL
+AI/ML (planned)
+Python (scikit-learn)
+Regression models for race predictions
+✨ Features
+📊 Interactive dashboard with stats, charts, and tables
+🧭 Sidebar navigation with dynamic routing
+🎯 Clean, responsive, F1-inspired UI
+📈 Points trend visualization
+🏁 Driver standings table
+🤖 AI Predictions module (planned)
+🏗️ Architecture Highlights
+Component-based frontend design
+Reusable UI components (StatCard, Chart, Table)
+Scalable routing structure
+Backend-first mindset with API-ready frontend
+🚀 Future Enhancements
+Live data integration via F1 API
+Podium prediction using machine learning
+Driver comparison analytics
+Race simulation insights
+Full-stack deployment
+🎯 Purpose
 
-```
-src/
-├── components/       # Reusable UI components
-├── layout/          # Layout components (Sidebar, MainLayout)
-├── pages/           # Page components (Dashboard, Drivers, etc)
-├── services/        # API services and utilities
-├── App.jsx          # Main app component with routing
-├── main.jsx         # Entry point
-└── index.css        # Global styles
-```
+This project is built to:
 
-## Getting Started
+Strengthen full-stack development skills
+Explore real-world system design
+Combine data engineering + frontend visualization
+Create a portfolio-ready, production-style application
+📌 Status
 
-### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone git@github.com:Mohammad-Adnan-Shakil/F1-Pulse.git
-cd F1-Pulse
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the development server:
-```bash
-npm run dev
-```
-
-The app will be available at `http://localhost:5174`
-
-## Available Scripts
-
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build locally
-- `npm run lint` - Run ESLint
-
-## License
-
-MIT
+🟡 Frontend — In Progress
+⚙️ Backend — Planned
+🤖 AI Integration — Upcoming
