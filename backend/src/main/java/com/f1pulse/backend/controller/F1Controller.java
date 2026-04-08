@@ -4,6 +4,7 @@ import com.f1pulse.backend.model.DriverDTO;
 import com.f1pulse.backend.service.F1Service;
 import org.springframework.web.bind.annotation.*;
 import com.f1pulse.backend.model.Driver;
+import com.f1pulse.backend.repository.DriverRepository;
 
 import java.util.List;
 
@@ -13,9 +14,11 @@ import java.util.List;
 public class F1Controller {
 
     private final F1Service f1Service;
+    private final DriverRepository driverRepository;
 
-    public F1Controller(F1Service f1Service) {
+    public F1Controller(F1Service f1Service, DriverRepository driverRepository) {
         this.f1Service = f1Service;
+        this.driverRepository = driverRepository;
     }
 
     @GetMapping("/drivers")
@@ -23,8 +26,8 @@ public class F1Controller {
         return f1Service.getDrivers();
     }
 
-    @PostMapping("/drivers/save")
-public List<Driver> saveDrivers() {
-    return f1Service.saveDrivers();
-}
+    @GetMapping("/api/f1/drivers/db")
+    public List<Driver> getDriversFromDB() {
+        return driverRepository.findAll();
+    }
 }

@@ -54,8 +54,10 @@ public class F1Service {
         }
     }
 
-    // 🔹 SAVE TO DATABASE
+    // 🔹 SAVE TO DATABASE (UPDATED)
     public List<Driver> saveDrivers() {
+
+        driverRepository.deleteAll(); // ✅ important
 
         List<DriverDTO> dtos = getDrivers();
         List<Driver> drivers = new ArrayList<>();
