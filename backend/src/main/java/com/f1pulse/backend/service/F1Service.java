@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.f1pulse.backend.model.Driver;
 import com.f1pulse.backend.model.DriverDTO;
+import com.f1pulse.backend.model.Race;
+import com.f1pulse.backend.model.RaceDTO;
 import com.f1pulse.backend.model.Team;
 import com.f1pulse.backend.model.TeamDTO;
 import com.f1pulse.backend.repository.DriverRepository;
+import com.f1pulse.backend.repository.RaceRepository;
 import com.f1pulse.backend.repository.TeamRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -19,21 +22,23 @@ public class F1Service {
 
     private final RestTemplate restTemplate;
     private final DriverRepository driverRepository;
-    private final TeamRepository teamRepository; // ✅ added
+    private final TeamRepository teamRepository; 
+    private final RaceRepository raceRepository;
 
     private final String url = "https://api.jolpi.ca/ergast/f1/current/drivers.json";
     private final String teamsUrl = "https://api.jolpi.ca/ergast/f1/current/constructors.json";
+    private final String racesUrl = "https://api.jolpi.ca/ergast/f1/current/races.json";
 
-    // ✅ updated constructor
     public F1Service(RestTemplate restTemplate,
-                     DriverRepository driverRepository,
-                     TeamRepository teamRepository) {
-        this.restTemplate = restTemplate;
-        this.driverRepository = driverRepository;
-        this.teamRepository = teamRepository;
-    }
+                 DriverRepository driverRepository,
+                 TeamRepository teamRepository,
+                 RaceRepository raceRepository) {
+    this.restTemplate = restTemplate;
+    this.driverRepository = driverRepository;
+    this.teamRepository = teamRepository;
+    this.raceRepository = raceRepository;
+}
 
-    // ================= DRIVERS =================
 
     public List<DriverDTO> getDrivers() {
         try {
@@ -85,7 +90,6 @@ public class F1Service {
         return driverRepository.findAll();
     }
 
-    // ================= TEAMS =================
 
     public List<TeamDTO> getTeams() {
         try {
@@ -134,4 +138,70 @@ public class F1Service {
     public List<Team> getTeamsFromDB() {
         return teamRepository.findAll();
     }
+
+    public List<RaceDTO> getRaces() {
+    try {
+        String response = restTemplate.getForObject(racesUrl, String.class);
+
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = mapper.readTree(response);
+
+        JsonNode races = root
+                .path("MRData")
+                .path("RaceTable")
+                .path("Races");
+
+        List<RaceDTO> result = new ArrayList<>();
+
+        for (JsonNode race : races) {
+
+            String raceName = race.path("raceName").asText();
+            String date = race.path("date").asText();
+
+            JsonNode circuit = race.path("Circuit");
+            String circuitName = circuit.path("circuitName").asText();
+
+            JsonNode locationNode = circuit.path("Location");
+            String location = locationNode.path("locality").asText();
+            String country = locationNode.path("country").asText();
+
+            result.add(new RaceDTO(
+                    raceName,
+                    circuitName,
+                    location,
+                    country,
+                    date
+            ));
+        }
+
+        return result;
+
+    } catch (Exception e) {
+        throw new RuntimeException("Error parsing races: " + e.getMessage());
+    }
+}
+
+public List<Race> saveRaces() {
+
+    raceRepository.deleteAll();
+
+    List<RaceDTO> dtos = getRaces();
+    List<Race> races = new ArrayList<>();
+
+    for (RaceDTO dto : dtos) {
+        races.add(new Race(
+                dto.getRaceName(),
+                dto.getCircuitName(),
+                dto.getLocation(),
+                dto.getCountry(),
+                dto.getDate()
+        ));
+    }
+
+    return raceRepository.saveAll(races);
+}
+
+public List<Race> getRacesFromDB() {
+    return raceRepository.findAll();
+}
 }
