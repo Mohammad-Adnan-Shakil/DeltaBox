@@ -6,19 +6,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 
-@RestControllerAdvice
+@ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleException(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleException(Exception ex) {
 
-        return new ResponseEntity<>(
-                new ErrorResponse(
-                        ex.getMessage(),
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        LocalDateTime.now()
-                ),
-                HttpStatus.INTERNAL_SERVER_ERROR
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                ex.getMessage(),
+                LocalDateTime.now()
         );
+
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

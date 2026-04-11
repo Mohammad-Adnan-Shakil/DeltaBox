@@ -4,6 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,46 +22,54 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         this.userDetailsService = userDetailsService;
     }
 
+    // ✅ Skip filtering for public + Swagger endpoints
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/");
+
+        return path.startsWith("/api/auth/") ||
+               path.startsWith("/swagger-ui") ||
+               path.startsWith("/v3/api-docs") ||
+               path.startsWith("/swagger-resources") ||
+               path.startsWith("/webjars");
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                   HttpServletResponse response,
+                                   FilterChain filterChain)
             throws ServletException, IOException {
+
         try {
             String header = request.getHeader("Authorization");
-            System.out.println("Authorization header: " + header); // DEBUG
-            
-            if (header != null) {
-                // Extract token - handle both "Bearer token" and direct token formats
-                String token = header.startsWith("Bearer ") ? header.substring(7) : header;
-                System.out.println("Token received: " + token.substring(0, Math.min(50, token.length())) + "..."); // DEBUG
-                
-                boolean isValid = jwtUtil.validateToken(token);
-                System.out.println("Token valid: " + isValid); // DEBUG
-                
-                if (isValid) {
+
+            if (header != null && header.startsWith("Bearer ")) {
+
+                String token = header.substring(7);
+
+                if (jwtUtil.validateToken(token)) {
+
                     String username = jwtUtil.extractUsername(token);
-                    System.out.println("Username extracted: " + username); // DEBUG
-                    
-                    // Load user details from database using CustomUserDetailsService
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                    System.out.println("User details loaded: " + userDetails.getUsername()); // DEBUG
-                    
-                    // Create authentication with user details and authorities
+
+                    UserDetails userDetails =
+                            userDetailsService.loadUserByUsername(username);
+
                     UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
                     SecurityContextHolder.getContext().setAuthentication(authentication);
-                    System.out.println("Authentication set for user: " + username + " with authorities: " + userDetails.getAuthorities()); // DEBUG
                 }
             }
+
         } catch (Exception e) {
-            System.out.println("JWT Filter error: " + e.getMessage()); // DEBUG
-            e.printStackTrace();
+            // Optional: replace with logger later
+            System.out.println("JWT Filter error: " + e.getMessage());
         }
+
         filterChain.doFilter(request, response);
     }
 }
