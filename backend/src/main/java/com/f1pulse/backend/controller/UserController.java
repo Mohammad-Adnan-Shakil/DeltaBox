@@ -1,8 +1,7 @@
 package com.f1pulse.backend.controller;
 
 import com.f1pulse.backend.dto.UserResponse;
-import com.f1pulse.backend.model.User;
-import com.f1pulse.backend.repository.UserRepository;
+import com.f1pulse.backend.service.UserService;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,10 +11,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/user")
 public class UserController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public UserController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @GetMapping("/me")
@@ -23,15 +22,8 @@ public class UserController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        // ✅ This is now EMAIL (important!)
         String email = auth.getName();
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        return new UserResponse(
-                user.getEmail(),   // ✅ FIXED
-                user.getRole()
-        );
+        return userService.getCurrentUser(email);
     }
 }

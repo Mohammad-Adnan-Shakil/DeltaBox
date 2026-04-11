@@ -1,7 +1,7 @@
 package com.f1pulse.backend.controller;
 
 import com.f1pulse.backend.dto.UserSummaryResponse;
-import com.f1pulse.backend.repository.UserRepository;
+import com.f1pulse.backend.service.UserService;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -12,23 +12,16 @@ import java.util.List;
 @RequestMapping("/api/admin")
 public class AdminController {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public AdminController(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public AdminController(UserService userService) {
+        this.userService = userService;
     }
 
     // ✅ Only ADMIN can access
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/users")
     public List<UserSummaryResponse> getAllUsers() {
-
-        return userRepository.findAll()
-                .stream()
-                .map(user -> new UserSummaryResponse(
-                        user.getEmail(),   // ✅ FIXED
-                        user.getRole()
-                ))
-                .toList();
+        return userService.getAllUsers();
     }
 }
