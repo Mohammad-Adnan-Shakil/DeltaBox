@@ -14,15 +14,15 @@ import java.io.IOException;
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JWTUtil jwtUtil;
+    private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(JWTUtil jwtUtil, CustomUserDetailsService userDetailsService) {
-        this.jwtUtil = jwtUtil;
+    public JwtAuthenticationFilter(JwtService jwtService,
+                                   CustomUserDetailsService userDetailsService) {
+        this.jwtService = jwtService;
         this.userDetailsService = userDetailsService;
     }
 
-    // ✅ Skip filtering for public + Swagger endpoints
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
@@ -47,26 +47,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 String token = header.substring(7);
 
-                if (jwtUtil.validateToken(token)) {
+                String email = jwtService.extractEmail(token);
 
-                    String username = jwtUtil.extractUsername(token);
+                if (email != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null) {
 
                     UserDetails userDetails =
-                            userDetailsService.loadUserByUsername(username);
+                            userDetailsService.loadUserByUsername(email);
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails,
-                                    null,
-                                    userDetails.getAuthorities()
-                            );
+                    if (jwtService.isTokenValid(token, userDetails.getUsername())) {
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
                 }
             }
 
         } catch (Exception e) {
-            // Optional: replace with logger later
             System.out.println("JWT Filter error: " + e.getMessage());
         }
 

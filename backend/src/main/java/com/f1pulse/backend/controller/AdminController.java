@@ -26,7 +26,7 @@ public class AdminController {
         return userRepository.findAll()
                 .stream()
                 .map(user -> new UserSummaryResponse(
-                        user.getUsername(),
+                        user.getEmail(),   // ✅ FIXED
                         user.getRole()
                 ))
                 .toList();

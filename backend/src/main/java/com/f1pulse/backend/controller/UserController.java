@@ -23,11 +23,15 @@ public class UserController {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        String username = auth.getName();
+        // ✅ This is now EMAIL (important!)
+        String email = auth.getName();
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        return new UserResponse(user.getUsername(), user.getRole());
+        return new UserResponse(
+                user.getEmail(),   // ✅ FIXED
+                user.getRole()
+        );
     }
 }
