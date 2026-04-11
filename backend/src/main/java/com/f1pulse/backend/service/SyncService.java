@@ -3,6 +3,8 @@ package com.f1pulse.backend.service;
 import com.f1pulse.backend.model.*;
 import com.f1pulse.backend.repository.*;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +17,7 @@ public class SyncService {
     private final RaceRepository raceRepository;
     private final SyncMetaRepository syncMetaRepository;
     private final F1ApiClient f1ApiClient;
+    private static final Logger log = LoggerFactory.getLogger(SyncService.class);
 
     private final long CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
@@ -46,16 +49,17 @@ public class SyncService {
 
     // ================= DRIVERS =================
 
+   
     public List<Driver> syncDrivers() {
-
-        String key = "drivers";
+         try {
+    String key = "drivers";
 
         if (!shouldSync(key)) {
-            System.out.println("Using cached drivers data");
+            log.info("Using cached drivers data");
             return driverRepository.findAll();
         }
 
-        System.out.println("Syncing fresh drivers data");
+        log.info("Syncing fresh drivers data");
 
         driverRepository.deleteAll();
 
@@ -73,13 +77,20 @@ public class SyncService {
         updateSyncTime(key);
 
         return driverRepository.saveAll(drivers);
+} catch (Exception e) {
+    log.error("Error syncing drivers: {}", e.getMessage());
+    throw e;
+}
+        
     }
 
     // ================= TEAMS =================
 
-    public List<Team> syncTeams() {
 
-        String key = "teams";
+    
+    public List<Team> syncTeams() {
+        try {
+     String key = "teams";
 
         if (!shouldSync(key)) {
             System.out.println("Using cached teams data");
@@ -103,12 +114,18 @@ public class SyncService {
         updateSyncTime(key);
 
         return teamRepository.saveAll(teams);
+} catch (Exception e) {
+    log.error("Error syncing drivers: {}", e.getMessage());
+    throw e;
+}
     }
 
     // ================= RACES =================
 
+    
     public List<Race> syncRaces() {
-
+        try {
+    
         String key = "races";
 
         if (!shouldSync(key)) {
@@ -136,5 +153,9 @@ public class SyncService {
         updateSyncTime(key);
 
         return raceRepository.saveAll(races);
+} catch (Exception e) {
+    log.error("Error syncing drivers: {}", e.getMessage());
+    throw e;
+}
     }
 }
