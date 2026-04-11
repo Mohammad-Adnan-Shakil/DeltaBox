@@ -1,57 +1,126 @@
-🚀 F1 Pulse — Formula 1 Analytics Dashboard
+# 🚀 F1 Pulse — Secure Formula 1 Analytics Platform
 
-F1 Pulse is a modern, full-stack analytics dashboard built to visualize and analyze Formula 1 data with a clean, high-performance UI and future-ready AI integration.
+F1 Pulse is a full-stack analytics platform designed to visualize and analyze Formula 1 data with a **secure, scalable backend architecture** and a modern frontend dashboard.
 
-🧠 Overview
+---
 
-F1 Pulse provides an interactive platform to explore:
+## 🧠 Overview
 
-Driver and constructor standings
-Race performance trends
-Real-time data visualization
-Predictive insights (upcoming feature)
+F1 Pulse enables users to explore:
 
-The project is designed with a scalable architecture, combining frontend performance with backend intelligence.
+* 🏎️ Driver and constructor standings
+* 📊 Race performance analytics
+* 📈 Data-driven visual insights
+* 🤖 AI-based predictions (upcoming)
 
-⚙️ Tech Stack
-Frontend
-React (Vite)
-Tailwind CSS
-Recharts (data visualization)
-Backend (planned / in-progress)
-Spring Boot
-PostgreSQL
-AI/ML (planned)
-Python (scikit-learn)
-Regression models for race predictions
-✨ Features
-📊 Interactive dashboard with stats, charts, and tables
-🧭 Sidebar navigation with dynamic routing
-🎯 Clean, responsive, F1-inspired UI
-📈 Points trend visualization
-🏁 Driver standings table
-🤖 AI Predictions module (planned)
-🏗️ Architecture Highlights
-Component-based frontend design
-Reusable UI components (StatCard, Chart, Table)
-Scalable routing structure
-Backend-first mindset with API-ready frontend
-🚀 Future Enhancements
-Live data integration via F1 API
-Podium prediction using machine learning
-Driver comparison analytics
-Race simulation insights
-Full-stack deployment
-🎯 Purpose
+The project focuses on **real-world backend engineering practices**, including authentication, authorization, and secure API design.
+
+---
+
+## ⚙️ Tech Stack
+
+### 🔹 Frontend
+
+* React (Vite)
+* Tailwind CSS
+* Recharts
+
+### 🔹 Backend
+
+* Spring Boot
+* PostgreSQL
+* Spring Security
+* JWT Authentication
+* Swagger (API Documentation)
+
+### 🔹 AI / ML (Planned)
+
+* Python (scikit-learn)
+* Regression models for predictions
+
+---
+
+## 🔐 Backend Features (Core Strength)
+
+* 🔑 **JWT-based Authentication**
+* 🛡️ **Role-Based Access Control (ADMIN / USER)**
+* 📦 **DTO-based architecture (clean API design)**
+* ✅ **Request validation using @Valid**
+* ⚠️ **Global error handling with structured responses**
+* 🔍 **Swagger UI for API testing and documentation**
+* 🚫 **Secure data handling (no password exposure)**
+
+---
+
+## 🚀 API Endpoints
+
+| Endpoint                  | Description                |
+| ------------------------- | -------------------------- |
+| `POST /api/auth/register` | Register new user          |
+| `POST /api/auth/login`    | Login and get JWT token    |
+| `GET /api/user/me`        | Get current logged-in user |
+| `GET /api/admin/users`    | Admin-only user listing    |
+
+---
+
+## 📄 API Documentation
+
+Swagger UI available at:
+
+```
+http://localhost:9090/swagger-ui/index.html
+```
+
+---
+
+## 🏗️ Architecture Highlights
+
+* Layered backend architecture (Controller → Service → Repository)
+* Stateless authentication using JWT
+* Secure endpoint protection using Spring Security
+* DTO pattern for request/response separation
+* Clean error handling strategy for production readiness
+
+---
+
+## 📊 Frontend Features
+
+* Interactive dashboard with charts and tables
+* Driver standings visualization
+* Points trend analytics
+* Responsive UI with Tailwind CSS
+
+---
+
+## 🚀 Future Enhancements
+
+* 🔴 Live F1 API integration
+* 🤖 AI-based race predictions
+* 📊 Advanced analytics & comparisons
+* ⚡ Redis caching for performance
+* ☁️ Full-stack deployment
+
+---
+
+## 🎯 Purpose
 
 This project is built to:
 
-Strengthen full-stack development skills
-Explore real-world system design
-Combine data engineering + frontend visualization
-Create a portfolio-ready, production-style application
-📌 Status
+* Demonstrate **real-world backend system design**
+* Practice secure API development with Spring Boot
+* Combine frontend visualization with backend intelligence
+* Build a **production-style, portfolio-ready application**
 
-🟡 Frontend — In Progress
-⚙️ Backend — Planned
-🤖 AI Integration — Upcoming
+---
+
+## 📌 Status
+
+* ✅ Backend — Completed (Core features + security)
+* 🟡 Frontend — In Progress
+* 🤖 AI Integration — Planned
+
+---
+
+## 💡 Key Takeaway
+
+F1 Pulse is not just a dashboard — it is a **secure, scalable backend-driven system** designed with industry best practices.
