@@ -2,6 +2,7 @@ package com.f1pulse.backend.service.impl;
 
 import com.f1pulse.backend.dto.AuthRequest;
 import com.f1pulse.backend.dto.AuthResponse;
+import com.f1pulse.backend.exception.UserAlreadyExistsException;
 import com.f1pulse.backend.model.User;
 import com.f1pulse.backend.repository.UserRepository;
 import com.f1pulse.backend.security.JwtService;
@@ -35,7 +36,7 @@ public class AuthServiceImpl implements AuthService {
 
         // ⚠️ Make sure you're using EMAIL everywhere
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("User already exists");
+            throw new UserAlreadyExistsException("User already exists");
         }
 
         User user = new User();

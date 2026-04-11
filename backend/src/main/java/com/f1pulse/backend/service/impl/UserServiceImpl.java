@@ -2,6 +2,7 @@ package com.f1pulse.backend.service.impl;
 
 import com.f1pulse.backend.dto.UserResponse;
 import com.f1pulse.backend.dto.UserSummaryResponse;
+import com.f1pulse.backend.exception.UserNotFoundException;
 import com.f1pulse.backend.model.User;
 import com.f1pulse.backend.repository.UserRepository;
 import com.f1pulse.backend.service.UserService;
@@ -23,7 +24,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse getCurrentUser(String email) {
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return new UserResponse(
                 user.getEmail(),
