@@ -6,9 +6,10 @@ import com.f1pulse.backend.exception.UserNotFoundException;
 import com.f1pulse.backend.model.User;
 import com.f1pulse.backend.repository.UserRepository;
 import com.f1pulse.backend.service.UserService;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 
 @Service
@@ -32,15 +33,19 @@ public class UserServiceImpl implements UserService {
         );
     }
 
-    @Override
-    public List<UserSummaryResponse> getAllUsers() {
+   @Override
+public List<UserSummaryResponse> getAllUsers(int page, int size) {
 
-        return userRepository.findAll()
-                .stream()
-                .map(user -> new UserSummaryResponse(
-                        user.getEmail(),
-                        user.getRole()
-                ))
-                .toList();
-    }
+    Pageable pageable = PageRequest.of(page, size);
+
+    Page<User> userPage = userRepository.findAll(pageable);
+
+    return userPage.getContent()
+            .stream()
+            .map(user -> new UserSummaryResponse(
+                    user.getEmail(),
+                    user.getRole()
+            ))
+            .toList();
+}
 }

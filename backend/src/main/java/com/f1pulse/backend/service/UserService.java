@@ -9,5 +9,5 @@ public interface UserService {
 
     UserResponse getCurrentUser(String email);
 
-    List<UserSummaryResponse> getAllUsers();
+    List<UserSummaryResponse> getAllUsers(int page, int size);
 }

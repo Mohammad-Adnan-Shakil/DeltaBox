@@ -8,6 +8,9 @@ import com.f1pulse.backend.repository.UserRepository;
 import com.f1pulse.backend.security.JwtService;
 import com.f1pulse.backend.service.AuthService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,6 +23,9 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+
+    private static final Logger logger =
+            LoggerFactory.getLogger(AuthServiceImpl.class);
 
     public AuthServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
@@ -34,8 +40,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse register(AuthRequest request) {
 
-        // ⚠️ Make sure you're using EMAIL everywhere
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            logger.warn("Registration failed - user already exists: {}", request.getEmail());
             throw new UserAlreadyExistsException("User already exists");
         }
 
@@ -46,6 +52,8 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.save(user);
 
+        logger.info("User registered successfully: {}", request.getEmail());
+
         String token = jwtService.generateToken(user);
 
         return new AuthResponse(token);
@@ -53,6 +61,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public AuthResponse login(AuthRequest request) {
+
+        logger.info("Login attempt: {}", request.getEmail());
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -62,7 +72,12 @@ public class AuthServiceImpl implements AuthService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> {
+                    logger.error("Login failed - user not found: {}", request.getEmail());
+                    return new RuntimeException("User not found");
+                });
+
+        logger.info("Login successful: {}", request.getEmail());
 
         String token = jwtService.generateToken(user);
 

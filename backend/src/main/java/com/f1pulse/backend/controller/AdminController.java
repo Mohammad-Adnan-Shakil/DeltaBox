@@ -23,12 +23,17 @@ public class AdminController {
     // ✅ Only ADMIN can access
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<UserSummaryResponse>>> getAllUsers() {
+public ResponseEntity<ApiResponse<List<UserSummaryResponse>>> getAllUsers(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+) {
 
-        List<UserSummaryResponse> users = userService.getAllUsers();
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(true, "Users fetched successfully", users)
-        );
-    }
+    return ResponseEntity.ok(
+            new ApiResponse<>(
+                    true,
+                    "Users fetched successfully",
+                    userService.getAllUsers(page, size)
+            )
+    );
+}
 }
