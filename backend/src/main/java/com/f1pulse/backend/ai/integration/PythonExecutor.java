@@ -1,40 +1,36 @@
 package com.f1pulse.backend.ai.integration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 @Component
 public class PythonExecutor {
 
+    private static final Logger logger = LoggerFactory.getLogger(PythonExecutor.class);
+
     public String runPredictionScript(String inputJson) {
         try {
-            String pythonPath = "python"; // or full path if needed
+            String pythonPath = "python";
             String scriptPath = "C:/projects/f1-pulse/backend/ml/predict.py";
 
-            System.out.println("=== AI DEBUG START ===");
-            System.out.println("Script Path: " + scriptPath);
-            System.out.println("Input JSON: " + inputJson);
+            logger.info("=== AI DEBUG START ===");
+            logger.info("Script Path: {}", scriptPath);
+            logger.info("Input JSON: {}", inputJson);
 
-            // ✅ DO NOT PASS JSON AS ARGUMENT
             ProcessBuilder processBuilder = new ProcessBuilder(
                     pythonPath,
-                    scriptPath
+                    scriptPath,
+                    inputJson
             );
 
             processBuilder.redirectErrorStream(true);
 
             Process process = processBuilder.start();
 
-            // 🔥 SEND JSON VIA STDIN (THIS FIXES EVERYTHING)
-            BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(process.getOutputStream())
-            );
-            writer.write(inputJson);
-            writer.flush();
-            writer.close();
-
-            // 🔥 READ OUTPUT
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream())
             );
@@ -48,18 +44,20 @@ public class PythonExecutor {
 
             int exitCode = process.waitFor();
 
-            System.out.println("Python Output: " + output);
-            System.out.println("Exit Code: " + exitCode);
-            System.out.println("=== AI DEBUG END ===");
+            logger.info("Python Output: {}", output);
+            logger.info("Exit Code: {}", exitCode);
+            logger.info("=== AI DEBUG END ===");
 
             if (exitCode != 0) {
+                logger.error("Python execution failed: {}", output);
                 throw new RuntimeException("Python failed: " + output);
             }
 
             return output.toString();
 
         } catch (Exception e) {
-            throw new RuntimeException("Error executing Python script: " + e.getMessage(), e);
+            logger.error("Error executing Python script", e);
+            throw new RuntimeException("Error executing Python script", e);
         }
     }
 }
