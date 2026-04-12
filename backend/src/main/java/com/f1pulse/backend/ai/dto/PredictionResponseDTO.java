@@ -1,16 +1,9 @@
-package com.f1pulse.ai.dto;
+package com.f1pulse.backend.ai.dto;
 
 public class PredictionResponseDTO {
 
     private double predictedPosition;
     private String confidence;
-
-    public PredictionResponseDTO() {}
-
-    public PredictionResponseDTO(double predictedPosition, String confidence) {
-        this.predictedPosition = predictedPosition;
-        this.confidence = confidence;
-    }
 
     public double getPredictedPosition() {
         return predictedPosition;

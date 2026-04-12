@@ -17,18 +17,21 @@ public class GlobalExceptionHandler {
     }
 
     // 🔴 USER ALREADY EXISTS
-   @ExceptionHandler(UserAlreadyExistsException.class)
-public ResponseEntity<ApiResponse<?>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
-    return ResponseEntity.badRequest().body(
-        new ApiResponse<>(false, ex.getMessage(), null)
-    );
-}
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ApiResponse<?>> handleUserAlreadyExists(UserAlreadyExistsException ex) {
 
-    // 🔴 GENERIC FALLBACK
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ApiResponse<>(false, ex.getMessage(), null));
+    }
+
+    // 🔴 GENERIC FALLBACK (🔥 DEBUG ENABLED)
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Object>> handleGeneric(Exception ex) {
 
+        // 🔥 Print full error in console (VERY IMPORTANT)
+        ex.printStackTrace();
+
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ApiResponse<>(false, "Something went wrong", null));
+                .body(new ApiResponse<>(false, ex.getMessage(), null));
     }
 }

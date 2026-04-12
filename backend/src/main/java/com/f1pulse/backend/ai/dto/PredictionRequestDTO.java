@@ -1,4 +1,4 @@
-package com.f1pulse.ai.dto;
+package com.f1pulse.backend.ai.dto;
 
 public class PredictionRequestDTO {
 
