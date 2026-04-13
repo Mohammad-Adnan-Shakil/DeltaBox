@@ -7,30 +7,24 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.UniqueConstraint;
 
+
 @Entity
-@Table(name = "driver", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "code")
-})
+@Table(name = "driver")
 public class Driver {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String name;
-
-    @Column(nullable = false, unique = true)
     private String code;
-
-    @Column(nullable = false)
+    private String name;
     private String nationality;
 
     public Driver() {}
 
-    public Driver(String name, String code, String nationality) {
-        this.name = name;
+    public Driver(String code, String name, String nationality) {
         this.code = code;
+        this.name = name;
         this.nationality = nationality;
     }
 
@@ -42,20 +36,20 @@ public class Driver {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getCode() {
         return code;
     }
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getNationality() {
@@ -66,5 +60,6 @@ public class Driver {
         this.nationality = nationality;
     }
 
-    // getters & setters
+    // getters + setters
 }
+

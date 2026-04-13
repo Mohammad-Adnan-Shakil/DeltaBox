@@ -73,9 +73,10 @@ public class SyncService {
                     drivers.add(existing);
                 } else {
                     drivers.add(new Driver(
-                            dto.getName(),
-                            dto.getCode(),
-                            dto.getNationality()));
+                            dto.getCode(), // ✅ FIRST
+                            dto.getName(), // ✅ SECOND
+                            dto.getNationality() // ✅ THIRD
+                    ));
                 }
             }
 
@@ -147,14 +148,17 @@ public class SyncService {
 
                 Driver driver = driverRepository.findAll().get(0); // temporary mapping
 
+                Long driverId = 47L; // TEMP (must exist)
+
                 races.add(new Race(
-                        driver,
+                        driverId,
                         dto.getRaceName(),
                         dto.getCircuitName(),
                         dto.getLocation(),
                         dto.getCountry(),
                         dto.getDate(),
-                        new java.util.Random().nextInt(20) + 1));
+                        (int) (Math.random() * 20 + 1) // fake position (1–20)
+                ));
             }
 
             updateSyncTime(key);
