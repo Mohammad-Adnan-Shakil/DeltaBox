@@ -19,7 +19,7 @@ public class DriverInsightsServiceImpl implements DriverInsightsService {
     @Override
     public DriverInsightsResponseDTO getDriverInsights(Long driverId) {
 
-        List<Race> races = raceRepository.findRecentRacesByDriver(driverId);
+        List<Race> races = raceRepository.findTop10ByDriverIdOrderByDateDesc(driverId);
 
         if (races.isEmpty()) {
             throw new RuntimeException("No race data found for driver");
