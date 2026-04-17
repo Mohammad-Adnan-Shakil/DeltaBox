@@ -1,0 +1,4 @@
+qualifying_position,constructor_id,track_id,season_year,recent_avg_position_last_5,recent_std_last_5,grid_position,is_home_race,finishing_position
+2,red_bull,monza,2023,3.2,1.1,2,0,1
+5,ferrari,monaco,2022,6.5,2.3,5,1,4
+1,mercedes,silverstone,2021,2.1,0.9,1,1,1
