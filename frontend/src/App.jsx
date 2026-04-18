@@ -1,24 +1,86 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import MainLayout from './layout/MainLayout';
-import Dashboard from './pages/Dashboard';
-import Drivers from './pages/Drivers';
-import Teams from './pages/Teams';
-import Races from './pages/Races';
-import Predictions from './pages/Predictions';
+import { Routes, Route, Navigate } from "react-router-dom";
+import ProtectedRoute from "./routes/ProtectedRoute";
+
+// Pages (we will create these next)
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import AIPage from "./pages/AIPage";
+import Drivers from "./pages/Drivers";
+import Races from "./pages/Races";
+import Constructors from "./pages/Constructors";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
-    <Router>
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/drivers" element={<Drivers />} />
-          <Route path="/teams" element={<Teams />} />
-          <Route path="/races" element={<Races />} />
-          <Route path="/predictions" element={<Predictions />} />
-        </Routes>
-      </MainLayout>
-    </Router>
+    <Routes>
+
+      {/* Public Routes */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+
+      {/* Protected Routes */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/ai"
+        element={
+          <ProtectedRoute>
+            <AIPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/drivers"
+        element={
+          <ProtectedRoute>
+            <Drivers />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/races"
+        element={
+          <ProtectedRoute>
+            <Races />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/constructors"
+        element={
+          <ProtectedRoute>
+            <Constructors />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Default Route */}
+      <Route path="/" element={<Navigate to="/dashboard" />} />
+
+      {/* Fallback Route */}
+      <Route path="*" element={<Navigate to="/dashboard" />} />
+
+    </Routes>
   );
 }
 
