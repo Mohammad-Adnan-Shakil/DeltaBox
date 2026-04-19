@@ -59,6 +59,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         
+                        // Data endpoints - public (no auth required)
+                        .requestMatchers("/api/drivers").permitAll()
+                        .requestMatchers("/api/races").permitAll()
+                        .requestMatchers("/api/constructors").permitAll()
+                        .requestMatchers("/api/teams").permitAll()
+                        
                         // All other requests require authentication
                         .anyRequest().authenticated()
                 )

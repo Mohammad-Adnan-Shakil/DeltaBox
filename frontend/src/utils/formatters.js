@@ -48,7 +48,9 @@ export const formatRaceDate = (date) => {
 };
 
 export const teamColor = (teamName = "") => {
-  const key = teamName.toLowerCase();
+  // Handle null/undefined values
+  if (!teamName) return "#808080"; // Gray fallback
+  const key = String(teamName).toLowerCase();
   if (key.includes("mercedes")) return "#00d2be";
   if (key.includes("ferrari")) return "#e8002d";
   if (key.includes("mclaren")) return "#ff8000";
