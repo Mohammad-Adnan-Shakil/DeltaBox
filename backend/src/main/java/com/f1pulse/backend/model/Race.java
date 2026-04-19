@@ -18,6 +18,8 @@ public class Race {
     private String location;
     private String country;
     private String date;
+    private Integer season = 2026;  // 🆕 Season field
+    private String status = "SCHEDULED";  // 🆕 Race status field
 
     private Integer position;
 
@@ -77,6 +79,16 @@ public class Race {
         return position;
     }
 
+    // ✅ Added: raceId getter (alias for frontend compatibility - uses 'id')
+    public Long getRaceId() {
+        return id;
+    }
+    
+    // ✅ Added: name getter (frontend expects 'name', model has 'raceName')
+    public String getName() {
+        return raceName;
+    }
+
     // =====================
     // SETTERS
     // =====================
@@ -111,5 +123,21 @@ public class Race {
 
     public void setPosition(Integer position) {
         this.position = position;
+    }
+
+    public Integer getSeason() {
+        return season;
+    }
+
+    public void setSeason(Integer season) {
+        this.season = season;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

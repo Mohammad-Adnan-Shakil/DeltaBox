@@ -27,11 +27,16 @@ const Login = () => {
 
     try {
       const res = await api.post("/auth/login", form);
+
+      console.log("LOGIN RESPONSE:", res.data);
+
+      // ✅ Pass full data (your context expects it)
       login(res.data);
+
       navigate("/dashboard");
     } catch (err) {
       console.log(err);
-      setError("Invalid email or password");
+      setError(err.response?.data?.message || "Invalid email or password");
     } finally {
       setLoading(false);
     }
@@ -40,7 +45,6 @@ const Login = () => {
   return (
     <div className="h-screen flex">
 
-      {/* LEFT */}
       <div className="hidden md:flex w-1/2 bg-background items-center justify-center relative">
         <div className="absolute right-0 top-0 h-full w-[3px] bg-primary"></div>
 
@@ -56,7 +60,6 @@ const Login = () => {
         </div>
       </div>
 
-      {/* RIGHT */}
       <motion.div
         className="w-full md:w-1/2 flex items-center justify-center bg-background px-6"
         initial={{ opacity: 0, x: 50 }}
@@ -93,16 +96,6 @@ const Login = () => {
           <button className="btn-primary w-full" disabled={loading}>
             {loading ? "SIGNING IN..." : "ACCESS DASHBOARD"}
           </button>
-
-          <p className="text-sm text-textSecondary text-center">
-            Don’t have an account?{" "}
-            <span
-              className="text-primary cursor-pointer"
-              onClick={() => navigate("/register")}
-            >
-              Register
-            </span>
-          </p>
 
         </form>
       </motion.div>

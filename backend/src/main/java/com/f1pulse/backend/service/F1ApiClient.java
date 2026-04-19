@@ -24,24 +24,39 @@ public class F1ApiClient {
 
     public List<DriverDTO> fetchDrivers() {
         try {
-            String response = restTemplate.getForObject(BASE_URL + "/current/drivers.json", String.class);
+            // 🆕 Use driverStandings endpoint to get drivers with constructors
+            String response = restTemplate.getForObject(BASE_URL + "/current/driverStandings.json", String.class);
 
             ObjectMapper mapper = new ObjectMapper();
             JsonNode root = mapper.readTree(response);
 
-            JsonNode drivers = root
+            JsonNode standings = root
                     .path("MRData")
-                    .path("DriverTable")
-                    .path("Drivers");
+                    .path("StandingsTable")
+                    .path("StandingsLists");
 
             List<DriverDTO> result = new ArrayList<>();
 
-            for (JsonNode driver : drivers) {
-                String name = driver.path("givenName").asText() + " " + driver.path("familyName").asText();
-                String code = driver.path("code").asText();
-                String nationality = driver.path("nationality").asText();
+            // Get the first (and usually only) standings list
+            if (standings.size() > 0) {
+                JsonNode driverStandings = standings.get(0).path("DriverStandings");
 
-                result.add(new DriverDTO(name, code, nationality));
+                for (JsonNode standing : driverStandings) {
+                    JsonNode driver = standing.path("Driver");
+                    JsonNode constructor = standing.path("Constructors");
+                    
+                    String name = driver.path("givenName").asText() + " " + driver.path("familyName").asText();
+                    String code = driver.path("code").asText();
+                    String nationality = driver.path("nationality").asText();
+                    
+                    // 🆕 Get constructor/team name
+                    String team = "";
+                    if (constructor.size() > 0) {
+                        team = constructor.get(0).path("name").asText();
+                    }
+
+                    result.add(new DriverDTO(name, code, nationality, team));
+                }
             }
 
             return result;

@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +25,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    private static final Logger logger =
-            LoggerFactory.getLogger(AuthServiceImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     public AuthServiceImpl(UserRepository userRepository,
                            PasswordEncoder passwordEncoder,
@@ -37,32 +37,37 @@ public class AuthServiceImpl implements AuthService {
         this.authenticationManager = authenticationManager;
     }
 
+    // ✅ REGISTER
     @Override
     public AuthResponse register(AuthRequest request) {
 
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            logger.warn("Registration failed - user already exists: {}", request.getEmail());
             throw new UserAlreadyExistsException("User already exists");
         }
 
         User user = new User();
+        user.setUsername(request.getUsername() != null ? request.getUsername() : request.getEmail());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole("USER");
 
         userRepository.save(user);
 
-        logger.info("User registered successfully: {}", request.getEmail());
+        // ✅ Convert to Spring Security UserDetails
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .roles("USER")
+                .build();
 
-        String token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(userDetails);
 
-        return new AuthResponse(token);
+        return new AuthResponse(token, user.getEmail(), user.getRole());
     }
 
+    // ✅ LOGIN
     @Override
     public AuthResponse login(AuthRequest request) {
-
-        logger.info("Login attempt: {}", request.getEmail());
 
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -72,15 +77,17 @@ public class AuthServiceImpl implements AuthService {
         );
 
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> {
-                    logger.error("Login failed - user not found: {}", request.getEmail());
-                    return new RuntimeException("User not found");
-                });
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-        logger.info("Login successful: {}", request.getEmail());
+        // ✅ Convert to Spring Security UserDetails
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .roles(user.getRole())
+                .build();
 
-        String token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(userDetails);
 
-        return new AuthResponse(token);
+        return new AuthResponse(token, user.getEmail(), user.getRole());
     }
 }

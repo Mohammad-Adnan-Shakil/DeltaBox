@@ -70,13 +70,16 @@ public class SyncService {
                 if (existing != null) {
                     existing.setName(dto.getName());
                     existing.setNationality(dto.getNationality());
+                    existing.setTeam(dto.getTeam());  // 🆕 Set team
                     drivers.add(existing);
                 } else {
-                    drivers.add(new Driver(
-                            dto.getCode(), // ✅ FIRST
-                            dto.getName(), // ✅ SECOND
-                            dto.getNationality() // ✅ THIRD
-                    ));
+                    Driver newDriver = new Driver(
+                            dto.getCode(),
+                            dto.getName(),
+                            dto.getNationality()
+                    );
+                    newDriver.setTeam(dto.getTeam());  // 🆕 Set team
+                    drivers.add(newDriver);
                 }
             }
 
@@ -150,7 +153,7 @@ public class SyncService {
 
                 Long driverId = 47L; // TEMP (must exist)
 
-                races.add(new Race(
+                Race race = new Race(
                         driverId,
                         dto.getRaceName(),
                         dto.getCircuitName(),
@@ -158,7 +161,24 @@ public class SyncService {
                         dto.getCountry(),
                         dto.getDate(),
                         (int) (Math.random() * 20 + 1) // fake position (1–20)
-                ));
+                );
+
+                // 🆕 Set race status based on date
+                // Current date: 2026-04-19
+                try {
+                    java.time.LocalDate raceDate = java.time.LocalDate.parse(dto.getDate());
+                    java.time.LocalDate currentDate = java.time.LocalDate.of(2026, 4, 19);
+                    
+                    if (raceDate.isBefore(currentDate)) {
+                        race.setStatus("COMPLETED");
+                    } else {
+                        race.setStatus("SCHEDULED");
+                    }
+                } catch (Exception e) {
+                    race.setStatus("SCHEDULED");
+                }
+
+                races.add(race);
             }
 
             updateSyncTime(key);

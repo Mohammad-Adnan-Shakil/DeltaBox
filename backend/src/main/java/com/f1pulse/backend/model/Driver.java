@@ -20,6 +20,14 @@ public class Driver {
     private String name;
     private String nationality;
     private Long teamId;
+    private Integer season = 2026;  // 🆕 Season field
+    
+    // ✅ Added: Points (championship points)
+    @Column(columnDefinition = "DOUBLE PRECISION DEFAULT 0")
+    private Double points = 0.0;
+    
+    // ✅ Added: Team name (for display)
+    private String team;
 
     public Driver() {}
 
@@ -68,7 +76,36 @@ public class Driver {
     public void setNationality(String nationality) {
         this.nationality = nationality;
     }
+    
+    // ✅ Added: points getters/setters
+    public Double getPoints() {
+        return points;
+    }
 
-    // getters + setters
+    public void setPoints(Double points) {
+        this.points = points;
+    }
+    
+    // ✅ Added: team getters/setters
+    public String getTeam() {
+        return team;
+    }
+
+    public void setTeam(String team) {
+        this.team = team;
+    }
+    
+    // ✅ Added: driverId getter (alias for frontend compatibility)
+    public Long getDriverId() {
+        return id;
+    }
+
+    public Integer getSeason() {
+        return season;
+    }
+
+    public void setSeason(Integer season) {
+        this.season = season;
+    }
 }
 

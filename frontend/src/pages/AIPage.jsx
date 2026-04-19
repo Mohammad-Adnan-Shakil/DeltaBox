@@ -1,253 +1,281 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../utils/axios";
 import { motion } from "framer-motion";
+import { useFetch, usePost } from "../hooks/useFetch";
+import { Card, Button, Input, Loader } from "../components/common";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
 const AIPage = () => {
-  const [drivers, setDrivers] = useState([]);
-  const [races, setRaces] = useState([]);
+  const { data: drivers } = useFetch("/drivers");
+  const { data: races } = useFetch("/races");
+  const { execute: runPrediction, loading } = usePost("/ai/intelligence");
 
   const [selectedDriver, setSelectedDriver] = useState("");
   const [selectedRace, setSelectedRace] = useState("");
-  const [position, setPosition] = useState(1);
+  const [simulatedPosition, setSimulatedPosition] = useState(10);
 
-  const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [animatedPosition, setAnimatedPosition] = useState(20);
+  const [error, setError] = useState("");
 
-  // 🔄 Load initial data
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [driversRes, racesRes] = await Promise.all([
-          api.get("/drivers"),
-          api.get("/races"),
-        ]);
-
-        setDrivers(driversRes.data);
-        setRaces(racesRes.data);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // 🔢 Animate prediction
-  useEffect(() => {
-    if (!result) return;
-
-    let start = 20;
-    const end = result?.prediction?.predictedPosition;
-
-    const interval = setInterval(() => {
-      start--;
-
-      if (start <= end) {
-        start = end;
-        clearInterval(interval);
-      }
-
-      setAnimatedPosition(start);
-    }, 50);
-
-    return () => clearInterval(interval);
-  }, [result]);
-
-  // 🧠 Run AI
-  const runAI = async () => {
-    if (!selectedDriver || !selectedRace) return;
-
-    setLoading(true);
-    setResult(null);
+  // Run AI Prediction
+  const handlePrediction = async () => {
+    if (!selectedDriver || !selectedRace) {
+      setError("Please select a driver and race");
+      return;
+    }
 
     try {
-      const res = await api.post("/ai/intelligence", {
-        driverId: selectedDriver,
-        raceId: selectedRace,
-        simulatedPosition: position,
+      setError("");
+      const prediction = await runPrediction({
+        driverId: parseInt(selectedDriver),
+        raceId: parseInt(selectedRace),
+        simulatedPosition: simulatedPosition,
       });
-
-      setResult(res.data);
+      setResult(prediction);
     } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+      setError(err.message || "Prediction failed");
     }
   };
 
+  const selectedDriverData = drivers?.find(
+    (d) => d.driverId === parseInt(selectedDriver)
+  );
+
   return (
-    <div className="flex gap-6 h-full">
-      {/* LEFT PANEL */}
-      <div className="w-[35%] surface space-y-6">
-        <div>
-          <h2 className="font-display text-2xl tracking-widePlus">
-            INTELLIGENCE ENGINE
-          </h2>
-          <div className="racing-divider"></div>
-        </div>
-
-        {/* Driver */}
-        <div>
-          <label className="text-sm text-textSecondary">Driver</label>
-          <select
-            className="input-field"
-            value={selectedDriver}
-            onChange={(e) => setSelectedDriver(e.target.value)}
-          >
-            <option value="">Select Driver</option>
-            {drivers.map((d) => (
-              <option key={d.driverId} value={d.driverId}>
-                {d.name} ({d.team})
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Race */}
-        <div>
-          <label className="text-sm text-textSecondary">Race</label>
-          <select
-            className="input-field"
-            value={selectedRace}
-            onChange={(e) => setSelectedRace(e.target.value)}
-          >
-            <option value="">Select Race</option>
-            {races.map((r) => (
-              <option key={r.raceId} value={r.raceId}>
-                {r.name} — {r.location}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Slider */}
-        <div>
-          <label className="text-sm text-textSecondary">
-            Simulated Position
-          </label>
-          <div className="flex items-center gap-4">
-            <input
-              type="range"
-              min="1"
-              max="20"
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
-              className="w-full"
-            />
-            <span className="font-mono text-xl">{position}</span>
-          </div>
-        </div>
-
-        <button
-          onClick={runAI}
-          className="btn-primary w-full"
-          disabled={loading}
-        >
-          {loading ? "RUNNING..." : "RUN INTELLIGENCE"}
-        </button>
+    <div className="space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-4xl font-bold text-white flex items-center gap-3 mb-2">
+          <span className="text-red-500">⚡</span> AI Intelligence Engine
+        </h1>
+        <p className="text-gray-400">Predict race positions and driver performance</p>
       </div>
 
-      {/* RIGHT PANEL */}
-      <motion.div
-        className="w-[65%] space-y-6 overflow-y-auto"
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        {!result && !loading && (
-          <div className="card text-center text-textSecondary">
-            Select inputs and run intelligence
-          </div>
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Control Panel */}
+        <Card className="lg:col-span-1 h-fit">
+          <h2 className="text-lg font-bold text-white mb-6">Prediction Setup</h2>
 
-        {loading && (
-          <div className="card text-center font-mono text-xl">
-            ANALYZING...
-          </div>
-        )}
+          {/* Driver Selection */}
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Select Driver
+              </label>
+              <select
+                value={selectedDriver}
+                onChange={(e) => setSelectedDriver(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white
+                  focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+              >
+                <option value="">Choose a driver...</option>
+                {drivers?.map((d) => (
+                  <option key={d.driverId} value={d.driverId}>
+                    {d.code || d.name} — {d.team || "No Team"}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {result && (
-          <>
-            {/* Prediction */}
-            <motion.div className="card flex justify-between">
-              <div>
-                <p className="text-textSecondary">Predicted Position</p>
-                <h1 className="text-6xl font-mono">
-                  P{animatedPosition}
-                </h1>
+            {/* Race Selection */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Select Race
+              </label>
+              <select
+                value={selectedRace}
+                onChange={(e) => setSelectedRace(e.target.value)}
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white
+                  focus:outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+              >
+                <option value="">Choose a race...</option>
+                {races?.map((r) => (
+                  <option key={r.raceId} value={r.raceId}>
+                    {r.raceName || `Race ${r.raceId}`} — {r.location}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Simulated Position Slider */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Simulated Starting Position
+              </label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="1"
+                  max="20"
+                  value={simulatedPosition}
+                  onChange={(e) => setSimulatedPosition(parseInt(e.target.value))}
+                  className="flex-1 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-red-500"
+                />
+                <span className="text-2xl font-bold text-red-500 w-8 text-right">
+                  P{simulatedPosition}
+                </span>
               </div>
+            </div>
 
-              <div className="w-64">
-                <p className="text-textSecondary mb-2">Confidence</p>
-                <div className="w-full h-3 bg-border rounded-full">
-                  <div
-                    className="h-full bg-primary transition-all"
-                    style={{
-                      width: `${
-                        (result?.prediction?.confidence || 0) * 100
-                      }%`,
-                    }}
-                  ></div>
+            {/* Error Message */}
+            {error && <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+              {error}
+            </div>}
+
+            {/* Run Button */}
+            <Button
+              onClick={handlePrediction}
+              disabled={loading || !selectedDriver || !selectedRace}
+              variant="primary"
+              size="lg"
+              className="w-full"
+            >
+              {loading ? "🔄 Analyzing..." : "⚡ Run Prediction"}
+            </Button>
+          </div>
+
+          {/* Selected Driver Info */}
+          {selectedDriverData && (
+            <div className="mt-6 pt-6 border-t border-gray-800">
+              <p className="text-xs text-gray-500 mb-3 uppercase font-bold">Current Selection</p>
+              <div className="space-y-2">
+                <p className="text-white font-bold">{selectedDriverData.name}</p>
+                <p className="text-gray-400">{selectedDriverData.team || "Free Agent"}</p>
+                <p className="text-red-500 font-bold">{selectedDriverData.points || 0} Points</p>
+              </div>
+            </div>
+          )}
+        </Card>
+
+        {/* Results Panel */}
+        <div className="lg:col-span-2 space-y-6">
+          {!result && !loading && (
+            <Card className="flex items-center justify-center min-h-[300px]">
+              <div className="text-center">
+                <p className="text-gray-400 text-lg">👆 Select driver and race to start</p>
+              </div>
+            </Card>
+          )}
+
+          {loading && (
+            <Card className="flex items-center justify-center min-h-[300px]">
+              <Loader size="lg" message="Analyzing prediction..." />
+            </Card>
+          )}
+
+          {result && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="space-y-6"
+            >
+              {/* Main Prediction Card */}
+              <Card hover className="bg-gradient-to-r from-red-500/10 to-transparent border-red-500/30">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-400 text-sm font-medium mb-2">PREDICTED POSITION</p>
+                    <motion.div
+                      initial={{ scale: 0.5 }}
+                      animate={{ scale: 1 }}
+                      className="text-6xl font-bold text-red-500"
+                    >
+                      P{result.prediction?.predictedPosition || "—"}
+                    </motion.div>
+                  </div>
+
+                  {/* Confidence Gauge */}
+                  <div className="text-right">
+                    <p className="text-gray-400 text-sm font-medium mb-3">Confidence</p>
+                    <div className="relative w-24 h-24 flex items-center justify-center">
+                      <svg className="w-full h-full" viewBox="0 0 100 100">
+                        <circle cx="50" cy="50" r="45" fill="none" stroke="#374151" strokeWidth="6" />
+                        <circle
+                          cx="50"
+                          cy="50"
+                          r="45"
+                          fill="none"
+                          stroke="#EF4444"
+                          strokeWidth="6"
+                          strokeDasharray={`${(result.prediction?.confidence || 0) * 282.74} 282.74`}
+                          strokeLinecap="round"
+                          style={{ rotate: "-90deg", transformOrigin: "50% 50%" }}
+                        />
+                      </svg>
+                      <span className="absolute text-2xl font-bold text-white">
+                        {Math.round((result.prediction?.confidence || 0) * 100)}%
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-right font-mono mt-2">
-                  {(
-                    (result?.prediction?.confidence || 0) * 100
-                  ).toFixed(0)}
-                  %
-                </p>
+              </Card>
+
+              {/* Insights Grid */}
+              <div className="grid grid-cols-3 gap-4">
+                <Card hover>
+                  <p className="text-gray-400 text-xs font-bold uppercase mb-2">Avg Finish</p>
+                  <p className="text-3xl font-bold text-blue-500">
+                    P{result.insights?.averageFinish || "—"}
+                  </p>
+                </Card>
+
+                <Card hover>
+                  <p className="text-gray-400 text-xs font-bold uppercase mb-2">Consistency</p>
+                  <p className="text-3xl font-bold text-green-500">
+                    {((result.insights?.consistencyScore || 0) * 100).toFixed(0)}%
+                  </p>
+                </Card>
+
+                <Card hover>
+                  <p className="text-gray-400 text-xs font-bold uppercase mb-2">Trend</p>
+                  <p className="text-3xl font-bold text-yellow-500">
+                    {result.insights?.trend || "—"}
+                  </p>
+                </Card>
               </div>
+
+              {/* Simulation Results */}
+              {result.simulation && (
+                <Card>
+                  <p className="text-gray-400 text-sm font-bold uppercase mb-4">Position Impact</p>
+                  <div className="flex items-center justify-around">
+                    <div className="text-center">
+                      <p className="text-gray-500 text-xs mb-2">Current Avg</p>
+                      <p className="text-2xl font-bold text-red-500">
+                        P{result.simulation.oldAverage || "—"}
+                      </p>
+                    </div>
+                    <span className="text-2xl text-gray-600">→</span>
+                    <div className="text-center">
+                      <p className="text-gray-500 text-xs mb-2">New Avg</p>
+                      <p className="text-2xl font-bold text-green-500">
+                        P{result.simulation.newAverage || "—"}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              )}
+
+              {/* Summary */}
+              {result.summary && (
+                <Card>
+                  <p className="text-gray-400 text-sm font-bold uppercase mb-3">Analysis</p>
+                  <p className="text-gray-300 leading-relaxed">{result.summary}</p>
+                </Card>
+              )}
             </motion.div>
-
-            {/* Insights */}
-            <div className="grid grid-cols-3 gap-4">
-              <div className="card">
-                <p className="text-textSecondary">Average Finish</p>
-                <p className="stat-number">
-                  {result?.insights?.averageFinish}
-                </p>
-              </div>
-
-              <div className="card">
-                <p className="text-textSecondary">Consistency</p>
-                <p className="stat-number">
-                  {result?.insights?.consistencyScore}
-                </p>
-              </div>
-
-              <div className="card">
-                <p className="text-textSecondary">Trend</p>
-                <p className="stat-number">
-                  {result?.insights?.trend}
-                </p>
-              </div>
-            </div>
-
-            {/* Simulation */}
-            <div className="card">
-              <p className="text-textSecondary">Simulation</p>
-              <p>
-                {result?.simulation?.oldAverage} →{" "}
-                {result?.simulation?.newAverage}
-              </p>
-            </div>
-
-            {/* Comparison */}
-            <div className="card">
-              <p className="text-textSecondary">Comparison</p>
-              <p>
-                {result?.comparison?.driverA} vs{" "}
-                {result?.comparison?.driverB}
-              </p>
-            </div>
-
-            {/* Summary */}
-            <div className="card">
-              <p>{result?.summary}</p>
-            </div>
-          </>
-        )}
-      </motion.div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

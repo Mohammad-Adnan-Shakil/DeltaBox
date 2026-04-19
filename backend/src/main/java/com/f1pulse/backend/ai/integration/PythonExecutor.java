@@ -18,29 +18,30 @@ public class PythonExecutor {
     public String runPredictionScript(String inputJson) {
         try {
             String pythonPath = "python";
-            String scriptPath = "C:/projects/f1-pulse/backend/ml/predict.py";
+            String scriptPath = "backend/ml/predict.py";
 
             logger.info("=== AI DEBUG START ===");
             logger.info("Script Path: {}", scriptPath);
             logger.info("Input JSON: {}", inputJson);
 
-            // ❌ REMOVE inputJson from arguments
             ProcessBuilder processBuilder = new ProcessBuilder(
                     pythonPath,
                     scriptPath
             );
 
+            // Set working directory to project root
+            processBuilder.directory(new java.io.File("."));
             processBuilder.redirectErrorStream(true);
 
             Process process = processBuilder.start();
 
-            // 🔥 SEND JSON VIA STDIN (CRITICAL)
+            // Send JSON via STDIN
             try (OutputStream os = process.getOutputStream()) {
                 os.write(inputJson.getBytes());
                 os.flush();
-            } // 🔥 THIS CLOSES STREAM → sends EOF
+            }
 
-            // 🔥 READ OUTPUT
+            // Read output
             BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream())
             );
@@ -59,15 +60,19 @@ public class PythonExecutor {
             logger.info("=== AI DEBUG END ===");
 
             if (exitCode != 0) {
-                logger.error("Python execution failed: {}", output);
-                throw new RuntimeException("Python failed: " + output);
+                logger.error("Python execution failed with exit code {}: {}", exitCode, output);
+                throw new RuntimeException("Python failed with code " + exitCode + ": " + output);
+            }
+
+            if (output.length() == 0) {
+                throw new RuntimeException("Empty response from Python script");
             }
 
             return output.toString();
 
         } catch (Exception e) {
             logger.error("Error executing Python script", e);
-            throw new RuntimeException("Error executing Python script", e);
+            throw new RuntimeException("Error executing Python script: " + e.getMessage(), e);
         }
     }
 
