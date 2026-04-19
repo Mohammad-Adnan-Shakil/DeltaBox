@@ -84,9 +84,11 @@ public class SecurityConfig {
         config.setAllowedOrigins(List.of(
                 "http://localhost:5173",      // Development
                 "http://localhost:5174",      // Development (alternate port)
+                "http://localhost:5175",      // Development (Vite fallback port)
                 "http://localhost:3000",      // Alternative dev port
                 "http://127.0.0.1:5173",
-                "http://127.0.0.1:5174"
+                "http://127.0.0.1:5174",
+                "http://127.0.0.1:5175"
         ));
 
         // ✅ Allow HTTP methods
