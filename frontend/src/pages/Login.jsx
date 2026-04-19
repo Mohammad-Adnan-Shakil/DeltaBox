@@ -12,26 +12,43 @@ const Login = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [form, setForm] = useState({
+  const [isLogin, setIsLogin] = useState(true);
+
+  // Login form state
+  const [loginForm, setLoginForm] = useState({
     email: "",
     password: "",
   });
 
+  // Register form state
+  const [registerForm, setRegisterForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleLoginChange = (e) => {
+    setLoginForm({ ...loginForm, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleRegisterChange = (e) => {
+    setRegisterForm({ ...registerForm, [e.target.name]: e.target.value });
+  };
+
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const res = await api.post("/auth/login", form);
+      const res = await api.post("/auth/login", loginForm);
       console.log("LOGIN RESPONSE:", res.data);
       login(res.data);
       navigate("/dashboard");
@@ -43,112 +60,437 @@ const Login = () => {
     }
   };
 
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    if (registerForm.password !== registerForm.confirmPassword) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await api.post("/auth/register", {
+        username: registerForm.name,
+        email: registerForm.email,
+        password: registerForm.password,
+      });
+      setSuccess("Account created successfully! Redirecting to login...");
+      setTimeout(() => {
+        setIsLogin(true);
+        setRegisterForm({ name: "", email: "", password: "", confirmPassword: "" });
+        setSuccess("");
+      }, 1500);
+    } catch (err) {
+      console.log(err);
+      setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputBaseStyle = {
+    width: "100%",
+    boxSizing: "border-box",
+    padding: "12px 16px",
+    backgroundColor: "rgba(255, 255, 255, 0.04)",
+    border: "1px solid rgba(255, 255, 255, 0.1)",
+    borderRadius: "10px",
+    color: "white",
+    fontSize: "15px",
+    fontFamily: "inherit",
+    transition: "all 0.2s",
+    outline: "none",
+  };
+
+  const inputFocusStyle = {
+    ...inputBaseStyle,
+    borderColor: "rgba(232, 0, 45, 0.6)",
+    boxShadow: "0 0 0 3px rgba(232, 0, 45, 0.1)",
+  };
+
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#0a0a0f]">
-      {/* LEFT PANEL - BRANDING (Desktop only) */}
-      <div className="hidden md:flex w-[55%] bg-[#0f0f1a] border-r border-white/6 items-center justify-center relative">
-        {/* Branding Content */}
-        <div className="flex flex-col items-center text-center">
-          {/* F1 PULSE Logo */}
-          <div className="flex items-baseline gap-0" style={{ letterSpacing: "-2px" }}>
-            <h1 className="text-7xl font-black text-[#e8002d]">F1</h1>
-            <h1 className="text-7xl font-black text-white">PULSE</h1>
-          </div>
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", backgroundColor: "#0a0a0f" }}>
+      <style>{`
+        @media (max-width: 767px) {
+          .login-container { flex-direction: column; }
+          .login-left { width: 100%; height: auto; padding: 40px 24px; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.06); }
+          .login-left-content .logo-text { font-size: 42px; line-height: 1; }
+          .login-left .feature-pills { display: none; }
+          .login-left .metadata-footer { display: none; }
+          .login-right { width: 100%; padding: 32px 24px; }
+        }
 
-          {/* Tagline */}
-          <div className="mt-6">
-            <p className="text-xl font-medium text-white">AI-Powered Formula 1</p>
-            <p className="text-xl font-normal text-white/50">Intelligence Platform</p>
-          </div>
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .login-container { flex-direction: row; }
+          .login-left { width: 50%; }
+          .login-left .feature-pills { display: none; }
+          .login-right { width: 50%; padding: 32px; }
+        }
 
-          {/* Feature Pills */}
-          <div className="mt-10 flex flex-wrap gap-3 justify-center">
-            <div className="px-4 py-2 rounded-full border border-white/10 bg-white/6 text-white text-xs">
-              Race Prediction
-            </div>
-            <div className="px-4 py-2 rounded-full border border-white/10 bg-white/6 text-white text-xs">
-              Performance Insights
-            </div>
-            <div className="px-4 py-2 rounded-full border border-white/10 bg-white/6 text-white text-xs">
-              What-if Simulation
-            </div>
-          </div>
+        @media (min-width: 1024px) {
+          .login-container { flex-direction: row; }
+          .login-left { width: 55%; }
+          .login-right { width: 45%; padding: 48px; }
+        }
 
-          {/* Bottom Footer Text */}
-          <p className="absolute bottom-8 text-xs text-white/30">2026 Season · Live Data · PostgreSQL</p>
-        </div>
-      </div>
+        html, body, #root {
+          height: 100%;
+          margin: 0;
+          padding: 0;
+        }
+      `}</style>
 
-      {/* RIGHT PANEL - LOGIN FORM */}
-      <div className="w-full md:w-[45%] flex items-center justify-center p-6 md:p-12">
-        <div className="w-full max-w-sm">
-          {/* Member Access Label */}
-          <p className="text-[11px] uppercase tracking-widest text-white/40 font-semibold">Member Access</p>
-
-          {/* Sign In Heading */}
-          <h2 className="mt-2 text-4xl font-bold text-white">Sign In</h2>
-
-          {/* Subtext */}
-          <p className="mt-1 text-sm text-white/60">Access your F1 intelligence dashboard</p>
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="mt-10 space-y-3">
-            {/* Email Input */}
-            <input
-              type="email"
-              name="email"
-              placeholder="Email address"
-              value={form.email}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-3 bg-white/4 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#e8002d]/60 focus:ring-3 focus:ring-[#e8002d]/10 transition-all text-sm"
-            />
-
-            {/* Password Input with Toggle */}
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-white/4 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-[#e8002d]/60 focus:ring-3 focus:ring-[#e8002d]/10 transition-all text-sm pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/60 transition-colors"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+      <div style={{ display: "flex", flex: 1 }} className="login-container">
+        {/* LEFT PANEL - BRANDING */}
+        <div
+          className="login-left"
+          style={{
+            display: "flex",
+            width: "55%",
+            backgroundColor: "#0f0f1a",
+            borderRight: "1px solid rgba(255,255,255,0.06)",
+            alignItems: "center",
+            justifyContent: "center",
+            position: "relative",
+          }}
+        >
+          <div
+            className="login-left-content"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+            }}
+          >
+            {/* F1 PULSE Logo */}
+            <div style={{ display: "flex", alignItems: "baseline", gap: 0, letterSpacing: "-2px" }}>
+              <h1 className="logo-text" style={{ fontSize: "64px", fontWeight: 900, color: "#e8002d", margin: 0 }}>
+                F1
+              </h1>
+              <h1 className="logo-text" style={{ fontSize: "64px", fontWeight: 900, color: "white", margin: 0 }}>
+                PULSE
+              </h1>
             </div>
 
-            {/* Error Message */}
-            {error && (
-              <p className="mt-3 text-center text-sm text-[#e8002d]/90">{error}</p>
-            )}
+            {/* Tagline */}
+            <div style={{ marginTop: "24px" }}>
+              <p style={{ fontSize: "20px", fontWeight: 500, color: "white", margin: 0 }}>AI-Powered Formula 1</p>
+              <p style={{ fontSize: "20px", fontWeight: 400, color: "rgba(255,255,255,0.5)", margin: "4px 0 0 0" }}>
+                Intelligence Platform
+              </p>
+            </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full mt-6 px-4 py-3 bg-[#e8002d] text-white font-bold text-sm uppercase tracking-wider rounded-xl hover:bg-[#c8001f] active:scale-95 hover:scale-99 transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed"
+            {/* Feature Pills */}
+            <div
+              className="feature-pills"
+              style={{
+                marginTop: "40px",
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "12px",
+                justifyContent: "center",
+              }}
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <div className="w-4 h-4 border-2 border-t-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                </span>
-              ) : (
-                "ACCESS DASHBOARD"
-              )}
-            </button>
-          </form>
+              <div style={{ padding: "8px 16px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(255,255,255,0.06)", color: "white", fontSize: "13px" }}>
+                Race Prediction
+              </div>
+              <div style={{ padding: "8px 16px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(255,255,255,0.06)", color: "white", fontSize: "13px" }}>
+                Performance Insights
+              </div>
+              <div style={{ padding: "8px 16px", borderRadius: "999px", border: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(255,255,255,0.06)", color: "white", fontSize: "13px" }}>
+                What-if Simulation
+              </div>
+            </div>
 
-          {/* Bottom Footer */}
-          <p className="mt-10 text-center text-xs text-white/20">F1 Pulse · 2026 Season</p>
+            {/* Bottom Footer Text */}
+            <p
+              className="metadata-footer"
+              style={{
+                position: "absolute",
+                bottom: "32px",
+                fontSize: "12px",
+                color: "rgba(255,255,255,0.3)",
+                margin: 0,
+              }}
+            >
+              2026 Season · Live Data · PostgreSQL
+            </p>
+          </div>
+        </div>
+
+        {/* RIGHT PANEL - LOGIN/REGISTER FORM */}
+        <div
+          className="login-right"
+          style={{
+            width: "45%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "48px 24px",
+          }}
+        >
+          <div style={{ width: "100%", maxWidth: "360px" }}>
+            {/* Header */}
+            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "3px", color: "rgba(255,255,255,0.4)", fontWeight: 600, margin: 0 }}>
+              {isLogin ? "Member Access" : "New Member"}
+            </p>
+
+            <h2 style={{ marginTop: "8px", fontSize: "32px", fontWeight: 700, color: "white", margin: "8px 0 0 0" }}>
+              {isLogin ? "Sign In" : "Create Account"}
+            </h2>
+
+            <p style={{ marginTop: "4px", fontSize: "14px", color: "rgba(255,255,255,0.6)", margin: "4px 0 0 0" }}>
+              {isLogin ? "Access your F1 intelligence dashboard" : "Join F1 Pulse for the 2026 season"}
+            </p>
+
+            {/* Form */}
+            <form
+              onSubmit={isLogin ? handleLoginSubmit : handleRegisterSubmit}
+              style={{
+                marginTop: "40px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "12px",
+              }}
+            >
+              {/* Register: Full Name Input */}
+              {!isLogin && (
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Full name"
+                  value={registerForm.name}
+                  onChange={handleRegisterChange}
+                  required={!isLogin}
+                  style={inputBaseStyle}
+                  onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+                  onBlur={(e) => Object.assign(e.target.style, inputBaseStyle)}
+                />
+              )}
+
+              {/* Email Input */}
+              <input
+                type="email"
+                name="email"
+                placeholder="Email address"
+                value={isLogin ? loginForm.email : registerForm.email}
+                onChange={isLogin ? handleLoginChange : handleRegisterChange}
+                required
+                style={inputBaseStyle}
+                onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+                onBlur={(e) => Object.assign(e.target.style, inputBaseStyle)}
+              />
+
+              {/* Password Input with Toggle */}
+              <div style={{ position: "relative", width: "100%" }}>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Password"
+                  value={isLogin ? loginForm.password : registerForm.password}
+                  onChange={isLogin ? handleLoginChange : handleRegisterChange}
+                  required
+                  style={{ ...inputBaseStyle, paddingRight: "48px" }}
+                  onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+                  onBlur={(e) => Object.assign(e.target.style, inputBaseStyle)}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{
+                    position: "absolute",
+                    right: "14px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    color: "rgba(255,255,255,0.5)",
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0",
+                    zIndex: 10,
+                  }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+
+              {/* Register: Confirm Password Input */}
+              {!isLogin && (
+                <div style={{ position: "relative", width: "100%" }}>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    name="confirmPassword"
+                    placeholder="Confirm password"
+                    value={registerForm.confirmPassword}
+                    onChange={handleRegisterChange}
+                    required={!isLogin}
+                    style={{ ...inputBaseStyle, paddingRight: "48px" }}
+                    onFocus={(e) => Object.assign(e.target.style, inputFocusStyle)}
+                    onBlur={(e) => Object.assign(e.target.style, inputBaseStyle)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    style={{
+                      position: "absolute",
+                      right: "14px",
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "rgba(255,255,255,0.5)",
+                      display: "flex",
+                      alignItems: "center",
+                      padding: "0",
+                      zIndex: 10,
+                    }}
+                  >
+                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+              )}
+
+              {/* Error Message */}
+              {error && (
+                <p style={{ marginTop: "12px", textAlign: "center", fontSize: "13px", color: "rgba(232,0,45,0.9)" }}>
+                  {error}
+                </p>
+              )}
+
+              {/* Success Message */}
+              {success && (
+                <p style={{ marginTop: "12px", textAlign: "center", fontSize: "13px", color: "rgba(76,175,80,0.9)" }}>
+                  {success}
+                </p>
+              )}
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  marginTop: "24px",
+                  width: "100%",
+                  padding: "14px",
+                  backgroundColor: "#e8002d",
+                  color: "white",
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  border: "none",
+                  borderRadius: "10px",
+                  letterSpacing: "1px",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  opacity: loading ? 0.75 : 1,
+                  transition: "all 0.2s",
+                  textTransform: "uppercase",
+                }}
+                onMouseEnter={(e) => {
+                  if (!loading) e.target.style.backgroundColor = "#c8001f";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "#e8002d";
+                }}
+                onMouseDown={(e) => {
+                  if (!loading) e.target.style.transform = "scale(0.97)";
+                }}
+                onMouseUp={(e) => {
+                  if (!loading) e.target.style.transform = "scale(1)";
+                }}
+              >
+                {loading ? (
+                  <div
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      border: "2px solid white",
+                      borderTop: "2px solid transparent",
+                      borderRadius: "50%",
+                      animation: "spin 0.6s linear infinite",
+                      margin: "0 auto",
+                    }}
+                  />
+                ) : isLogin ? (
+                  "ACCESS DASHBOARD"
+                ) : (
+                  "CREATE ACCOUNT"
+                )}
+              </button>
+            </form>
+
+            {/* Divider */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                marginTop: "24px",
+              }}
+            >
+              <div style={{ flex: 1, height: "1px", backgroundColor: "rgba(255,255,255,0.08)" }}></div>
+              <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.3)" }}>OR</span>
+              <div style={{ flex: 1, height: "1px", backgroundColor: "rgba(255,255,255,0.08)" }}></div>
+            </div>
+
+            {/* Toggle Button */}
+            <button
+              type="button"
+              onClick={() => {
+                setIsLogin(!isLogin);
+                setError("");
+                setSuccess("");
+              }}
+              style={{
+                width: "100%",
+                marginTop: "12px",
+                padding: "14px",
+                backgroundColor: "transparent",
+                border: "1px solid rgba(255,255,255,0.12)",
+                borderRadius: "10px",
+                color: "rgba(255,255,255,0.7)",
+                fontSize: "15px",
+                fontWeight: 600,
+                letterSpacing: "1px",
+                cursor: "pointer",
+                transition: "all 0.2s",
+                textTransform: "uppercase",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.borderColor = "rgba(232,0,45,0.5)";
+                e.target.style.color = "white";
+                e.target.style.backgroundColor = "rgba(232,0,45,0.06)";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.borderColor = "rgba(255,255,255,0.12)";
+                e.target.style.color = "rgba(255,255,255,0.7)";
+                e.target.style.backgroundColor = "transparent";
+              }}
+            >
+              {isLogin ? "CREATE ACCOUNT" : "ALREADY HAVE AN ACCOUNT?"}
+            </button>
+
+            {/* Bottom Footer */}
+            <p style={{ marginTop: "40px", textAlign: "center", fontSize: "12px", color: "rgba(255,255,255,0.2)", margin: "40px 0 0 0" }}>
+              F1 Pulse · 2026 Season
+            </p>
+          </div>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   );
 };
