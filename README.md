@@ -1,23 +1,42 @@
-# F1 PULSE — AI-Powered Formula 1 Intelligence Platform
+# F1 Pulse — AI-Powered Formula 1 Intelligence Platform
 
-A full-stack AI platform for Formula 1 race analysis, driver performance 
-prediction, and strategic simulation. Built with Spring Boot, React, and 
-a multi-model Python ML engine.
+![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Python](https://img.shields.io/badge/Python-3.9-3776AB?style=flat-square&logo=python&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![XGBoost](https://img.shields.io/badge/XGBoost-ML-FF6600?style=flat-square)
+![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens)
 
-🔗 Live Demo: [coming soon] · GitHub: github.com/Mohammad-Adnan-Shakil
+> F1 Pulse predicts race outcomes using a 3-model ML ensemble (XGBoost + Random Forest + Linear Regression) orchestrated from a Spring Boot backend via subprocess — with conflict detection that flags high-uncertainty races instead of hiding them.
+
+🔗 **Live Demo:** [Coming Soon — deploying to Render] · **GitHub:** [github.com/Mohammad-Adnan-Shakil](https://github.com/Mohammad-Adnan-Shakil)
 
 ---
 
 ## What It Does
 
-F1 Pulse gives you a complete intelligence layer over the 2026 F1 season:
+F1 Pulse is a complete intelligence layer over the 2026 F1 season — built for analysis, prediction, and strategic simulation.
 
-- **AI Race Prediction** — predict where any driver finishes at any circuit
-- **What-If Simulation** — change grid position and see how it impacts outcome
-- **Confidence Scoring** — know how reliable each prediction is
-- **Live Standings** — real-time driver and constructor standings from PostgreSQL
-- **Race Calendar** — full 2026 season with completed vs upcoming status
-- **Performance Insights** — trend detection, consistency scoring, model analysis
+| Feature | Description |
+|---|---|
+| 🤖 **AI Race Prediction** | Predict where any driver finishes at any circuit |
+| 🔀 **What-If Simulation** | Change grid position, see how it shifts the predicted outcome |
+| 📊 **Confidence Scoring** | Know exactly how reliable each prediction is — and when models disagree |
+| 🏆 **Live Standings** | Real-time driver and constructor standings from PostgreSQL |
+| 📅 **Race Calendar** | Full 2026 season with completed vs upcoming status |
+| 📈 **Performance Insights** | Trend detection, consistency scoring, multi-model analysis |
+
+---
+
+## Engineering Highlights
+
+These are the non-trivial decisions that make this project more than a tutorial:
+
+- **Multi-model conflict detection** — When XGBoost, Random Forest, and Linear Regression disagree, the AI Orchestrator doesn't average them out — it flags the conflict as a "high-uncertainty race" signal. Disagreement itself is data.
+- **Cross-language ML execution** — Python ML engine called from Java via `ProcessBuilder` with JSON over STDIN/STDOUT. No microservice overhead, no shared memory. Clean subprocess architecture.
+- **JWT + RBAC from scratch** — Token generation, validation middleware, and role-based route protection implemented without Spring Security's opinionated defaults.
+- **Feature engineering pipeline** — Models receive rolling average finish, consistency score, recent trend direction, and grid-to-finish delta — not raw position integers.
 
 ---
 
@@ -25,9 +44,8 @@ F1 Pulse gives you a complete intelligence layer over the 2026 F1 season:
 
 ### Backend — Java + Spring Boot
 - REST API with JWT authentication + Role-Based Access Control (RBAC)
-- JPA / Hibernate ORM
-- PostgreSQL database
-- ProcessBuilder integration for Java ↔ Python ML execution
+- JPA / Hibernate ORM with PostgreSQL
+- `ProcessBuilder` integration for Java ↔ Python ML execution
 
 ### Frontend — React + Tailwind CSS
 - Animated dashboard with live race clock
@@ -37,89 +55,69 @@ F1 Pulse gives you a complete intelligence layer over the 2026 F1 season:
 
 ### Machine Learning — Python
 - **XGBoost** — race outcome prediction
-- **Random Forest** — performance trend analysis  
+- **Random Forest** — performance trend analysis
 - **Linear Regression** — average finish baseline
-- Custom AI Orchestrator: combines all three models, detects conflicts,
-  generates human-readable insights
+- **Custom AI Orchestrator** — combines all three models, detects conflicts, generates human-readable insights
 - Feature engineering pipeline from raw race + driver data
 - Joblib for model serialization and loading
 
 ### Integration Layer
-- Java calls Python via ProcessBuilder (subprocess)
+- Java calls Python via `ProcessBuilder` (subprocess)
 - JSON over STDIN/STDOUT for structured ML communication
 - Stateless request/response — no shared memory between services
 
 ---
 
 ## Architecture
+
+```
 React Frontend
-↓ (REST + JWT)
+    ↓  (REST + JWT)
 Spring Boot Backend
-↓ (ProcessBuilder)
+    ↓  (ProcessBuilder)
 Python ML Engine
-↓
+    ↓
 AI Orchestrator
-├── XGBoost Model
-├── Random Forest Model
-└── Linear Regression Model
-↓
+    ├── XGBoost Model
+    ├── Random Forest Model
+    └── Linear Regression Model
+    ↓
 Prediction + Confidence + Insight Response
-↓
+    ↓
 Spring Boot → React → User
+```
 
 ---
 
 ## AI Engine — How It Works
 
-1. Frontend sends: driverId + raceId + gridPosition
+1. Frontend sends: `driverId` + `raceId` + `gridPosition`
 2. Spring Boot fetches driver stats and race history from PostgreSQL
-3. Feature vector is constructed (avg finish, consistency, recent form, grid)
+3. Feature vector is constructed: `(avg_finish, consistency, recent_form, grid)`
 4. Java spawns Python subprocess, sends JSON payload via STDIN
 5. Python runs XGBoost + Random Forest + Linear Regression in parallel
 6. AI Orchestrator compares model outputs:
-   - If models agree → high confidence prediction
-   - If models conflict → flags uncertainty, returns "conflicting models" insight
-7. Response includes: predicted finish, confidence %, trend, what-if impact,
-   performance insight text
+   - Models agree → **high confidence prediction**
+   - Models conflict → flags uncertainty, returns `"conflicting models"` insight
+7. Response includes: predicted finish, confidence %, trend, what-if impact, performance insight text
 8. Spring Boot returns enriched JSON to frontend
 9. React renders: position badge, confidence ring, simulation cards
 
 ---
 
-## Key Engineering Decisions
-
-**Multi-model architecture over single model**  
-Using three models lets the orchestrator detect when models disagree — 
-which itself is a signal (high uncertainty race) rather than hiding it.
-
-**Cross-language execution via ProcessBuilder**  
-Keeps the ML layer in Python (where the ecosystem is strongest) while 
-the backend stays in Java (performance, type safety, Spring ecosystem).
-No microservice overhead — simple subprocess with JSON I/O.
-
-**JWT + RBAC from scratch**  
-Implemented token generation, validation middleware, and role-based 
-route protection without using Spring Security's opinionated defaults.
-
-**Feature engineering from raw data**  
-Rather than feeding raw finish positions, the pipeline computes: 
-rolling average finish, consistency score, recent trend direction, 
-grid-to-finish delta — giving models meaningful signal.
-
----
-
 ## API Reference
 
-### POST /api/ai/predict
+### `POST /api/ai/predict`
+
 ```json
-Request:
+// Request
 {
   "driverId": 1,
   "raceId": 10,
   "gridPosition": 5
 }
 
-Response:
+// Response
 {
   "predictedFinish": 2,
   "confidence": 80,
@@ -134,11 +132,15 @@ Response:
 }
 ```
 
-### GET /api/drivers/standings
-### GET /api/races/calendar  
-### GET /api/constructors/standings
-### POST /api/auth/login
-### POST /api/auth/register
+### Other Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/drivers/standings` | Live driver standings |
+| `GET` | `/api/races/calendar` | Full 2026 race calendar |
+| `GET` | `/api/constructors/standings` | Constructor championship table |
+| `POST` | `/api/auth/login` | Authenticate and receive JWT |
+| `POST` | `/api/auth/register` | Register a new user |
 
 ---
 
@@ -161,7 +163,7 @@ cd backend
 ```bash
 cd ml
 pip install -r requirements.txt
-# Models are loaded automatically by Spring Boot via subprocess
+# Models load automatically when Spring Boot spawns the subprocess
 ```
 
 ### Frontend
@@ -181,27 +183,22 @@ psql -U postgres -d f1pulse -f db/seed.sql
 ---
 
 ## Project Structure
+
+```
 f1-pulse/
 ├── backend/          # Spring Boot — APIs, auth, DB, ML integration
 ├── frontend/         # React + Tailwind — dashboard, charts, prediction UI
 ├── ml/               # Python — XGBoost, Random Forest, orchestrator
 └── db/               # PostgreSQL schema + 2026 season seed data
-
----
-
-## Screenshots
-
-| Dashboard | AI Prediction | Driver Standings |
-|-----------|--------------|-----------------|
-| [add screenshot] | [add screenshot] | [add screenshot] |
+```
 
 ---
 
 ## Author
 
-**Mohammad Adnan Shakil**  
-CSE Student · Presidency University, Bengaluru (2024–2028)  
+**Mohammad Adnan Shakil**
+CSE Student · Presidency University, Bengaluru (2024–2028)
 Building toward backend + full-stack roles at top-tier companies
 
-GitHub · [github.com/Mohammad-Adnan-Shakil](https://github.com/Mohammad-Adnan-Shakil)  
-LinkedIn · [linkedin.com/in/Mohammad-Adnan-Shakil](https://linkedin.com/in/Mohammad-Adnan-Shakil)
+[![GitHub](https://img.shields.io/badge/GitHub-Mohammad--Adnan--Shakil-181717?style=flat-square&logo=github)](https://github.com/Mohammad-Adnan-Shakil)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Mohammad%20Adnan%20Shakil-0A66C2?style=flat-square&logo=linkedin)](https://linkedin.com/in/Mohammad-Adnan-Shakil)
