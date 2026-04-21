@@ -68,12 +68,21 @@ public class ErgastService {
                 return seasons;
             }
             
-            logger.info("✅ [ErgastService] Got response from Ergast API, checking structure...");
+            logger.info("✅ [ErgastService] Got response from Ergast API, response is null? {}", response == null);
+            
+            // 🔍 DEBUG: Print raw response
+            String rawJson = objectMapper.writeValueAsString(response);
+            logger.info("📋 [ErgastService] RAW API RESPONSE (first 500 chars): {}", rawJson.substring(0, Math.min(500, rawJson.length())));
+            logger.info("📋 [ErgastService] RAW RESPONSE LENGTH: {} chars", rawJson.length());
 
             if (response.has("MRData")) {
                 JsonNode mrData = response.get("MRData");
+                logger.info("✅ [ErgastService] Found MRData object");
+                
                 if (mrData.has("SeasonTable")) {
                     JsonNode seasonTable = mrData.get("SeasonTable");
+                    logger.info("✅ [ErgastService] Found SeasonTable object");
+                    
                     if (seasonTable.has("Seasons")) {
                         JsonNode seasonNodes = seasonTable.get("Seasons");
                         logger.info("✅ [ErgastService] Found Seasons array with {} entries", seasonNodes.size());
@@ -90,10 +99,10 @@ public class ErgastService {
                         }
                         logger.info("✅ [ErgastService] Successfully parsed {} seasons", seasons.size());
                     } else {
-                        logger.error("❌ [ErgastService] Seasons field not found in SeasonTable");
+                        logger.error("❌ [ErgastService] Seasons field not found in SeasonTable. Available fields: {}", seasonTable.fieldNames());
                     }
                 } else {
-                    logger.error("❌ [ErgastService] SeasonTable not found in MRData");
+                    logger.error("❌ [ErgastService] SeasonTable not found in MRData. Available fields: {}", mrData.fieldNames());
                 }
             } else {
                 logger.error("❌ [ErgastService] MRData not found in response. Available fields: {}", response.fieldNames());
@@ -146,11 +155,19 @@ public class ErgastService {
             }
             
             logger.info("✅ [ErgastService] Got response from Ergast API for year {}", year);
+            
+            // 🔍 DEBUG: Print raw response
+            String rawJson = objectMapper.writeValueAsString(response);
+            logger.info("📋 [ErgastService] RAW RACES RESPONSE for {} (first 500 chars): {}", year, rawJson.substring(0, Math.min(500, rawJson.length())));
 
             if (response.has("MRData")) {
                 JsonNode mrData = response.get("MRData");
+                logger.info("✅ [ErgastService] Found MRData for year {}", year);
+                
                 if (mrData.has("RaceTable")) {
                     JsonNode raceTable = mrData.get("RaceTable");
+                    logger.info("✅ [ErgastService] Found RaceTable for year {}", year);
+                    
                     if (raceTable.has("Races")) {
                         JsonNode raceNodes = raceTable.get("Races");
                         logger.info("✅ [ErgastService] Found Races array with {} entries for year {}", raceNodes.size(), year);
@@ -185,10 +202,10 @@ public class ErgastService {
                         }
                         logger.info("✅ [ErgastService] Successfully parsed {} races for year {}", races.size(), year);
                     } else {
-                        logger.error("❌ [ErgastService] Races field not found in RaceTable for year {}", year);
+                        logger.error("❌ [ErgastService] Races field not found in RaceTable for year {}. Available fields: {}", year, raceTable.fieldNames());
                     }
                 } else {
-                    logger.error("❌ [ErgastService] RaceTable not found in MRData for year {}", year);
+                    logger.error("❌ [ErgastService] RaceTable not found in MRData for year {}. Available fields: {}", year, mrData.fieldNames());
                 }
             } else {
                 logger.error("❌ [ErgastService] MRData not found in response for year {}", year);
