@@ -58,7 +58,7 @@ const Sidebar = ({ mobileOpen = false, onNavigate = () => {} }) => {
           <div>
             <div className="border-b border-borderSoft px-5 py-6 lg:px-4 xl:px-5">
               <h1 className="text-xl font-bold tracking-tight lg:text-center xl:text-left">
-                <span className="text-accentRed">F1</span> <span className="text-whitePrimary lg:hidden xl:inline">PULSE</span>
+                <span className="text-accentRed">APEX</span> <span className="text-whitePrimary lg:hidden xl:inline">IQ</span>
               </h1>
             </div>
 

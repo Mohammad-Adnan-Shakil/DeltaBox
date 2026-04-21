@@ -31,7 +31,7 @@ MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 print("=" * 60)
-print("🏎️  F1 PULSE - RANDOM FOREST MODEL TRAINING (v2)")
+print("🏎️  ApexIQ - RANDOM FOREST MODEL TRAINING (v2)")
 print("=" * 60)
 print(f"📅 Training Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 print()

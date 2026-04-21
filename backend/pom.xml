@@ -15,7 +15,7 @@
     <groupId>com.f1pulse</groupId>
     <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>f1-pulse-backend</name>
+    <name>apexiq-backend</name>
 
     <properties>
         <java.version>21</java.version>

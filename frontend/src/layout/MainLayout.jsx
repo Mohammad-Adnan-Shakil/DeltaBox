@@ -21,7 +21,7 @@ const MainLayout = ({ children }) => {
           <Menu className="h-4 w-4" />
         </button>
         <p className="text-sm font-semibold tracking-wide">
-          <span className="text-accentRed">F1</span> PULSE
+          <span className="text-accentRed">APEX</span> IQ
         </p>
         <p className="text-xs text-whiteMuted">{user?.username || "User"}</p>
       </div>

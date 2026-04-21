@@ -1,4 +1,4 @@
--- F1 Pulse 2026 baseline seed
+-- ApexIQ 2026 baseline seed
 -- Run manually in PostgreSQL when the local DB is empty or needs reset.
 -- This script intentionally marks only the first 3 rounds as COMPLETED.
 
