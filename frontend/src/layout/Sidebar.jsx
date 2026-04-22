@@ -7,9 +7,10 @@ import {
   Shield,
   User,
   Users,
-  BookOpen,
   Lock,
   LogIn,
+  Gauge,
+  Radio,
 } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -19,11 +20,12 @@ const NAV_ITEMS_PUBLIC = [
   { to: "/drivers", label: "Drivers", icon: Users },
   { to: "/races", label: "Races", icon: Flag },
   { to: "/constructors", label: "Constructors", icon: Shield },
-  { to: "/history", label: "History", icon: BookOpen },
 ];
 
 const NAV_ITEMS_PROTECTED = [
   { to: "/ai", label: "AI Prediction", icon: Brain },
+  { to: "/telemetry", label: "Telemetry", icon: Gauge },
+  { to: "/race-engineer", label: "Race Engineer", icon: Radio },
   { to: "/profile", label: "Profile", icon: User },
 ];
 

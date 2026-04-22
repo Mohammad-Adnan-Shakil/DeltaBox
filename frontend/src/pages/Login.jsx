@@ -6,7 +6,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 const Login = () => {
   useEffect(() => {
-    document.title = "Login | ApexIQ";
+    document.title = "Login | DeltaBox";
   }, []);
 
   const navigate = useNavigate();
@@ -168,7 +168,7 @@ const Login = () => {
               textAlign: "center",
             }}
           >
-            {/* ApexIQ Logo */}
+            {/* DeltaBox Logo */}
             <div style={{ display: "flex", alignItems: "baseline", gap: 0, letterSpacing: "-2px" }}>
               <h1 className="logo-text" style={{ fontSize: "64px", fontWeight: 900, color: "#e8002d", margin: 0 }}>
                 F1
@@ -246,7 +246,7 @@ const Login = () => {
             </h2>
 
             <p style={{ marginTop: "4px", fontSize: "14px", color: "rgba(255,255,255,0.6)", margin: "4px 0 0 0" }}>
-              {isLogin ? "Access your F1 intelligence dashboard" : "Join ApexIQ for the 2026 season"}
+              {isLogin ? "Access your F1 intelligence dashboard" : "Join DeltaBox for the 2026 season"}
             </p>
 
             {/* Form */}
@@ -479,7 +479,7 @@ const Login = () => {
 
             {/* Bottom Footer */}
             <p style={{ marginTop: "40px", textAlign: "center", fontSize: "12px", color: "rgba(255,255,255,0.2)", margin: "40px 0 0 0" }}>
-              ApexIQ · 2026 Season
+              DeltaBox · 2026 Season
             </p>
           </div>
         </div>

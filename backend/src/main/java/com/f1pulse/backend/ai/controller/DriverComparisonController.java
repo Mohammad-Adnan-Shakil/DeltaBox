@@ -1,14 +1,14 @@
-package com.f1pulse.backend.ai.controller;
+package com.deltabox.backend.ai.controller;
 
-import com.f1pulse.backend.ai.dto.DriverComparisonResponseDTO;
-import com.f1pulse.backend.ai.service.DriverComparisonService;
-import com.f1pulse.backend.dto.ApiResponse;
+import com.deltabox.backend.ai.dto.DriverComparisonResponseDTO;
+import com.deltabox.backend.ai.service.DriverComparisonService;
+import com.deltabox.backend.dto.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ai")
-@Tag(name = "ApexIQ Predictions", description = "AI-powered race predictions and driver intelligence")
+@Tag(name = "DeltaBox Predictions", description = "AI-powered race predictions and driver intelligence")
 public class DriverComparisonController {
 
     private final DriverComparisonService comparisonService;

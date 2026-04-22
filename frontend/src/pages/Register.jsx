@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 const Register = () => {
   useEffect(() => {
-    document.title = "Register | ApexIQ";
+    document.title = "Register | DeltaBox";
   }, []);
 
   const navigate = useNavigate();

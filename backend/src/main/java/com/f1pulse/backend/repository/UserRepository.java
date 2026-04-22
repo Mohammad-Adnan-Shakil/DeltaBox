@@ -1,6 +1,6 @@
-package com.f1pulse.backend.repository;
+package com.deltabox.backend.repository;
 
-import com.f1pulse.backend.model.User;
+import com.deltabox.backend.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

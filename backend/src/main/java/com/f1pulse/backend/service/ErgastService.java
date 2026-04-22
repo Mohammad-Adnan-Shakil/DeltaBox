@@ -1,4 +1,4 @@
-package com.f1pulse.backend.service;
+package com.deltabox.backend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -52,7 +52,7 @@ public class ErgastService {
 
         try {
             // Fetch available seasons from Ergast
-            String url = ERGAST_API_BASE + ".json?limit=100";
+            String url = ERGAST_API_BASE + "/seasons.json?limit=100";
             logger.info("📡 [ErgastService] Fetching seasons from: {}", url);
             
             JsonNode response = null;

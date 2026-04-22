@@ -13,9 +13,8 @@ const Drivers = lazy(() => import("./pages/Drivers"));
 const Races = lazy(() => import("./pages/Races"));
 const Constructors = lazy(() => import("./pages/Teams"));
 const Profile = lazy(() => import("./pages/Profile"));
-const History = lazy(() => import("./pages/History"));
-const HistoryDriver = lazy(() => import("./pages/HistoryDriver"));
-const HistoryChampions = lazy(() => import("./pages/HistoryChampions"));
+const TelemetryPage = lazy(() => import("./pages/TelemetryPage"));
+const RaceEngineerPage = lazy(() => import("./pages/RaceEngineerPage"));
 
 const LoadingFallback = () => (
   <div style={{
@@ -87,40 +86,6 @@ function App() {
         }
       />
 
-      {/* Account-required Routes - Feature lock for guests */}
-      <Route
-        path="/history"
-        element={
-          <RequireFeatureAccess featureName="History Browser">
-            <MainLayout>
-              <History />
-            </MainLayout>
-          </RequireFeatureAccess>
-        }
-      />
-
-      <Route
-        path="/history/driver/:driverCode"
-        element={
-          <RequireFeatureAccess featureName="Driver History">
-            <MainLayout>
-              <HistoryDriver />
-            </MainLayout>
-          </RequireFeatureAccess>
-        }
-      />
-
-      <Route
-        path="/history/champions"
-        element={
-          <RequireFeatureAccess featureName="Champions History">
-            <MainLayout>
-              <HistoryChampions />
-            </MainLayout>
-          </RequireFeatureAccess>
-        }
-      />
-
       {/* Account-required Routes - Locked screen for guests */}
       <Route
         path="/ai"
@@ -128,6 +93,28 @@ function App() {
           <RequireFeatureAccess featureName="AI Race Predictions">
             <MainLayout>
               <AIPage />
+            </MainLayout>
+          </RequireFeatureAccess>
+        }
+      />
+
+      <Route
+        path="/telemetry"
+        element={
+          <RequireFeatureAccess featureName="Telemetry Analysis">
+            <MainLayout>
+              <TelemetryPage />
+            </MainLayout>
+          </RequireFeatureAccess>
+        }
+      />
+
+      <Route
+        path="/race-engineer"
+        element={
+          <RequireFeatureAccess featureName="Race Engineer">
+            <MainLayout>
+              <RaceEngineerPage />
             </MainLayout>
           </RequireFeatureAccess>
         }

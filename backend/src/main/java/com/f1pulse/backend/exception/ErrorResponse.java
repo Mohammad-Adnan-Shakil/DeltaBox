@@ -1,4 +1,4 @@
-package com.f1pulse.backend.exception;
+package com.deltabox.backend.exception;
 
 import java.time.LocalDateTime;
 

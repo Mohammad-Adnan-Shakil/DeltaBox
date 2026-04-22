@@ -1,8 +1,8 @@
-package com.f1pulse.backend.util;
+package com.deltabox.backend.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.f1pulse.backend.exception.PythonExecutionException;
+import com.deltabox.backend.exception.PythonExecutionException;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;

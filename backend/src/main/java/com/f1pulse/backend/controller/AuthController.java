@@ -1,8 +1,8 @@
-package com.f1pulse.backend.controller;
+package com.deltabox.backend.controller;
 
-import com.f1pulse.backend.dto.AuthRequest;
-import com.f1pulse.backend.dto.AuthResponse;
-import com.f1pulse.backend.service.AuthService;
+import com.deltabox.backend.dto.AuthRequest;
+import com.deltabox.backend.dto.AuthResponse;
+import com.deltabox.backend.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;

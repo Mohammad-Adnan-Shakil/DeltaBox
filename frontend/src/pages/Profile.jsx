@@ -6,7 +6,7 @@ import useFetch from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
 import { nationalityFlag, teamColor } from "../utils/formatters";
 
-const FAV_KEY = "f1pulse:favourite-driver";
+const FAV_KEY = "deltabox:favourite-driver";
 
 const Profile = () => {
   usePageTitle("Profile");
@@ -23,7 +23,7 @@ const Profile = () => {
   }, [favouriteDriverId]);
 
   const profile = profileData || user || {};
-  const emailOrUser = profile.email || profile.username || "user@f1pulse.app";
+  const emailOrUser = profile.email || profile.username || "user@deltabox.app";
   const role = String(profile.role || user?.role || "USER").toUpperCase();
 
   const driverList = drivers || [];
@@ -68,7 +68,7 @@ const Profile = () => {
             <h1 className="mt-1 text-3xl font-bold">{emailOrUser}</h1>
             <div className="mt-2 flex items-center gap-2">
               <span className="rounded-full bg-accentRed/20 px-3 py-1 text-xs font-semibold text-accentRed">{role}</span>
-              <span className="text-sm text-whiteMuted">Member · ApexIQ 2026</span>
+              <span className="text-sm text-whiteMuted">Member · DeltaBox 2026</span>
             </div>
           </div>
         </div>

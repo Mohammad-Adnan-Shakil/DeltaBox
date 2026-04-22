@@ -1,4 +1,4 @@
-package com.f1pulse.backend.ai.dto;
+package com.deltabox.backend.ai.dto;
 
 public class SimulationResponseDTO {
 

@@ -1,4 +1,4 @@
-package com.f1pulse.backend.service;
+package com.deltabox.backend.service;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

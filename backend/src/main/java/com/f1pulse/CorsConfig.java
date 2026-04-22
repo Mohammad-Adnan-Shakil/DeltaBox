@@ -1,4 +1,4 @@
-package com.f1pulse;
+package com.deltabox;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

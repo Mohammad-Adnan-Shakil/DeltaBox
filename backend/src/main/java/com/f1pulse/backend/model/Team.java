@@ -1,4 +1,4 @@
-package com.f1pulse.backend.model;
+package com.deltabox.backend.model;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;

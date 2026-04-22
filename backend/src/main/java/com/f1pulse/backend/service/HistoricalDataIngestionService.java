@@ -1,7 +1,7 @@
-package com.f1pulse.backend.service;
+package com.deltabox.backend.service;
 
-import com.f1pulse.backend.model.*;
-import com.f1pulse.backend.repository.*;
+import com.deltabox.backend.model.*;
+import com.deltabox.backend.repository.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

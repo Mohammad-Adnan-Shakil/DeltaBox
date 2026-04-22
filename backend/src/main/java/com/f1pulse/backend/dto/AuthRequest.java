@@ -1,4 +1,4 @@
-package com.f1pulse.backend.dto;
+package com.deltabox.backend.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

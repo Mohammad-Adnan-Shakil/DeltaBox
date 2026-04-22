@@ -1,7 +1,7 @@
-package com.f1pulse.backend.controller;
+package com.deltabox.backend.controller;
 
-import com.f1pulse.backend.model.Driver;
-import com.f1pulse.backend.repository.DriverRepository;
+import com.deltabox.backend.model.Driver;
+import com.deltabox.backend.repository.DriverRepository;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

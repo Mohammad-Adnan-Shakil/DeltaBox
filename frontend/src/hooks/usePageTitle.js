@@ -2,7 +2,7 @@
 
 const usePageTitle = (title) => {
   useEffect(() => {
-    document.title = `${title} | ApexIQ`;
+    document.title = `${title} | DeltaBox`;
   }, [title]);
 };
 

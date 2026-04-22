@@ -21,7 +21,7 @@ from utils.feature_engineering_v2 import build_training_dataset, get_feature_nam
 
 # Configuration
 DB_HOST = "localhost"
-DB_NAME = "f1pulse"
+DB_NAME = "deltabox"
 DB_USER = "postgres"
 DB_PASS = "adnanshakil20"
 DB_PORT = 5432
@@ -30,7 +30,7 @@ MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 os.makedirs(MODEL_DIR, exist_ok=True)
 
 print("=" * 60)
-print("🏎️  ApexIQ - XGBOOST MODEL TRAINING (v2)")
+print("🏎️  DeltaBox - XGBOOST MODEL TRAINING (v2)")
 print("=" * 60)
 print(f"📅 Training Start: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 print()

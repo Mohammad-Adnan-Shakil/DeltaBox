@@ -1,4 +1,4 @@
-package com.f1pulse.backend.ai.util;
+package com.deltabox.backend.ai.util;
 
 import java.util.List;
 

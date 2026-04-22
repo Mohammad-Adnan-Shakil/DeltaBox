@@ -1,4 +1,4 @@
-package com.f1pulse.backend.security;
+package com.deltabox.backend.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

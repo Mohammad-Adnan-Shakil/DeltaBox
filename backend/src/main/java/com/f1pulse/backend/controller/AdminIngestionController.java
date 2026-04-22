@@ -1,6 +1,6 @@
-package com.f1pulse.backend.controller;
+package com.deltabox.backend.controller;
 
-import com.f1pulse.backend.service.HistoricalDataIngestionService;
+import com.deltabox.backend.service.HistoricalDataIngestionService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

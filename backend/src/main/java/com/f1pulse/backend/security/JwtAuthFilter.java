@@ -1,4 +1,4 @@
-package com.f1pulse.backend.security;
+package com.deltabox.backend.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

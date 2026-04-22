@@ -1,9 +1,9 @@
-package com.f1pulse.backend.ai.service;
+package com.deltabox.backend.ai.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.f1pulse.backend.ai.dto.PredictionRequestDTO;
-import com.f1pulse.backend.ai.dto.PredictionResponseDTO;
-import com.f1pulse.backend.util.PythonExecutor;
+import com.deltabox.backend.ai.dto.PredictionRequestDTO;
+import com.deltabox.backend.ai.dto.PredictionResponseDTO;
+import com.deltabox.backend.util.PythonExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;

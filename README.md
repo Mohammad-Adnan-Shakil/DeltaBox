@@ -1,4 +1,4 @@
-# ApexIQ — AI-Powered Formula 1 Intelligence Platform
+# DeltaBox — AI-Powered Formula 1 Intelligence Platform
 
 ![Java](https://img.shields.io/badge/Java-17-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=flat-square&logo=springboot&logoColor=white)
@@ -8,7 +8,7 @@
 ![XGBoost](https://img.shields.io/badge/XGBoost-ML-FF6600?style=flat-square)
 ![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens)
 
-> ApexIQ predicts race outcomes using a 3-model ML ensemble (XGBoost + Random Forest + Linear Regression) orchestrated from a Spring Boot backend via subprocess — with conflict detection that flags high-uncertainty races instead of hiding them.
+> DeltaBox predicts race outcomes using a 3-model ML ensemble (XGBoost + Random Forest + Linear Regression) orchestrated from a Spring Boot backend via subprocess — with conflict detection that flags high-uncertainty races instead of hiding them.
 
 🔗 **Live Demo:** [Coming Soon — deploying to Render] · **GitHub:** [github.com/Mohammad-Adnan-Shakil](https://github.com/Mohammad-Adnan-Shakil)
 
@@ -16,7 +16,7 @@
 
 ## What It Does
 
-ApexIQ is a complete intelligence layer over the 2026 F1 season — built for analysis, prediction, and strategic simulation.
+DeltaBox is a complete intelligence layer over the 2026 F1 season — built for analysis, prediction, and strategic simulation.
 
 | Feature | Description |
 |---|---|
@@ -177,7 +177,7 @@ npm run dev
 ### Database
 ```bash
 # Run the seed script to populate 2026 season data
-psql -U postgres -d f1pulse -f db/seed.sql
+psql -U postgres -d deltabox -f db/seed.sql
 ```
 
 ---
@@ -185,7 +185,7 @@ psql -U postgres -d f1pulse -f db/seed.sql
 ## Project Structure
 
 ```
-f1-pulse/
+delta-box/
 ├── backend/          # Spring Boot — APIs, auth, DB, ML integration
 ├── frontend/         # React + Tailwind — dashboard, charts, prediction UI
 ├── ml/               # Python — XGBoost, Random Forest, orchestrator

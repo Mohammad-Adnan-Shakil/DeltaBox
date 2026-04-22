@@ -1,4 +1,4 @@
-# F1 Pulse: Feature Implementation Summary
+# DeltaBox: Feature Implementation Summary
 
 ## Overview
 Successfully implemented TWO major features:
@@ -40,7 +40,7 @@ Successfully implemented TWO major features:
   - `HistoricalResultRepository`
 
 #### Data Ingestion Service
-- **File**: `backend/src/main/java/com/f1pulse/backend/service/HistoricalDataIngestionService.java`
+- **File**: `backend/src/main/java/com/deltabox/backend/service/HistoricalDataIngestionService.java`
 - **Features**:
   - Fetches data from Ergast F1 API (`https://ergast.com/api/f1`)
   - Handles pagination (limit: 1000 per request)
@@ -52,7 +52,7 @@ Successfully implemented TWO major features:
   - Auto-handles data parsing and storage
 
 #### Admin Endpoints for Ingestion
-- **File**: `backend/src/main/java/com/f1pulse/backend/controller/AdminIngestionController.java`
+- **File**: `backend/src/main/java/com/deltabox/backend/controller/AdminIngestionController.java`
 - **Endpoints**:
   ```
   POST /api/admin/ingest-historical
@@ -71,7 +71,7 @@ Successfully implemented TWO major features:
   ```
 
 #### Public Historical API Endpoints
-- **File**: `backend/src/main/java/com/f1pulse/backend/controller/HistoricalController.java`
+- **File**: `backend/src/main/java/com/deltabox/backend/controller/HistoricalController.java`
 - **Public Endpoints** (No auth required):
   ```
   GET /api/historical/seasons
@@ -144,7 +144,7 @@ Successfully implemented TWO major features:
 ### ✅ Completed Components
 
 #### Security Configuration Updates
-- **File**: `backend/src/main/java/com/f1pulse/backend/security/SecurityConfig.java`
+- **File**: `backend/src/main/java/com/deltabox/backend/security/SecurityConfig.java`
 - **Changes**:
   - Added `@EnableMethodSecurity(prePostEnabled = true)` for @PreAuthorize support
   - Updated authorization rules:
@@ -362,7 +362,7 @@ backend/
 ├── pom.xml (updated - added Flyway)
 ├── src/
 │   ├── main/
-│   │   ├── java/com/f1pulse/backend/
+│   │   ├── java/com/deltabox/backend/
 │   │   │   ├── model/
 │   │   │   │   ├── HistoricalSeason.java (NEW)
 │   │   │   │   ├── HistoricalRace.java (NEW)

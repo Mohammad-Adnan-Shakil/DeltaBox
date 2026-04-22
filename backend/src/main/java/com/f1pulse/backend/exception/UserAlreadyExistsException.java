@@ -1,4 +1,4 @@
-package com.f1pulse.backend.exception;
+package com.deltabox.backend.exception;
 
 public class UserAlreadyExistsException extends RuntimeException {
 
