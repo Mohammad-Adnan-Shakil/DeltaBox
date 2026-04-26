@@ -28,6 +28,7 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         return new UserResponse(
+                user.getUsername(),
                 user.getEmail(),
                 user.getRole()
         );
