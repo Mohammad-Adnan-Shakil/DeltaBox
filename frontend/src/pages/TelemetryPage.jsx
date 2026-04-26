@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import api from "../services/api";
 import SkeletonLoader from "../components/SkeletonLoader";
+import useFetch from "../hooks/useFetch";
 
 const TelemetryPage = () => {
   // Form state
@@ -18,6 +19,15 @@ const TelemetryPage = () => {
   const [telemetryData, setTelemetryData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  
+  // Fetch dropdown data
+  const { data: drivers } = useFetch("/drivers");
+  const { data: races } = useFetch("/races");
+  
+  // Extract unique values for dropdowns
+  const availableYears = races ? [...new Set(races.map(r => r.season))].sort((a, b) => b - a) : [2024];
+  const availableGrandPrix = races ? [...new Set(races.map(r => r.raceName))].sort() : ["Monaco"];
+  const availableDrivers = drivers || [];
 
   // Page title
   useEffect(() => {
@@ -129,27 +139,31 @@ const TelemetryPage = () => {
             {/* Year */}
             <div className="flex flex-col">
               <label className="text-sm text-whiteMuted mb-2">Year</label>
-              <input
-                type="number"
+              <select
                 name="year"
                 value={formData.year}
                 onChange={handleInputChange}
                 className="bg-bgPrimary border border-red-600/30 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600/50"
-                placeholder="2024"
-              />
+              >
+                {availableYears.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
             </div>
 
             {/* Grand Prix */}
             <div className="flex flex-col">
               <label className="text-sm text-whiteMuted mb-2">Grand Prix</label>
-              <input
-                type="text"
+              <select
                 name="grandPrix"
                 value={formData.grandPrix}
                 onChange={handleInputChange}
                 className="bg-bgPrimary border border-red-600/30 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600/50"
-                placeholder="Monaco"
-              />
+              >
+                {availableGrandPrix.map(gp => (
+                  <option key={gp} value={gp}>{gp}</option>
+                ))}
+              </select>
             </div>
 
             {/* Session Type */}
@@ -172,29 +186,31 @@ const TelemetryPage = () => {
             {/* Driver 1 */}
             <div className="flex flex-col">
               <label className="text-sm text-whiteMuted mb-2">Driver 1</label>
-              <input
-                type="text"
+              <select
                 name="driver1"
                 value={formData.driver1}
                 onChange={handleInputChange}
-                maxLength="3"
-                className="bg-bgPrimary border border-red-600/30 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600/50 uppercase"
-                placeholder="VER"
-              />
+                className="bg-bgPrimary border border-red-600/30 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600/50"
+              >
+                {availableDrivers.map(driver => (
+                  <option key={driver.driverId} value={driver.code}>{driver.code} - {driver.name}</option>
+                ))}
+              </select>
             </div>
 
             {/* Driver 2 */}
             <div className="flex flex-col">
               <label className="text-sm text-whiteMuted mb-2">Driver 2</label>
-              <input
-                type="text"
+              <select
                 name="driver2"
                 value={formData.driver2}
                 onChange={handleInputChange}
-                maxLength="3"
-                className="bg-bgPrimary border border-red-600/30 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600/50 uppercase"
-                placeholder="LEC"
-              />
+                className="bg-bgPrimary border border-red-600/30 rounded px-3 py-2 text-white focus:outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600/50"
+              >
+                {availableDrivers.map(driver => (
+                  <option key={driver.driverId} value={driver.code}>{driver.code} - {driver.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 
