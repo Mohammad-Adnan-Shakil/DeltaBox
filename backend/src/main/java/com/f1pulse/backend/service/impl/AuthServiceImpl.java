@@ -80,15 +80,27 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(AuthRequest request) {
 
+        // Determine if identifier is email or username
+        String identifier = request.getIdentifier();
+        User user;
+
+        if (identifier.contains("@")) {
+            // Treat as email
+            user = userRepository.findByEmail(identifier)
+                    .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+        } else {
+            // Treat as username
+            user = userRepository.findByUsername(identifier)
+                    .orElseThrow(() -> new RuntimeException("Invalid credentials"));
+        }
+
+        // Authenticate using the user's email (UserDetailsService uses email)
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
+                        user.getEmail(),
                         request.getPassword()
                 )
         );
-
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
 
         // ✅ Convert to Spring Security UserDetails
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()

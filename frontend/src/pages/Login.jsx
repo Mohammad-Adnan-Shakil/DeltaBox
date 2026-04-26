@@ -294,11 +294,11 @@ const Login = () => {
                 />
               )}
 
-              {/* Email Input */}
+              {/* Email or Username Input */}
               <input
-                type="email"
+                type="text"
                 name="email"
-                placeholder="Email address"
+                placeholder="Email or username"
                 value={isLogin ? loginForm.email : registerForm.email}
                 onChange={isLogin ? handleLoginChange : handleRegisterChange}
                 required
