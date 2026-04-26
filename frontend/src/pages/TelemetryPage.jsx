@@ -25,7 +25,9 @@ const TelemetryPage = () => {
   const { data: races } = useFetch("/races");
   
   // Extract unique values for dropdowns
-  const availableYears = races ? [...new Set(races.map(r => r.season))].sort((a, b) => b - a) : [2024];
+  const allYears = races ? [...new Set(races.map(r => r.season))] : [];
+  const defaultYears = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+  const availableYears = [...new Set([...allYears, ...defaultYears])].sort((a, b) => b - a);
   const availableGrandPrix = races ? [...new Set(races.map(r => r.raceName))].sort() : ["Monaco"];
   const availableDrivers = drivers || [];
 
