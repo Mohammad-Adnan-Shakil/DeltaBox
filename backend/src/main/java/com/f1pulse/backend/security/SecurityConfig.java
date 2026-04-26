@@ -112,7 +112,8 @@ public class SecurityConfig {
                 "http://127.0.0.1:5173",
                 "http://127.0.0.1:5174",
                 "http://127.0.0.1:5175",
-                "http://127.0.0.1:4173"       // Production preview build (IP)
+                "http://127.0.0.1:4173",      // Production preview build (IP)
+                "https://delta-box.vercel.app" // Vercel production
         ));
 
         // ✅ Allow HTTP methods
