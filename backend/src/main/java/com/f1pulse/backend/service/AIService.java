@@ -8,6 +8,7 @@ import com.f1pulse.backend.repository.DriverRepository;
 import com.f1pulse.backend.repository.RaceRepository;
 import com.f1pulse.backend.repository.TeamRepository;
 import com.f1pulse.backend.util.StatsUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.LinkedHashMap;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Service
+@ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
 public class AIService {
 
     private final RaceRepository raceRepository;
