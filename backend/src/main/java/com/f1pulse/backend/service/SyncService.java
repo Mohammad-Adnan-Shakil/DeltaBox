@@ -14,6 +14,7 @@ import com.f1pulse.backend.repository.SyncMetaRepository;
 import com.f1pulse.backend.repository.TeamRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -28,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
+@ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
 public class SyncService {
 
     private static final Logger log = LoggerFactory.getLogger(SyncService.class);
