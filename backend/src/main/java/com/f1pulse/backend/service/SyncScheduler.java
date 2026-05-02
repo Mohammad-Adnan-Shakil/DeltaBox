@@ -1,11 +1,12 @@
 package com.f1pulse.backend.service;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
 public class SyncScheduler {
-
     private final SyncService syncService;
 
     public SyncScheduler(SyncService syncService) {
