@@ -53,9 +53,30 @@ public class DataInitializationService implements ApplicationRunner {
             
             log.info("🌱 Database is empty. Starting initial sync...");
             
-            syncService.syncTeams();
-            syncService.syncDrivers();
-            syncService.syncRaces();
+            // Sync teams only if empty
+            if (teamRepository.count() == 0) {
+                syncService.syncTeams();
+                log.info("✅ Teams synced successfully");
+            } else {
+                log.info("Teams already exist, skipping team sync");
+            }
+            
+            // Sync drivers only if empty
+            if (driverRepository.count() == 0) {
+                syncService.syncDrivers();
+                log.info("✅ Drivers synced successfully");
+            } else {
+                log.info("Drivers already exist, skipping driver sync");
+            }
+            
+            // Sync races only if empty
+            if (raceRepository.count() == 0) {
+                syncService.syncRaces();
+                log.info("✅ Races synced successfully");
+            } else {
+                log.info("Races already exist, skipping race sync");
+            }
+            
             syncService.deduplicateScheduleRows(2026);
             log.info("Initial F1 sync completed");
         } catch (Exception ex) {

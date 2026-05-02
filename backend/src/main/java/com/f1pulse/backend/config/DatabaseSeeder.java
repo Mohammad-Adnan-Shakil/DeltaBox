@@ -59,19 +59,31 @@ public class DatabaseSeeder implements CommandLineRunner {
         
         try {
             // Seed teams first (drivers depend on teams)
-            log.info("Seeding teams...");
-            syncService.syncTeams();
-            log.info("✅ Teams seeded successfully");
+            if (teamRepository.count() == 0) {
+                log.info("Seeding teams...");
+                syncService.syncTeams();
+                log.info("✅ Teams seeded successfully");
+            } else {
+                log.info("Teams already exist, skipping team seeding");
+            }
 
             // Seed drivers
-            log.info("Seeding drivers...");
-            syncService.syncDrivers();
-            log.info("✅ Drivers seeded successfully");
+            if (driverRepository.count() == 0) {
+                log.info("Seeding drivers...");
+                syncService.syncDrivers();
+                log.info("✅ Drivers seeded successfully");
+            } else {
+                log.info("Drivers already exist, skipping driver seeding");
+            }
 
             // Seed races
-            log.info("Seeding races...");
-            syncService.syncRaces();
-            log.info("✅ Races seeded successfully");
+            if (raceRepository.count() == 0) {
+                log.info("Seeding races...");
+                syncService.syncRaces();
+                log.info("✅ Races seeded successfully");
+            } else {
+                log.info("Races already exist, skipping race seeding");
+            }
 
             log.info("🎉 Initial database seeding completed successfully!");
         } catch (Exception e) {

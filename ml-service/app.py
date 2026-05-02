@@ -122,6 +122,7 @@ def train_models():
             logger.warning(f"⚠️ RF training data not found, using fallback model")
             # Create fitted fallback model with synthetic data
             import numpy as np
+            import joblib
             # Exact same 6 features as used in predict_rf function
             n_features = 6
             X_dummy = np.random.rand(200, n_features)  # 200 samples, 6 features
@@ -131,11 +132,11 @@ def train_models():
             le_driver = LabelEncoder()
             # Fit the encoder with some dummy values
             le_driver.fit(['0', '1', '2', '3', '4', '5'])
-            with open(os.path.join(MODELS_DIR, "rf_model.pkl"), "wb") as f:
-                pickle.dump(rf_model, f, protocol=4)
-            with open(os.path.join(MODELS_DIR, "le_driver.pkl"), "wb") as f:
-                pickle.dump(le_driver, f, protocol=4)
-            logger.info("✅ RF fallback model trained and saved")
+            
+            # Save models with joblib for better compatibility
+            joblib.dump(rf_model, os.path.join(MODELS_DIR, "rf_model.pkl"))
+            joblib.dump(le_driver, os.path.join(MODELS_DIR, "le_driver.pkl"))
+            logger.info("✅ RF fallback model trained and saved with joblib")
         
         # ===== Train XGBoost Model =====
         logger.info("🔄 Training XGBoost model...")
@@ -188,6 +189,7 @@ def train_models():
             logger.warning(f"⚠️ XGB training data not found, using fallback model")
             # Create fitted fallback model with synthetic data
             import numpy as np
+            import joblib
             # Exact same 8 features as used in predict_xgb function
             n_features = 8
             X_dummy = np.random.rand(200, n_features)  # 200 samples, 8 features
@@ -199,13 +201,12 @@ def train_models():
             # Fit encoders with some dummy values
             le_constructor.fit(['0', '1', '2', '3', '4', '5'])
             le_track.fit(['0', '1', '2', '3', '4', '5'])
-            with open(os.path.join(MODELS_DIR, "xgb_model.pkl"), "wb") as f:
-                pickle.dump(xgb_model, f, protocol=4)
-            with open(os.path.join(MODELS_DIR, "le_constructor.pkl"), "wb") as f:
-                pickle.dump(le_constructor, f, protocol=4)
-            with open(os.path.join(MODELS_DIR, "le_track.pkl"), "wb") as f:
-                pickle.dump(le_track, f, protocol=4)
-            logger.info("✅ XGBoost fallback model trained and saved")
+            
+            # Save models with joblib for better compatibility
+            joblib.dump(xgb_model, os.path.join(MODELS_DIR, "xgb_model.pkl"))
+            joblib.dump(le_constructor, os.path.join(MODELS_DIR, "le_constructor.pkl"))
+            joblib.dump(le_track, os.path.join(MODELS_DIR, "le_track.pkl"))
+            logger.info("✅ XGBoost fallback model trained and saved with joblib")
         
         logger.info("✅ Model training pipeline completed successfully!")
         training_in_progress = False
@@ -223,13 +224,13 @@ def load_models():
     """Load all ML models on startup"""
     global models, models_loaded
     try:
-        import pickle
-        models["rf"] = pickle.load(open(os.path.join(MODELS_DIR, "rf_model.pkl"), "rb"))
-        models["xgb"] = pickle.load(open(os.path.join(MODELS_DIR, "xgb_model.pkl"), "rb"))
-        models["le_constructor"] = pickle.load(open(os.path.join(MODELS_DIR, "le_constructor.pkl"), "rb"))
-        models["le_driver"] = pickle.load(open(os.path.join(MODELS_DIR, "le_driver.pkl"), "rb"))
-        models["le_track"] = pickle.load(open(os.path.join(MODELS_DIR, "le_track.pkl"), "rb"))
-        logger.info("✅ All models loaded successfully")
+        import joblib
+        models["rf"] = joblib.load(os.path.join(MODELS_DIR, "rf_model.pkl"))
+        models["xgb"] = joblib.load(os.path.join(MODELS_DIR, "xgb_model.pkl"))
+        models["le_constructor"] = joblib.load(os.path.join(MODELS_DIR, "le_constructor.pkl"))
+        models["le_driver"] = joblib.load(os.path.join(MODELS_DIR, "le_driver.pkl"))
+        models["le_track"] = joblib.load(os.path.join(MODELS_DIR, "le_track.pkl"))
+        logger.info("✅ All models loaded successfully with joblib")
         models_loaded = True
         return True
     except Exception as e:
