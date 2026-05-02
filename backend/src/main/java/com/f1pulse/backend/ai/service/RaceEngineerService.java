@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +41,15 @@ public class RaceEngineerService {
     public RaceEngineerService(RestTemplate restTemplate, ObjectMapper objectMapper) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
-        
-        // Log API key presence on startup
-        log.info("🔑 [RaceEngineer] GROQ_API_KEY present: {}", !apiKey.isEmpty());
+    }
+    
+    @PostConstruct
+    public void init() {
+        if (apiKey == null || apiKey.isEmpty()) {
+            log.warn("⚠️ [RaceEngineer] GROQ_API_KEY is not set - Race Engineer will use fallback responses");
+        } else {
+            log.info("✅ [RaceEngineer] GROQ_API_KEY configured successfully");
+        }
         log.info("🌐 [RaceEngineer] Groq API URL: {}", apiUrl);
         log.info("🤖 [RaceEngineer] Groq model: {}", model);
     }
