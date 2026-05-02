@@ -6,6 +6,7 @@ import com.f1pulse.backend.exception.UserNotFoundException;
 import com.f1pulse.backend.model.User;
 import com.f1pulse.backend.repository.UserRepository;
 import com.f1pulse.backend.service.UserService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@ConditionalOnProperty(name = "security.enabled", havingValue = "true", matchIfMissing = true)
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
