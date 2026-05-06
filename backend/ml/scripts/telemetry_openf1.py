@@ -39,6 +39,22 @@ warnings.filterwarnings('ignore')
 OPENF1_API_BASE = "https://api.openf1.org/v1"
 CURRENT_SEASON = 2024  # Will be updated dynamically
 
+# Session type mapping: shorthand -> OpenF1 full name
+SESSION_TYPE_MAP = {
+    'R': 'Race',
+    'Q': 'Qualifying',
+    'FP1': 'Practice 1',
+    'FP2': 'Practice 2',
+    'FP3': 'Practice 3',
+    'S': 'Sprint',
+    'RACE': 'Race',
+    'QUALIFYING': 'Qualifying',
+    'PRACTICE 1': 'Practice 1',
+    'PRACTICE 2': 'Practice 2',
+    'PRACTICE 3': 'Practice 3',
+    'SPRINT': 'Sprint',
+}
+
 
 def get_current_season() -> int:
     """Get the current F1 season from OpenF1 API."""
@@ -76,6 +92,34 @@ def get_races(year: int) -> List[Dict[str, Any]]:
         return []
 
 
+def get_meetings(year: int) -> List[Dict[str, Any]]:
+    """Get all meetings (race events) for a given year."""
+    try:
+        logger.info(f"🏁 Fetching meetings for {year}...")
+        response = requests.get(f"{OPENF1_API_BASE}/meetings", params={"year": year}, timeout=10)
+        response.raise_for_status()
+        meetings = response.json()
+        
+        logger.info(f"✅ Found {len(meetings)} meetings for {year}")
+        return meetings
+    except Exception as e:
+        logger.error(f"❌ Failed to fetch meetings for {year}: {str(e)}")
+        return []
+
+
+def get_sessions(meeting_key: int) -> List[Dict[str, Any]]:
+    """Get all sessions for a specific meeting."""
+    try:
+        response = requests.get(f"{OPENF1_API_BASE}/sessions", params={"meeting_key": meeting_key}, timeout=10)
+        response.raise_for_status()
+        sessions = response.json()
+        
+        return sessions
+    except Exception as e:
+        logger.error(f"❌ Failed to fetch sessions for meeting {meeting_key}: {str(e)}")
+        return []
+
+
 def find_race(year: int, grand_prix: str) -> Optional[Dict[str, Any]]:
     """Find a specific race by year and grand prix name."""
     try:
@@ -88,13 +132,47 @@ def find_race(year: int, grand_prix: str) -> Optional[Dict[str, Any]]:
             location = race.get('location', '').lower()
             
             if grand_prix_lower in race_name or grand_prix_lower in location:
-                logger.info(f"✅ Found race: {race.get('race_name')} (session_key: {race.get('session_key')})")
+                logger.info(f"✅ Found race: {race.get('race_name')}")
                 return race
         
         logger.warning(f"⚠️  Race '{grand_prix}' not found for {year}")
         return None
     except Exception as e:
         logger.error(f"❌ Error finding race: {str(e)}")
+        return None
+
+
+def find_session(meeting_key: int, session_type: str) -> Optional[Dict[str, Any]]:
+    """Find a specific session by meeting key and session type."""
+    try:
+        sessions = get_sessions(meeting_key)
+        
+        if not sessions:
+            logger.warning(f"⚠️  No sessions found for meeting {meeting_key}")
+            return None
+        
+        # Normalize requested session type
+        session_type_upper = session_type.strip().upper()
+        requested_session = SESSION_TYPE_MAP.get(session_type_upper, session_type_upper)
+        
+        logger.info(f"  🔍 Looking for session type: '{requested_session}' (input: '{session_type}')")
+        
+        for session in sessions:
+            session_name = session.get('session_name', '').strip()
+            
+            # Debug: Log all available sessions
+            if session == sessions[0]:
+                logger.info(f"  📋 Available sessions: {[s.get('session_name') for s in sessions]}")
+            
+            # Exact match on session name
+            if session_name == requested_session:
+                logger.info(f"  ⏱ Found session: '{session_name}' (key: {session.get('session_key')})")
+                return session
+        
+        logger.warning(f"⚠️  Session '{requested_session}' not found. Available: {[s.get('session_name') for s in sessions]}")
+        return None
+    except Exception as e:
+        logger.error(f"❌ Error finding session: {str(e)}")
         return None
 
 
@@ -331,22 +409,9 @@ def analyze(year: int, grand_prix: str, session_type: str, driver1: str, driver2
     logger.info(f"  📋 Input (raw): year={year}, grand_prix='{grand_prix}', session_type='{session_type}', driver1='{driver1}', driver2='{driver2}'")
     logger.info(f"  ✅ Input (decoded): year={year}, grand_prix='{grand_prix_decoded}', session_type='{session_type_decoded}', driver1='{driver1_code}', driver2='{driver2_code}'")
     
-    # Map session type
-    session_type_map = {
-        'Q': 'Qualifying',
-        'R': 'Race',
-        'FP1': 'FP1',
-        'FP2': 'FP2',
-        'FP3': 'FP3',
-        'S': 'Sprint',
-        'QUALIFYING': 'Qualifying',
-        'RACE': 'Race',
-    }
-    mapped_session = session_type_map.get(session_type_decoded, session_type_decoded)
-    
     try:
-        # 🔗 Find the race
-        logger.info(f"🔗 Finding race: {year} {grand_prix_decoded}...")
+        # Step 1: Find the race (meeting)
+        logger.info(f"🏁 Requested Race: {year} {grand_prix_decoded} ({session_type_decoded})")
         race = find_race(year, grand_prix_decoded)
         
         if not race:
@@ -354,15 +419,32 @@ def analyze(year: int, grand_prix: str, session_type: str, driver1: str, driver2
             logger.error(f"❌ {error_msg}")
             return {"error": error_msg}
         
-        session_key = race.get('session_key')
-        if not session_key:
-            error_msg = f"Could not find session key for {grand_prix_decoded} {year}"
+        # Get meeting key from race
+        meeting_key = race.get('meeting_key')
+        if not meeting_key:
+            error_msg = f"Could not find meeting key for {grand_prix_decoded} {year}"
             logger.error(f"❌ {error_msg}")
             return {"error": error_msg}
         
-        logger.info(f"✅ Found session: key={session_key}")
+        logger.info(f"🏎 Meeting Found: key={meeting_key}, race='{race.get('race_name')}'")
         
-        # 👥 Get drivers for this session
+        # Step 2: Find the session
+        session = find_session(meeting_key, session_type_decoded)
+        
+        if not session:
+            error_msg = f"Session '{session_type}' not found for {grand_prix_decoded} {year}"
+            logger.error(f"❌ OpenF1 Failure: {error_msg}")
+            return {"error": error_msg}
+        
+        session_key = session.get('session_key')
+        if not session_key:
+            error_msg = f"Could not find session key for {grand_prix_decoded} {year} - {session_type_decoded}"
+            logger.error(f"❌ {error_msg}")
+            return {"error": error_msg}
+        
+        logger.info(f"⏱ Session Found: key={session_key}, type='{session.get('session_name')}'")
+        
+        # Step 3: Get drivers for this session
         logger.info(f"👥 Fetching drivers for session...")
         session_drivers = get_drivers_for_session(session_key)
         
@@ -389,8 +471,8 @@ def analyze(year: int, grand_prix: str, session_type: str, driver1: str, driver2
             logger.error(f"❌ {error_msg}")
             return {"error": error_msg}
         
-        # 📡 Fetch telemetry for both drivers
-        logger.info(f"📡 Fetching telemetry...")
+        # Step 4: Fetch telemetry for both drivers
+        logger.info(f"📡 Telemetry Loaded: Fetching for {driver1_code} and {driver2_code}...")
         
         tel1_raw = get_driver_telemetry(session_key, driver1_number)
         tel2_raw = get_driver_telemetry(session_key, driver2_number)
@@ -440,13 +522,16 @@ def analyze(year: int, grand_prix: str, session_type: str, driver1: str, driver2
         # Downsample
         downsampled = downsample_data(result_data, max_points=500)
         
+        # Get session name for output
+        session_name = session.get('session_name', session_type_decoded)
+        
         # Build final output
         output = {
             'driver1': driver1_code,
             'driver2': driver2_code,
             'year': year,
             'race': grand_prix_decoded,
-            'session': mapped_session,
+            'session': session_name,
             **downsampled
         }
         
@@ -456,7 +541,7 @@ def analyze(year: int, grand_prix: str, session_type: str, driver1: str, driver2
         
     except Exception as e:
         error_msg = f"Telemetry analysis failed: {str(e)}"
-        logger.error(f"❌ {error_msg}", exc_info=True)
+        logger.error(f"❌ OpenF1 Failure: {error_msg}", exc_info=True)
         return {"error": error_msg}
 
 
