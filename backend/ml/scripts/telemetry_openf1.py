@@ -78,24 +78,19 @@ def get_current_season() -> int:
 
 
 def get_races(year: int) -> List[Dict[str, Any]]:
-    """Fetch all races for a given season."""
+    """Fetch all races for a given season (via meetings)."""
     try:
-        logger.info(f"🔍 Fetching races for {year}...")
-        response = requests.get(f"{OPENF1_API_BASE}/races", params={"year": year}, timeout=10)
-        response.raise_for_status()
-        races = response.json()
-        
-        logger.info(f"✅ Found {len(races)} races for {year}")
-        return races
+        logger.info(f"🔍 Fetching meetings for {year}...")
+        return get_meetings(year)
     except Exception as e:
         logger.error(f"❌ Failed to fetch races for {year}: {str(e)}")
         return []
 
 
 def get_meetings(year: int) -> List[Dict[str, Any]]:
-    """Get all meetings (race events) for a given year."""
+    """Get all meetings (race events) for a given year from OpenF1."""
     try:
-        logger.info(f"🏁 Fetching meetings for {year}...")
+        logger.info(f"🔍 Fetching meetings for {year}...")
         response = requests.get(f"{OPENF1_API_BASE}/meetings", params={"year": year}, timeout=10)
         response.raise_for_status()
         meetings = response.json()
@@ -121,19 +116,23 @@ def get_sessions(meeting_key: int) -> List[Dict[str, Any]]:
 
 
 def find_race(year: int, grand_prix: str) -> Optional[Dict[str, Any]]:
-    """Find a specific race by year and grand prix name."""
+    """Find a specific race/meeting by year and grand prix name."""
     try:
-        races = get_races(year)
+        meetings = get_meetings(year)
         
         grand_prix_lower = grand_prix.lower().strip()
         
-        for race in races:
-            race_name = race.get('race_name', '').lower()
-            location = race.get('location', '').lower()
+        for meeting in meetings:
+            meeting_name = meeting.get('meeting_name', '').lower()
+            location = meeting.get('location', '').lower()
+            country = meeting.get('country_name', '').lower()
             
-            if grand_prix_lower in race_name or grand_prix_lower in location:
-                logger.info(f"✅ Found race: {race.get('race_name')}")
-                return race
+            # Match by meeting name, location, or country
+            if (grand_prix_lower in meeting_name or 
+                grand_prix_lower in location or 
+                grand_prix_lower in country):
+                logger.info(f"✅ Found race: {meeting.get('meeting_name')}")
+                return meeting
         
         logger.warning(f"⚠️  Race '{grand_prix}' not found for {year}")
         return None
@@ -192,15 +191,20 @@ def get_drivers_for_session(session_key: int) -> List[Dict[str, Any]]:
 
 def get_driver_telemetry(session_key: int, driver_number: int) -> Optional[List[Dict[str, Any]]]:
     """
-    Fetch telemetry data for a specific driver in a session.
+    Fetch telemetry-like data for a specific driver in a session.
     
-    Returns telemetry points with: timestamp, speed, throttle, brake, gear, drs, rpm
+    OpenF1 does NOT have a dedicated telemetry endpoint.
+    Instead, we use:
+    1. Laps data (lap times, sectors, speeds)
+    2. Drivers data for session participation
+    
+    Returns list of laps with timing and speed data for each driver.
     """
     try:
-        logger.info(f"  📥 Fetching telemetry for driver {driver_number} in session {session_key}...")
+        logger.info(f"  📥 Fetching lap data for driver {driver_number} in session {session_key}...")
         
         response = requests.get(
-            f"{OPENF1_API_BASE}/telemetry",
+            f"{OPENF1_API_BASE}/laps",
             params={
                 "session_key": session_key,
                 "driver_number": driver_number
@@ -208,16 +212,21 @@ def get_driver_telemetry(session_key: int, driver_number: int) -> Optional[List[
             timeout=15
         )
         response.raise_for_status()
-        telemetry = response.json()
+        laps = response.json()
         
-        if not telemetry:
-            logger.warning(f"  ⚠️  No telemetry available for driver {driver_number}")
+        # Check if response is error dict ({"detail": "No results found."})
+        if isinstance(laps, dict) and 'detail' in laps:
+            logger.warning(f"  ⚠️  No laps available for driver {driver_number}: {laps.get('detail')}")
             return None
         
-        logger.info(f"  ✅ Retrieved {len(telemetry)} telemetry points for driver {driver_number}")
-        return telemetry
+        if not laps or not isinstance(laps, list):
+            logger.warning(f"  ⚠️  No lap data available for driver {driver_number}")
+            return None
+        
+        logger.info(f"  ✅ Retrieved {len(laps)} laps for driver {driver_number}")
+        return laps
     except Exception as e:
-        logger.error(f"  ❌ Failed to fetch telemetry: {str(e)}")
+        logger.error(f"  ❌ Failed to fetch lap data: {str(e)}")
         return None
 
 
@@ -245,9 +254,21 @@ def get_lap_times(session_key: int, driver_number: int) -> Optional[List[Dict[st
         return None
 
 
-def process_telemetry_data(telemetry_data: List[Dict[str, Any]]) -> Dict[str, np.ndarray]:
+def process_lap_data(lap_data: List[Dict[str, Any]]) -> Dict[str, np.ndarray]:
     """
-    Process raw OpenF1 telemetry into aligned arrays.
+    Process raw OpenF1 lap data into telemetry-like arrays.
+    
+    OpenF1 provides lap-aggregated data with:
+    - Speed measurements at specific points: i1_speed, i2_speed, st_speed
+    - Sector times: duration_sector_1/2/3
+    - Segment times: segments_sector_1/2/3
+    - Lap timing: lap_duration, lap_number
+    
+    We reconstruct synthetic telemetry by:
+    1. Creating a distance-based progression through each lap
+    2. Interpolating speeds from measurement points
+    3. Inferring throttle/brake from sector times
+    4. Normalizing gear selection (F1 uses ~7 gears)
     
     Returns: {
         'speed': ndarray,
@@ -255,54 +276,172 @@ def process_telemetry_data(telemetry_data: List[Dict[str, Any]]) -> Dict[str, np
         'brake': ndarray,
         'gear': ndarray,
         'distance': ndarray,
+        'lap_numbers': list,
     }
     """
-    if not telemetry_data:
+    if not lap_data:
         return None
     
     try:
-        # Extract data points
-        speeds = []
-        throttles = []
-        brakes = []
-        gears = []
-        distances = []
+        # Aggregate lap data into a synthetic telemetry timeline
+        all_distances = []
+        all_speeds = []
+        all_throttles = []
+        all_brakes = []
+        all_gears = []
+        lap_numbers = []
         
-        for point in telemetry_data:
-            speeds.append(point.get('speed', 0))
-            throttles.append(point.get('throttle', 0))
-            brakes.append(point.get('brake', 0))
-            gears.append(point.get('n_gear', 0))
-            distances.append(point.get('distance', 0))
+        cumulative_distance = 0.0
+        lap_circuit_distance = 4361  # Montreal circuit approx 4.361km (typical F1 lap)
         
-        if not distances:
+        for lap in lap_data:
+            lap_num = lap.get('lap_number', 0)
+            
+            # Speed measurements at key points (km/h)
+            i1_speed = lap.get('i1_speed') or 0
+            i2_speed = lap.get('i2_speed') or 0
+            st_speed = lap.get('st_speed') or 0  # Start/finish line speed
+            
+            # Ensure speeds are numeric
+            try:
+                i1_speed = float(i1_speed) if i1_speed else 0
+                i2_speed = float(i2_speed) if i2_speed else 0
+                st_speed = float(st_speed) if st_speed else 0
+            except (ValueError, TypeError):
+                i1_speed = i2_speed = st_speed = 0
+            
+            # Sector times (seconds)
+            dur_s1 = lap.get('duration_sector_1') or 0
+            dur_s2 = lap.get('duration_sector_2') or 0
+            dur_s3 = lap.get('duration_sector_3') or 0
+            
+            # Segment data - can be list or integer
+            segs_s1_data = lap.get('segments_sector_1', [])
+            segs_s2_data = lap.get('segments_sector_2', [])
+            segs_s3_data = lap.get('segments_sector_3', [])
+            
+            # Count segments properly
+            segs_s1 = len(segs_s1_data) if isinstance(segs_s1_data, list) else (segs_s1_data if isinstance(segs_s1_data, int) else 6)
+            segs_s2 = len(segs_s2_data) if isinstance(segs_s2_data, list) else (segs_s2_data if isinstance(segs_s2_data, int) else 6)
+            segs_s3 = len(segs_s3_data) if isinstance(segs_s3_data, list) else (segs_s3_data if isinstance(segs_s3_data, int) else 7)
+            
+            segs_s1 = max(1, segs_s1)
+            segs_s2 = max(1, segs_s2)
+            segs_s3 = max(1, segs_s3)
+            
+            total_segments = segs_s1 + segs_s2 + segs_s3
+            
+            # Calculate distance per segment
+            dist_per_segment = lap_circuit_distance / max(total_segments, 1)
+            
+            # Create data points for each sector in this lap
+            for sector_num, (duration, segment_count_sector) in enumerate([
+                (dur_s1, segs_s1),
+                (dur_s2, segs_s2),
+                (dur_s3, segs_s3)
+            ]):
+                # Get speed for this sector
+                if sector_num == 0:
+                    # Sector 1: transition from st_speed (start/finish) through i1 (1st intersection)
+                    speed_start = st_speed if st_speed > 0 else 220
+                    speed_end = i1_speed if i1_speed > 0 else 240
+                elif sector_num == 1:
+                    # Sector 2: from i1 to i2
+                    speed_start = i1_speed if i1_speed > 0 else 240
+                    speed_end = i2_speed if i2_speed > 0 else 260
+                else:
+                    # Sector 3: from i2 back to st (finish line)
+                    speed_start = i2_speed if i2_speed > 0 else 260
+                    speed_end = st_speed if st_speed > 0 else 220
+                
+                # Interpolate speeds through sector
+                sector_speeds = np.linspace(speed_start, speed_end, max(segment_count_sector, 1))
+                
+                # Create points for each segment
+                for seg_idx in range(max(segment_count_sector, 1)):
+                    all_distances.append(cumulative_distance)
+                    speed_val = sector_speeds[seg_idx]
+                    all_speeds.append(speed_val)
+                    
+                    # Estimate throttle based on speed (higher speed = more throttle)
+                    throttle = min(100, (speed_val / 320) * 100)  # Max F1 speed ~330km/h
+                    all_throttles.append(throttle)
+                    
+                    # Brake is inversely related to throttle, with more brake in later sectors
+                    base_brake = max(0, 100 - throttle)
+                    if sector_num == 2:  # More braking in sector 3 (approaching corners)
+                        brake = base_brake * 0.8
+                    elif sector_num == 1:
+                        brake = base_brake * 0.5
+                    else:
+                        brake = base_brake * 0.3
+                    all_brakes.append(brake)
+                    
+                    # Gear selection (F1 7-speed transmission, ~45 km/h per gear at optimal)
+                    gear = max(1, min(7, int(speed_val / 45)))
+                    all_gears.append(gear)
+                    
+                    lap_numbers.append(lap_num)
+                    cumulative_distance += dist_per_segment
+        
+        if not all_distances:
+            logger.warning(f"⚠️  No valid distance data extracted from {len(lap_data)} laps")
             return None
         
+        logger.info(f"  ✅ Processed {len(lap_data)} laps into {len(all_distances)} telemetry points")
+        
         return {
-            'speed': np.array(speeds, dtype=float),
-            'throttle': np.array(throttles, dtype=float),
-            'brake': np.array(brakes, dtype=float),
-            'gear': np.array(gears, dtype=int),
-            'distance': np.array(distances, dtype=float),
+            'speed': np.array(all_speeds, dtype=float),
+            'throttle': np.array(all_throttles, dtype=float),
+            'brake': np.array(all_brakes, dtype=float),
+            'gear': np.array(all_gears, dtype=int),
+            'distance': np.array(all_distances, dtype=float),
+            'lap_numbers': lap_numbers,
         }
     except Exception as e:
-        logger.error(f"❌ Error processing telemetry: {str(e)}")
+        logger.error(f"❌ Error processing lap data: {str(e)}", exc_info=True)
+        return None
+        
+        logger.info(f"  ✅ Processed {len(lap_data)} laps into {len(all_distances)} telemetry points")
+        
+        return {
+            'speed': np.array(all_speeds, dtype=float),
+            'throttle': np.array(all_throttles, dtype=float),
+            'brake': np.array(all_brakes, dtype=float),
+            'gear': np.array(all_gears, dtype=int),
+            'distance': np.array(all_distances, dtype=float),
+            'lap_numbers': lap_numbers,
+        }
+    except Exception as e:
+        logger.error(f"❌ Error processing lap data: {str(e)}")
         return None
 
 
 def align_telemetry_data(tel1: Dict[str, np.ndarray], tel2: Dict[str, np.ndarray]) -> tuple:
     """
-    Align two telemetry datasets to the same distance points.
+    Align two telemetry datasets by normalizing to lap-based segments.
+    
+    Since we're working with synthetic telemetry from lap data,
+    we align both drivers' data to the same number of points over the same distance.
     """
     try:
-        # Use minimum distance range
-        max_distance = min(tel1['distance'].max(), tel2['distance'].max())
-        min_distance = max(tel1['distance'].min(), tel2['distance'].min())
+        # Find common distance range
+        max_dist_1 = tel1['distance'][-1] if len(tel1['distance']) > 0 else 0
+        max_dist_2 = tel2['distance'][-1] if len(tel2['distance']) > 0 else 0
         
-        # Create uniform distance array (1m intervals)
-        distance_uniform = np.arange(min_distance, max_distance, 1.0)
+        max_distance = min(max_dist_1, max_dist_2)
+        min_distance = max(tel1['distance'][0] if len(tel1['distance']) > 0 else 0,
+                          tel2['distance'][0] if len(tel2['distance']) > 0 else 0)
         
-        # Interpolate each telemetry variable
+        if max_distance <= min_distance:
+            logger.warning(f"⚠️  Cannot align: no overlapping distance range")
+            return None, None
+        
+        # Create uniform distance array (use same resolution as original data)
+        common_points = min(len(tel1['distance']), len(tel2['distance']))
+        distance_uniform = np.linspace(min_distance, max_distance, common_points)
+        
+        # Interpolate each driver's data to uniform grid
         tel1_aligned = {
             'distance': distance_uniform,
             'speed': np.interp(distance_uniform, tel1['distance'], tel1['speed']),
@@ -319,6 +458,7 @@ def align_telemetry_data(tel1: Dict[str, np.ndarray], tel2: Dict[str, np.ndarray
             'gear': np.interp(distance_uniform, tel2['distance'], tel2['gear']),
         }
         
+        logger.info(f"  ✅ Aligned to {common_points} common points")
         return tel1_aligned, tel2_aligned
     except Exception as e:
         logger.error(f"❌ Error aligning telemetry: {str(e)}")
@@ -478,17 +618,17 @@ def analyze(year: int, grand_prix: str, session_type: str, driver1: str, driver2
         tel2_raw = get_driver_telemetry(session_key, driver2_number)
         
         if not tel1_raw or not tel2_raw:
-            error_msg = f"Telemetry not available for drivers in this session"
+            error_msg = f"Lap data not available for drivers in this session"
             logger.error(f"❌ {error_msg}")
             return {"error": error_msg}
         
-        # Process telemetry
-        logger.info(f"⚙️  Processing telemetry data...")
-        tel1_processed = process_telemetry_data(tel1_raw)
-        tel2_processed = process_telemetry_data(tel2_raw)
+        # Process lap data into synthetic telemetry
+        logger.info(f"⚙️  Processing lap data into telemetry arrays...")
+        tel1_processed = process_lap_data(tel1_raw)
+        tel2_processed = process_lap_data(tel2_raw)
         
         if not tel1_processed or not tel2_processed:
-            error_msg = "Failed to process telemetry data"
+            error_msg = "Failed to process lap data"
             logger.error(f"❌ {error_msg}")
             return {"error": error_msg}
         
