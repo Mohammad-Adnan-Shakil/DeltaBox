@@ -22,6 +22,19 @@ const hasTelemetry = (telemetryData) =>
 const buildTelemetryPayload = (telemetryData, selectedDrivers, userMessage) => ({
   driver1: selectedDrivers.driver1,
   driver2: selectedDrivers.driver2,
+  // Race context
+  race: selectedDrivers.grandPrix || "Unknown",
+  year: selectedDrivers.year || new Date().getFullYear(),
+  session: selectedDrivers.sessionType || "Unknown",
+  // Telemetry arrays
+  driver1Speed: toNumberList(telemetryData?.driver1_speed),
+  driver2Speed: toNumberList(telemetryData?.driver2_speed),
+  driver1Throttle: toNumberList(telemetryData?.driver1_throttle),
+  driver2Throttle: toNumberList(telemetryData?.driver2_throttle),
+  driver1Brake: toNumberList(telemetryData?.driver1_brake),
+  driver2Brake: toNumberList(telemetryData?.driver2_brake),
+  lapDelta: toNumberList(telemetryData?.delta),
+  // Also keep legacy format for backward compatibility
   speedData: {
     [selectedDrivers.driver1]: toNumberList(telemetryData?.driver1_speed),
     [selectedDrivers.driver2]: toNumberList(telemetryData?.driver2_speed)

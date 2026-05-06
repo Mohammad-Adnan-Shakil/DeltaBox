@@ -58,6 +58,7 @@ com\f1pulse\backend\controller\ConstructorController.class
 com\f1pulse\backend\controller\HistoricalController.class
 com\f1pulse\backend\ai\util\StatsUtil.class
 com\f1pulse\backend\security\SecurityConfig.class
+com\f1pulse\backend\ai\telemetry\TelemetryPromptContext.class
 com\f1pulse\backend\controller\UserController.class
 com\f1pulse\backend\ai\dto\DriverInsightsResponseDTO.class
 com\f1pulse\backend\controller\TeamController.class
@@ -85,10 +86,11 @@ com\f1pulse\backend\model\HistoricalConstructorStandings.class
 com\f1pulse\backend\model\RaceResultDTO.class
 com\f1pulse\backend\model\Team.class
 com\f1pulse\backend\ai\dto\DriverComparisonResponseDTO.class
-com\f1pulse\backend\ai\controller\DeltaAnalystController$TelemetryContext.class
+com\f1pulse\backend\ai\dto\DeltaAnalystChatRequest.class
 com\f1pulse\backend\model\HistoricalConstructor.class
 com\f1pulse\backend\service\AIService.class
 com\f1pulse\backend\ai\dto\MultiSimulationResponseDTO.class
+com\f1pulse\backend\ai\telemetry\TelemetryPromptContext$Stats.class
 com\f1pulse\backend\model\User.class
 com\f1pulse\backend\BackendApplication.class
 com\f1pulse\backend\service\impl\AuthServiceImpl.class
@@ -105,6 +107,7 @@ com\f1pulse\backend\controller\AdminIngestionController.class
 com\f1pulse\backend\controller\HealthController.class
 com\f1pulse\backend\repository\HistoricalDriverStandingsRepository.class
 com\f1pulse\backend\model\DriverDTO.class
+com\f1pulse\backend\ai\util\AiResponseFormatter.class
 com\f1pulse\backend\ai\dto\SimulationResponseDTO.class
 com\f1pulse\backend\security\CustomUserDetailsService.class
 com\f1pulse\backend\service\F1Service.class

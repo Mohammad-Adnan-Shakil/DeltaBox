@@ -907,7 +907,7 @@ def compare():
 
 @app.route('/telemetry', methods=['GET'])
 def telemetry():
-    """Analyze telemetry for two drivers from a specific F1 session"""
+    """Analyze telemetry for two drivers from a specific F1 session using OpenF1 API"""
     try:
         year = request.args.get('year', type=int)
         grand_prix_raw = request.args.get('grand_prix')
@@ -915,20 +915,16 @@ def telemetry():
         driver1_raw = request.args.get('driver1')
         driver2_raw = request.args.get('driver2')
         
-        # ✅ DECODE URL-encoded parameters (Flask should do this, but be explicit)
+        # ✅ DECODE URL-encoded parameters
         grand_prix = unquote(grand_prix_raw) if grand_prix_raw else None
         session_type = unquote(session_type_raw) if session_type_raw else None
         driver1 = unquote(driver1_raw) if driver1_raw else None
         driver2 = unquote(driver2_raw) if driver2_raw else None
         
-        # 📨 LOG INCOMING REQUEST with decoded values
-        logger.info(f"🎯 TELEMETRY ENDPOINT: Incoming request")
+        # 📨 LOG INCOMING REQUEST
+        logger.info(f"🎯 TELEMETRY ENDPOINT: Incoming OpenF1 telemetry request")
         logger.info(f"  📊 Raw params: year={year}, grand_prix={grand_prix_raw}, session_type={session_type_raw}, driver1={driver1_raw}, driver2={driver2_raw}")
         logger.info(f"  ✅ Decoded params: year={year}, grand_prix={grand_prix}, session_type={session_type}, driver1={driver1}, driver2={driver2}")
-        
-        # 📋 VALIDATE YEAR
-        if year and year > 2024:
-            logger.warning(f"⚠️  Year {year} requested - FastF1 data not available yet, will attempt to use 2024 instead")
         
         if not all([year, grand_prix, session_type, driver1, driver2]):
             logger.error(f"❌ Missing required parameters")
@@ -936,9 +932,9 @@ def telemetry():
                 "error": "Missing required parameters. Need: year, grand_prix, session_type, driver1, driver2"
             }), 400
         
-        # Import and run telemetry analysis
-        from telemetry_analysis import analyze
-        logger.info(f"🚀 Calling analyze() with: year={year}, grand_prix={grand_prix}, session_type={session_type}, driver1={driver1}, driver2={driver2}")
+        # Import and run OpenF1 telemetry analysis
+        from telemetry_openf1 import analyze
+        logger.info(f"🚀 Calling OpenF1 analyze() with: year={year}, grand_prix={grand_prix}, session_type={session_type}, driver1={driver1}, driver2={driver2}")
         
         result = analyze(year, grand_prix, session_type, driver1, driver2)
         
