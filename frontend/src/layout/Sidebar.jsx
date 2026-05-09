@@ -24,6 +24,7 @@ const NAV_ITEMS_PUBLIC = [
 ];
 
 const NAV_ITEMS_PROTECTED = [
+  { to: "/telemetry", label: "Telemetry Intelligence", icon: Gauge },
   { to: "/race-engineer", label: "Race Engineer", icon: Radio },
 ];
 

@@ -14,6 +14,7 @@ const Races = lazy(() => import("./pages/Races"));
 const RaceDetails = lazy(() => import("./pages/RaceDetails"));
 const Constructors = lazy(() => import("./pages/Teams"));
 const Profile = lazy(() => import("./pages/Profile"));
+const TelemetryPage = lazy(() => import("./pages/TelemetryPage"));
 const RaceEngineerPage = lazy(() => import("./pages/RaceEngineerPage"));
 const ComparePage = lazy(() => import("./pages/ComparePage"));
 
@@ -126,6 +127,17 @@ function App() {
           <RequireFeatureAccess featureName="AI Race Predictions">
             <MainLayout>
               <ComparePage />
+            </MainLayout>
+          </RequireFeatureAccess>
+        }
+      />
+
+      <Route
+        path="/telemetry"
+        element={
+          <RequireFeatureAccess featureName="Telemetry Intelligence">
+            <MainLayout>
+              <TelemetryPage />
             </MainLayout>
           </RequireFeatureAccess>
         }
