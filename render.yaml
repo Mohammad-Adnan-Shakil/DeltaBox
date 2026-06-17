@@ -14,17 +14,7 @@ services:
     startCommand: java -jar backend/target/backend-0.0.2-SNAPSHOT.jar
     envVars:
       - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: deltabox-db
-          property: connectionString
-      - key: SPRING_DATASOURCE_USERNAME
-        fromDatabase:
-          name: deltabox-db
-          property: user
-      - key: SPRING_DATASOURCE_PASSWORD
-        fromDatabase:
-          name: deltabox-db
-          property: password
+        sync: false  # Set manually in Render dashboard to the Neon Postgres connection string
       - key: ML_SERVICE_URL
         fromService:
           type: web
@@ -79,11 +69,5 @@ services:
         value: https://deltabox-2.onrender.com
 
 # 🗄️ PostgreSQL Database
-databases:
-  - name: deltabox-db
-    plan: starter
-    databaseName: deltabox
-    user: deltabox
-
 # Environment variables for local development:
 # - ML_SERVICE_URL=http://localhost:5000 (for local development)
