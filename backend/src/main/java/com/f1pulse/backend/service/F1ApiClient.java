@@ -6,6 +6,8 @@ import com.f1pulse.backend.model.DriverDTO;
 import com.f1pulse.backend.model.RaceDTO;
 import com.f1pulse.backend.model.RaceResultDTO;
 import com.f1pulse.backend.model.TeamDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -15,6 +17,7 @@ import java.util.List;
 @Component
 public class F1ApiClient {
 
+    private static final Logger log = LoggerFactory.getLogger(F1ApiClient.class);
     private static final String BASE_URL = "https://api.jolpi.ca/ergast/f1";
 
     private final RestTemplate restTemplate;
@@ -116,12 +119,19 @@ public class F1ApiClient {
 
     public List<RaceResultDTO> fetchRaceResults() {
         try {
-            String response = restTemplate.getForObject(BASE_URL + "/current/results.json?limit=2000", String.class);
-            JsonNode races = objectMapper.readTree(response)
-                    .path("MRData")
+            String url = BASE_URL + "/current/results.json?limit=2000";
+            log.info("[F1API] Fetching race results from: {}", url);
+            
+            String response = restTemplate.getForObject(url, String.class);
+            log.info("[F1API] Received response of {} bytes", response.length());
+            
+            JsonNode root = objectMapper.readTree(response);
+            JsonNode races = root.path("MRData")
                     .path("RaceTable")
                     .path("Races");
 
+            log.info("[F1API] Found {} races with result data", races.size());
+            
             List<RaceResultDTO> results = new ArrayList<>();
 
             for (JsonNode race : races) {
@@ -135,6 +145,8 @@ public class F1ApiClient {
                 String country = locationNode.path("country").asText();
 
                 JsonNode raceResults = race.path("Results");
+                log.debug("[F1API] Round {}: {} - {} results", round, raceName, raceResults.size());
+                
                 for (JsonNode row : raceResults) {
                     JsonNode driver = row.path("Driver");
                     String driverCode = driver.path("code").asText(driver.path("driverId").asText("")).toUpperCase();
@@ -153,8 +165,10 @@ public class F1ApiClient {
                 }
             }
 
+            log.info("[F1API] Total race result entries parsed: {}", results.size());
             return results;
         } catch (Exception e) {
+            log.error("[F1API] Error fetching race results", e);
             throw new RuntimeException("Error fetching race results: " + e.getMessage(), e);
         }
     }

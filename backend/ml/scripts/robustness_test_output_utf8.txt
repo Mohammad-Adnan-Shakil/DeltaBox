@@ -1,0 +1,172 @@
+﻿
+================================================================================
+MULTI-RACE TELEMETRY ROBUSTNESS TEST
+================================================================================
+
+Test 1: 2024 Canadian GP Race
+   Input: 2024 Canadian R VER vs LEC
+python : 2026-05-06 18:42:57,558 - INFO - \U0001f680 OPENF1 TELEMETRY ANALYZE: 
+Received request
+At line:1 char:1
++ python test_robustness.py 2>&1 > robustness_test_output.txt ; type ro ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (2026-05-06 18:4...eceived request 
+   :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+2026-05-06 18:42:57,558 - INFO -   \U0001f4cb Input (raw): year=2024, 
+grand_prix='Canadian', session_type='R', driver1='VER', driver2='LEC'
+2026-05-06 18:42:57,558 - INFO -   \u2705 Input (decoded): year=2024, 
+grand_prix='Canadian', session_type='R', driver1='VER', driver2='LEC'
+2026-05-06 18:42:57,558 - INFO - \U0001f3c1 Requested Race: 2024 Canadian (R)
+2026-05-06 18:42:57,558 - INFO - \U0001f50d Fetching meetings for 2024...
+2026-05-06 18:42:58,611 - INFO - \u2705 Found 25 meetings for 2024
+2026-05-06 18:42:58,614 - INFO - \u2705 Found race: Canadian Grand Prix
+2026-05-06 18:42:58,614 - INFO - \U0001f3ce Meeting Found: key=1237, 
+race='None'
+2026-05-06 18:42:59,585 - INFO -   \U0001f50d Looking for session type: 'Race' 
+(input: 'R')
+2026-05-06 18:42:59,586 - INFO -   \U0001f4cb Available sessions: ['Practice 
+1', 'Practice 2', 'Practice 3', 'Qualifying', 'Race']
+2026-05-06 18:42:59,586 - INFO -   \u23f1 Found session: 'Race' (key: 9531)
+2026-05-06 18:42:59,586 - INFO - \u23f1 Session Found: key=9531, type='Race'
+2026-05-06 18:42:59,586 - INFO - \U0001f465 Fetching drivers for session...
+2026-05-06 18:43:00,509 - INFO - \U0001f4ca Found 20 drivers for session 9531
+2026-05-06 18:43:00,511 - INFO -   Available drivers: ['VER', 'SAR', 'RIC', 
+'NOR', 'GAS', 'PER', 'ALO', 'LEC', 'STR', 'MAG', 'TSU', 'ALB', 'ZHO', 'HUL', 
+'OCO', 'HAM', 'SAI', 'RUS', 'BOT', 'PIA']
+2026-05-06 18:43:00,511 - INFO - \U0001f4e1 Telemetry Loaded: Fetching for VER 
+and LEC...
+2026-05-06 18:43:00,511 - INFO -   \U0001f4e5 Fetching lap data for driver 1 
+in session 9531...
+2026-05-06 18:43:01,431 - INFO -   \u2705 Retrieved 70 laps for driver 1
+2026-05-06 18:43:01,434 - INFO -   \U0001f4e5 Fetching lap data for driver 16 
+in session 9531...
+2026-05-06 18:43:02,323 - INFO -   \u2705 Retrieved 41 laps for driver 16
+2026-05-06 18:43:02,325 - INFO - \u2699\ufe0f  Processing lap data into 
+telemetry arrays...
+2026-05-06 18:43:02,328 - INFO -   \u2705 Processed 70 laps into 1328 
+telemetry points
+2026-05-06 18:43:02,330 - INFO -   \u2705 Processed 41 laps into 775 telemetry 
+points
+2026-05-06 18:43:02,331 - INFO - \U0001f504 Aligning telemetry data...
+2026-05-06 18:43:02,331 - INFO -   \u2705 Aligned to 775 common points
+2026-05-06 18:43:02,331 - INFO - \U0001f4ca Calculating lap delta...
+2026-05-06 18:43:02,333 - INFO -   \U0001f4ca Downsampled from 775 to 775 
+points
+2026-05-06 18:43:02,333 - INFO - \u2705 TELEMETRY ANALYSIS COMPLETE: 775 
+points for VER vs LEC
+2026-05-06 18:43:02,334 - INFO - \U0001f680 OPENF1 TELEMETRY ANALYZE: Received 
+request
+2026-05-06 18:43:02,334 - INFO -   \U0001f4cb Input (raw): year=2024, 
+grand_prix='Monaco', session_type='Q', driver1='NOR', driver2='LEC'
+2026-05-06 18:43:02,334 - INFO -   \u2705 Input (decoded): year=2024, 
+grand_prix='Monaco', session_type='Q', driver1='NOR', driver2='LEC'
+2026-05-06 18:43:02,334 - INFO - \U0001f3c1 Requested Race: 2024 Monaco (Q)
+   PASSED: 775 points, avg speeds: 254.2 / 249.5 km/h
+2026-05-06 18:43:02,334 - INFO - \U0001f50d Fetching meetings for 2024...
+
+Test 2: 2024 Monaco GP Qualifying
+   Input: 2024 Monaco Q NOR vs LEC
+2026-05-06 18:43:03,314 - INFO - \u2705 Found 25 meetings for 2024
+2026-05-06 18:43:03,316 - INFO - \u2705 Found race: Monaco Grand Prix
+2026-05-06 18:43:03,317 - INFO - \U0001f3ce Meeting Found: key=1236, 
+race='None'
+2026-05-06 18:43:04,234 - INFO -   \U0001f50d Looking for session type: 
+'Qualifying' (input: 'Q')
+2026-05-06 18:43:04,234 - INFO -   \U0001f4cb Available sessions: ['Practice 
+1', 'Practice 2', 'Practice 3', 'Qualifying', 'Race']
+2026-05-06 18:43:04,234 - INFO -   \u23f1 Found session: 'Qualifying' (key: 
+9519)
+2026-05-06 18:43:04,234 - INFO - \u23f1 Session Found: key=9519, 
+type='Qualifying'
+2026-05-06 18:43:04,234 - INFO - \U0001f465 Fetching drivers for session...
+2026-05-06 18:43:05,086 - INFO - \U0001f4ca Found 20 drivers for session 9519
+2026-05-06 18:43:05,088 - INFO -   Available drivers: ['VER', 'SAR', 'RIC', 
+'NOR', 'GAS', 'PER', 'ALO', 'LEC', 'STR', 'MAG', 'TSU', 'ALB', 'ZHO', 'HUL', 
+'OCO', 'HAM', 'SAI', 'RUS', 'BOT', 'PIA']
+2026-05-06 18:43:05,088 - INFO - \U0001f4e1 Telemetry Loaded: Fetching for NOR 
+and LEC...
+2026-05-06 18:43:05,088 - INFO -   \U0001f4e5 Fetching lap data for driver 4 
+in session 9519...
+2026-05-06 18:43:05,997 - INFO -   \u2705 Retrieved 27 laps for driver 4
+2026-05-06 18:43:06,000 - INFO -   \U0001f4e5 Fetching lap data for driver 16 
+in session 9519...
+2026-05-06 18:43:06,813 - INFO -   \u2705 Retrieved 26 laps for driver 16
+2026-05-06 18:43:06,815 - INFO - \u2699\ufe0f  Processing lap data into 
+telemetry arrays...
+2026-05-06 18:43:06,817 - INFO -   \u2705 Processed 27 laps into 558 telemetry 
+points
+2026-05-06 18:43:06,818 - INFO -   \u2705 Processed 26 laps into 537 telemetry 
+points
+2026-05-06 18:43:06,818 - INFO - \U0001f504 Aligning telemetry data...
+2026-05-06 18:43:06,818 - INFO -   \u2705 Aligned to 537 common points
+2026-05-06 18:43:06,818 - INFO - \U0001f4ca Calculating lap delta...
+2026-05-06 18:43:06,820 - INFO -   \U0001f4ca Downsampled from 537 to 537 
+points
+2026-05-06 18:43:06,820 - INFO - \u2705 TELEMETRY ANALYSIS COMPLETE: 537 
+points for NOR vs LEC
+   PASSED: 537 points, avg speeds: 201.7 / 198.6 km/h
+2026-05-06 18:43:06,820 - INFO - \U0001f680 OPENF1 TELEMETRY ANALYZE: Received 
+request
+
+Test 3: 2024 Monaco GP Race
+   Input: 2024 Monaco R NOR vs ALO
+2026-05-06 18:43:06,821 - INFO -   \U0001f4cb Input (raw): year=2024, 
+grand_prix='Monaco', session_type='R', driver1='NOR', driver2='ALO'
+2026-05-06 18:43:06,821 - INFO -   \u2705 Input (decoded): year=2024, 
+grand_prix='Monaco', session_type='R', driver1='NOR', driver2='ALO'
+2026-05-06 18:43:06,821 - INFO - \U0001f3c1 Requested Race: 2024 Monaco (R)
+2026-05-06 18:43:06,821 - INFO - \U0001f50d Fetching meetings for 2024...
+2026-05-06 18:43:07,646 - INFO - \u2705 Found 25 meetings for 2024
+2026-05-06 18:43:07,648 - INFO - \u2705 Found race: Monaco Grand Prix
+2026-05-06 18:43:07,648 - INFO - \U0001f3ce Meeting Found: key=1236, 
+race='None'
+2026-05-06 18:43:08,637 - INFO -   \U0001f50d Looking for session type: 'Race' 
+(input: 'R')
+2026-05-06 18:43:08,637 - INFO -   \U0001f4cb Available sessions: ['Practice 
+1', 'Practice 2', 'Practice 3', 'Qualifying', 'Race']
+2026-05-06 18:43:08,637 - INFO -   \u23f1 Found session: 'Race' (key: 9523)
+2026-05-06 18:43:08,637 - INFO - \u23f1 Session Found: key=9523, type='Race'
+2026-05-06 18:43:08,637 - INFO - \U0001f465 Fetching drivers for session...
+2026-05-06 18:43:09,547 - INFO - \U0001f4ca Found 20 drivers for session 9523
+2026-05-06 18:43:09,549 - INFO -   Available drivers: ['VER', 'SAR', 'RIC', 
+'NOR', 'GAS', 'PER', 'ALO', 'LEC', 'STR', 'MAG', 'TSU', 'ALB', 'ZHO', 'HUL', 
+'OCO', 'HAM', 'SAI', 'RUS', 'BOT', 'PIA']
+2026-05-06 18:43:09,549 - INFO - \U0001f4e1 Telemetry Loaded: Fetching for NOR 
+and ALO...
+2026-05-06 18:43:09,549 - INFO -   \U0001f4e5 Fetching lap data for driver 4 
+in session 9523...
+2026-05-06 18:43:10,448 - INFO -   \u2705 Retrieved 78 laps for driver 4
+2026-05-06 18:43:10,450 - INFO -   \U0001f4e5 Fetching lap data for driver 14 
+in session 9523...
+2026-05-06 18:43:11,438 - INFO -   \u2705 Retrieved 76 laps for driver 14
+2026-05-06 18:43:11,440 - INFO - \u2699\ufe0f  Processing lap data into 
+telemetry arrays...
+2026-05-06 18:43:11,443 - INFO -   \u2705 Processed 78 laps into 1637 
+telemetry points
+2026-05-06 18:43:11,448 - INFO -   \u2705 Processed 76 laps into 1595 
+telemetry points
+2026-05-06 18:43:11,448 - INFO - \U0001f504 Aligning telemetry data...
+2026-05-06 18:43:11,448 - INFO -   \u2705 Aligned to 1595 common points
+2026-05-06 18:43:11,448 - INFO - \U0001f4ca Calculating lap delta...
+2026-05-06 18:43:11,451 - INFO -   \U0001f4ca Downsampled from 1595 to 533 
+points
+2026-05-06 18:43:11,452 - INFO - \u2705 TELEMETRY ANALYSIS COMPLETE: 533 
+points for NOR vs ALO
+   PASSED: 533 points, avg speeds: 214.1 / 210.8 km/h
+
+================================================================================
+TEST SUMMARY
+================================================================================
+[PASSED] 2024 Canadian GP Race
+     775 points, avg speeds: 254.2 / 249.5 km/h
+[PASSED] 2024 Monaco GP Qualifying
+     537 points, avg speeds: 201.7 / 198.6 km/h
+[PASSED] 2024 Monaco GP Race
+     533 points, avg speeds: 214.1 / 210.8 km/h
+
+================================================================================
+Result: 3/3 tests passed
+SUCCESS - All tests passed - Fix is robust
+================================================================================

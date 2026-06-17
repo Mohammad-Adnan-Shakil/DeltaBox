@@ -1,0 +1,51 @@
+{
+  "training_date": "2026-06-17T13:06:44.473908",
+  "dataset_rows": 1939,
+  "train_samples": 1551,
+  "test_samples": 388,
+  "feature_names": [
+    "career_avg_finish",
+    "career_wins",
+    "career_poles",
+    "recent_form_5",
+    "circuit_affinity",
+    "team_performance",
+    "experience",
+    "championship_position",
+    "grid_position",
+    "consistency_score",
+    "recent_trend",
+    "grid_to_finish_delta"
+  ],
+  "target": "target_finish_position",
+  "random_forest": {
+    "test_samples": 388,
+    "mae": 2.2775608464069115,
+    "rmse": 3.044909995996562,
+    "r2": 0.618404834502358,
+    "exact_match_accuracy": 0.14690721649484537,
+    "top3_accuracy": 0.7809278350515464,
+    "exact_correct": 57,
+    "top3_correct": 303
+  },
+  "xgboost": {
+    "test_samples": 388,
+    "mae": 2.299641994778643,
+    "rmse": 3.0539172520873294,
+    "r2": 0.6161438749834798,
+    "exact_match_accuracy": 0.15979381443298968,
+    "top3_accuracy": 0.7989690721649485,
+    "exact_correct": 62,
+    "top3_correct": 310
+  },
+  "blended": {
+    "test_samples": 388,
+    "mae": 2.272293691150583,
+    "rmse": 3.028437260432713,
+    "r2": 0.6225224689107988,
+    "exact_match_accuracy": 0.14432989690721648,
+    "top3_accuracy": 0.7963917525773195,
+    "exact_correct": 56,
+    "top3_correct": 309
+  }
+}

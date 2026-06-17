@@ -37,6 +37,7 @@ com\f1pulse\backend\ai\service\PredictionServiceImpl.class
 com\f1pulse\backend\repository\ConstructorRepository.class
 com\f1pulse\backend\repository\RaceRepository.class
 com\f1pulse\backend\model\HistoricalDriver.class
+com\f1pulse\backend\config\DatabaseInitializer.class
 com\f1pulse\backend\security\JwtAuthFilter.class
 com\f1pulse\backend\repository\DriverRepository.class
 com\f1pulse\backend\model\Race.class
@@ -68,6 +69,7 @@ com\f1pulse\backend\controller\AuthController.class
 com\f1pulse\backend\repository\HistoricalQualifyingRepository.class
 com\f1pulse\backend\ai\service\GroqApiService.class
 com\f1pulse\backend\service\MLClientService.class
+com\f1pulse\backend\dto\PodiumDriverDTO.class
 com\f1pulse\backend\config\AppConfig.class
 com\f1pulse\backend\service\HistoricalDataIngestionService.class
 com\f1pulse\backend\ai\controller\RaceEngineerController.class
@@ -100,6 +102,7 @@ com\f1pulse\backend\security\CustomUserDetailsService.class
 com\f1pulse\backend\service\F1Service.class
 com\f1pulse\backend\model\HistoricalDriverStandings.class
 com\f1pulse\backend\repository\HistoricalConstructorRepository.class
+com\f1pulse\backend\controller\SyncDebugController.class
 com\f1pulse\backend\service\F1ApiClient.class
 com\f1pulse\backend\exception\UserNotFoundException.class
 com\f1pulse\backend\dto\GoogleAuthRequest.class

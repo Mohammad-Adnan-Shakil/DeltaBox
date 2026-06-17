@@ -16,7 +16,7 @@ public class HistoricalConstructorStandings {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "year", nullable = false)
+    @Column(name = "\"year\"", nullable = false)
     private Integer year;
 
     @Column(name = "constructor_id", nullable = false)

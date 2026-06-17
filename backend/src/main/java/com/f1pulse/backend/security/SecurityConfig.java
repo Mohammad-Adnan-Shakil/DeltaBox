@@ -73,6 +73,9 @@ public class SecurityConfig {
                         // Public endpoints - Historical F1 Data (no login required)
                         .requestMatchers("/api/historical/**").permitAll()
                         
+                        // Debug endpoints (no login required)
+                        .requestMatchers("/api/debug/**").permitAll()
+                        
                         // Protected endpoints - Admin only
                         .requestMatchers("/api/admin/**").authenticated()
                         

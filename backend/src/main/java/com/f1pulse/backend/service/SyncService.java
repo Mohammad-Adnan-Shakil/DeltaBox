@@ -166,9 +166,29 @@ public class SyncService {
             log.info("Syncing fresh races data");
             List<RaceDTO> calendar = f1ApiClient.fetchRaces();
             List<RaceResultDTO> results = f1ApiClient.fetchRaceResults();
+            log.info("=================================");
+log.info("RESULT COUNT = {}", results.size());
+
+results.stream()
+       .limit(10)
+       .forEach(r ->
+           log.info(
+               "ROUND={} DRIVER={} POS={}",
+               r.getRound(),
+               r.getDriverCode(),
+               r.getPosition()
+           )
+       );
+
+log.info("=================================");
+
+            log.info("Fetched {} races from F1 API", calendar.size());
+            log.info("Fetched {} race results from F1 API", results.size());
 
             Map<Integer, List<RaceResultDTO>> resultsByRound = results.stream()
                     .collect(Collectors.groupingBy(RaceResultDTO::getRound));
+
+            log.info("Race results grouped by round: {}", resultsByRound.keySet());
 
             Map<String, Driver> driversByCode = new HashMap<>();
             for (Driver driver : driverRepository.findAll()) {
