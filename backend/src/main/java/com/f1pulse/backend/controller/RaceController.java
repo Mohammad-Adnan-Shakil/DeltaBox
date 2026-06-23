@@ -173,31 +173,6 @@ public class RaceController {
         return getRaceResults(raceId);
     }
 
-    // Helper methods for generating mock data (these would connect to actual driver data in production)
-    private String generateDriverName(Long driverId) {
-        // Mock driver names - in production this would query the Driver entity
-        String[] names = {"Max Verstappen", "Lewis Hamilton", "Charles Leclerc", "Lando Norris", "Carlos Sainz"};
-        return names[(int)(driverId % names.length)];
-    }
-    
-    private String generateDriverCode(Long driverId) {
-        // Mock driver codes - in production this would query the Driver entity
-        String[] codes = {"VER", "HAM", "LEC", "NOR", "SAI"};
-        return codes[(int)(driverId % codes.length)];
-    }
-    
-    private String generateCountry(Long driverId) {
-        // Mock countries - in production this would query the Driver entity
-        String[] countries = {"Netherlands", "United Kingdom", "Monaco", "United Kingdom", "Spain"};
-        return countries[(int)(driverId % countries.length)];
-    }
-    
-    private String generateTeam(Long driverId) {
-        // Mock teams - in production this would query the Driver entity
-        String[] teams = {"Red Bull Racing", "Mercedes", "Ferrari", "McLaren", "Ferrari"};
-        return teams[(int)(driverId % teams.length)];
-    }
-    
     private Integer calculatePoints(Integer position) {
         // F1 points system for 2026
         switch (position) {
