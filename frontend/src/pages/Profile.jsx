@@ -28,7 +28,7 @@ const Profile = () => {
           setFavouriteDriverId(profile.favoriteDriver);
         }
       } catch (error) {
-        console.log("No saved favorite driver found");
+        // No saved favorite driver - will use empty state
       }
     };
 
