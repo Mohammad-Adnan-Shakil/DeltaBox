@@ -1,17 +1,19 @@
 # DeltaBox — AI-Powered Formula 1 Intelligence Platform
 
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=flat-square&logo=springboot&logoColor=white)
-![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.2.5-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=black)
 ![Python](https://img.shields.io/badge/Python-3.11-3776AB?style=flat-square&logo=python&logoColor=white)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.0-000000?style=flat-square&logo=flask&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/Neon%20Postgres-14-4169E1?style=flat-square&logo=postgresql&logoColor=white)
 ![XGBoost](https://img.shields.io/badge/XGBoost-Ensemble-FF6600?style=flat-square)
 ![JWT](https://img.shields.io/badge/JWT-Auth-000000?style=flat-square&logo=jsonwebtokens)
 ![Render](https://img.shields.io/badge/Deployed-Render-46E3B7?style=flat-square&logo=render&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
 
-> DeltaBox is a production-deployed F1 intelligence platform that predicts race outcomes using a blended XGBoost + Random Forest ensemble. The Java Spring Boot backend calls the Python ML layer directly via subprocess execution (JSON over STDIN/STDOUT) — no separate microservice, no network hop for inference.
+> DeltaBox is a full-stack F1 intelligence platform that predicts race outcomes using a blended XGBoost + Random Forest ensemble. The Java Spring Boot backend communicates with a standalone Python ML microservice over HTTP — a deliberate move away from an earlier subprocess-based integration, made to decouple ML inference from the API server's lifecycle.
 
-🔗 **Live Demo:** [deltabox link — Render](https://[RENDER_DEPLOY_URL]) · **GitHub:** [github.com/Mohammad-Adnan-Shakil/deltabox](https://github.com/Mohammad-Adnan-Shakil/deltabox)
+🔗 **Live Demo:** [delta-box.vercel.app](https://delta-box.vercel.app) · **GitHub:** [github.com/Mohammad-Adnan-Shakil/deltabox](https://github.com/Mohammad-Adnan-Shakil/deltabox)
 
 ---
 
@@ -24,20 +26,20 @@ DeltaBox is a complete intelligence layer over the 2026 F1 season — built for 
 | 🤖 **AI Race Prediction** | Predict where any driver finishes at any circuit using a blended XGBoost + Random Forest ensemble |
 | 🔀 **What-If Simulation** | Change grid position, see how it shifts the predicted outcome in real time |
 | 📊 **Confidence Scoring** | Know exactly how reliable each prediction is — and when models disagree |
-| 📡 **Live Telemetry** | Compare lap telemetry between two drivers — speed, throttle, brake, gear, delta |
-| 🏆 **Live Standings** | Driver and constructor standings from PostgreSQL, synced with 2026 season data |
-| 📅 **Race Calendar** | Full 2026 season with completed vs. upcoming race status |
+| 🏆 **Live Standings** | Driver and constructor standings synced with 2026 season data |
+| 📅 **Race Calendar** | Full 2026 season with completed vs. upcoming race status, podium results |
 | 📈 **Performance Insights** | Trend detection, consistency scoring, and multi-model analysis per driver |
-| 💬 **Delta Analyst (AI Chat)** | Groq-powered conversational assistant for natural-language race/telemetry Q&A — **in active development** |
+| 🗂️ **Historical Archive** | Season-by-season data back to 1950 via Ergast API, with DB fallback |
+| 🛠️ **Race Engineer (AI Chat)** | DeepSeek R1-powered assistant for natural-language race strategy Q&A |
 
 ---
 
 ## Performance
 
-- **79.6% Top-3 finishing-position accuracy** on a held-out test set
-- **R² 0.62** for the blended ensemble
-- **13.4ms blended prediction latency** (XGBoost: 2.5ms · Random Forest: 10.9ms)
-- Trained and validated on historical F1 race data across multiple seasons
+- **79.6% Top-3 finishing-position accuracy** on a held-out test set (blended ensemble)
+- **R² 0.623**, **MAE 2.272** for the blended ensemble (XGBoost: R² 0.616, MAE 2.300 · Random Forest: R² 0.618, MAE 2.278)
+- Trained on ~1,900 rows of real F1 race data sourced from the Jolpica API
+- **~71ms model load, ~2.5–13ms inference** — measured locally; reproduce via the ML service's own benchmark script before quoting in an interview
 
 ---
 
@@ -45,30 +47,33 @@ DeltaBox is a complete intelligence layer over the 2026 F1 season — built for 
 
 Non-trivial decisions that separate this from a tutorial project:
 
-- **Direct subprocess ML integration** — the Python ML engine runs via `ProcessBuilder`, invoked directly by the Spring Boot backend with JSON over STDIN/STDOUT. No separate service to deploy, version, or keep alive — one less network hop, one less point of failure.
-- **Multi-model conflict detection** — when XGBoost and Random Forest disagree beyond a threshold, the AI Orchestrator doesn't average them silently — it flags the conflict as a high-uncertainty signal. Disagreement itself is data.
-- **Live telemetry via fastf1** — real lap-by-lap telemetry data (speed, throttle, brake, gear, time delta) fetched and processed via the `fastf1` library.
+- **ML as a decoupled HTTP microservice** — the Python ML engine runs as a standalone Flask service, called by the Spring Boot backend over REST. This replaced an earlier `ProcessBuilder`/subprocess integration: the old approach tied ML availability to the JVM process and made the ML layer hard to scale, redeploy, or version independently. Splitting it out removed that coupling.
+- **Multi-model conflict detection** — when XGBoost and Random Forest disagree beyond a threshold, the system doesn't average them silently — it flags the conflict as a high-uncertainty signal. Disagreement itself is data.
 - **JWT + RBAC from scratch** — token generation, validation middleware, and role-based route protection implemented without relying on Spring Security's opinionated defaults.
 - **Feature engineering pipeline** — models receive rolling average finish, consistency score, recent trend direction, and grid-to-finish delta — not raw position integers.
+- **Database URL normalization layer** — a custom Spring `EnvironmentPostProcessor` normalizes Postgres connection strings (`postgres://`, `postgresql://`, `jdbc:postgresql://`) across hosting providers, written to support a clean migration from Render's free Postgres tier to Neon without touching application code.
+- **Historical data resilience** — historical season/driver/circuit data is served from the Ergast API with a database fallback, so the feature degrades gracefully instead of failing outright.
 
 ---
 
 ## Architecture
 
 ```
-React Frontend
+React Frontend (Vercel)
       ↓ REST + JWT
-Spring Boot Backend
-      ↓ ProcessBuilder (JSON over STDIN/STDOUT)
-Python ML Engine
+Spring Boot Backend (Render, Docker)
+      ↓ HTTP REST
+Python ML Microservice (Flask)
    ├── XGBoost Model (.pkl)
    ├── Random Forest Model (.pkl)
-   ├── Blended Ensemble + AI Orchestrator
-   └── Label Encoders (driver, constructor, track)
+   ├── Blended Ensemble + Conflict Detection
+   └── Feature Pipeline (rolling form, consistency, grid delta)
       ↓
-Prediction + Confidence + Insight + Telemetry Response
+Prediction + Confidence + Insight Response
       ↓
 Spring Boot → React → User
+
+Backend ←→ Neon Postgres (managed, serverless Postgres)
 ```
 
 ---
@@ -76,29 +81,30 @@ Spring Boot → React → User
 ## Tech Stack
 
 ### Backend — Java + Spring Boot
-- REST API with JWT authentication and Role-Based Access Control (RBAC)
-- JPA / Hibernate ORM with PostgreSQL
-- `ProcessBuilder` for direct subprocess invocation of the Python ML engine
-- Deployed on Render
+- REST API with JWT authentication and Role-Based Access Control (RBAC), built from scratch
+- JPA / Hibernate ORM with Neon Postgres
+- HTTP client (`MLClientService`) calling the Flask ML microservice — no subprocess, no shared process lifecycle
+- Deployed on Render via Docker
 
 ### Frontend — React + Tailwind CSS
-- Animated dashboard with live race clock
+- Animated dashboard with live standings and race calendar
 - Recharts for driver standings and performance visualization
 - Framer Motion for page transitions and card animations
 - Fully responsive — mobile, tablet, desktop
+- Deployed on Vercel
 
-### Machine Learning — Python
+### Machine Learning — Python + Flask
 - **XGBoost** — race outcome prediction
 - **Random Forest** — performance trend analysis
-- **Blended ensemble** + custom AI Orchestrator — combines model outputs, detects conflicts, generates human-readable insights
-- **fastf1** — live lap telemetry data (speed, throttle, brake, gear, delta)
-- Invoked as a subprocess by the Spring Boot backend, not a standalone service
-- Models serialized with pickle, loaded at process start
+- **Blended ensemble** — combines model outputs, detects conflicts, generates human-readable insights
+- Served as a standalone Flask REST microservice, called by the Spring Boot backend over HTTP
+- Models serialized with pickle (protocol 4), loaded via joblib at service startup
 
 ### Infrastructure
-- Single deployment on Render (backend + ML subprocess + frontend)
-- Environment variables for all secrets (`JWT_SECRET`, `SPRING_DATASOURCE_*`)
-- PostgreSQL with persistent storage
+- Backend: Render (Docker)
+- Frontend: Vercel
+- Database: Neon Postgres (serverless, managed)
+- Environment variables for all secrets (`JWT_SECRET`, `DATABASE_URL`, `ML_SERVICE_URL`, `GROQ_API_KEY`)
 - Auto-deploy on push via GitHub integration
 
 ---
@@ -106,22 +112,22 @@ Spring Boot → React → User
 ## AI Engine — How It Works
 
 1. Frontend sends: `driverId` + `raceId` + `gridPosition`
-2. Spring Boot fetches driver stats and race history from PostgreSQL
+2. Spring Boot fetches driver stats and race history from Neon Postgres
 3. Feature vector is constructed: `(avg_finish, consistency, recent_form, grid, track, constructor)`
-4. Spring Boot writes the feature vector as JSON to the Python process's STDIN
-5. Python runs XGBoost + Random Forest, blends results via the AI Orchestrator
-6. Orchestrator compares model outputs:
+4. Spring Boot calls the Flask ML service over HTTP with the feature vector as JSON
+5. Flask service runs XGBoost + Random Forest, blends results
+6. Blend logic compares model outputs:
    - Models agree → **high confidence prediction**
-   - Models conflict → flags uncertainty, returns `"conflicting models"` insight
-7. Python writes the result as JSON to STDOUT
-8. Spring Boot reads STDOUT, returns enriched JSON to frontend
-9. React renders: position badge, confidence ring, simulation cards, insight text
+   - Models conflict → flags uncertainty, returns a "conflicting models" insight
+7. Flask service returns the result as a JSON HTTP response
+8. Spring Boot relays the enriched JSON to the frontend
+9. React renders: position prediction, confidence indicator, simulation cards, insight text
 
 ---
 
 ## API Reference
 
-### `POST /api/ai/intelligence`
+### `POST /api/ai/predict`
 
 ```json
 // Request
@@ -148,10 +154,14 @@ Spring Boot → React → User
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `GET` | `/api/drivers/standings` | Live driver standings |
-| `GET` | `/api/races/calendar` | Full 2026 race calendar |
-| `GET` | `/api/constructors/standings` | Constructor championship table |
-| `GET` | `/api/telemetry/compare` | Lap telemetry comparison between two drivers |
+| `GET` | `/api/drivers` | All drivers (2026 season) |
+| `GET` | `/api/constructors` | Constructor standings |
+| `GET` | `/api/races` | Full 2026 race calendar |
+| `GET` | `/api/races/{raceId}/results` | Race results (podium) |
+| `GET` | `/api/ai/model-metrics` | Live model performance metrics |
+| `POST` | `/api/ai/simulate` | What-if grid position simulation |
+| `POST` | `/api/race-engineer/ask` | AI race strategy advice (DeepSeek R1) |
+| `GET` | `/api/historical/seasons` | F1 seasons archive (1950–2026) |
 | `POST` | `/api/auth/login` | Authenticate and receive JWT |
 | `POST` | `/api/auth/register` | Register a new user |
 
@@ -163,7 +173,7 @@ Spring Boot → React → User
 - Java 21+
 - Node.js 18+
 - Python 3.11+
-- PostgreSQL 14+
+- PostgreSQL 14+ (or a Neon connection string)
 
 ### Backend
 ```bash
@@ -172,12 +182,12 @@ cd backend
 ./mvnw spring-boot:run
 ```
 
-The Spring Boot app invokes the Python ML scripts directly via `ProcessBuilder` — no separate ML server needs to be started.
-
-### ML Engine dependencies
+### ML Microservice
 ```bash
 cd backend/ml
 pip install -r requirements.txt
+python app.py
+# Runs as a standalone Flask service — must be running for AI features to work
 ```
 
 ### Frontend
@@ -190,11 +200,13 @@ npm run dev
 
 ### Environment Variables
 ```env
-SPRING_DATASOURCE_URL=jdbc:postgresql://...
-SPRING_DATASOURCE_USERNAME=...
-SPRING_DATASOURCE_PASSWORD=...
+DATABASE_URL=postgresql://...        # Neon Postgres connection string
 JWT_SECRET=...
+ML_SERVICE_URL=http://localhost:5000
+GROQ_API_KEY=...                     # Required for Race Engineer AI chat
 ```
+
+> Note: reported latency figures (model load / inference time) were measured during development and should be re-benchmarked locally before quoting them as current numbers.
 
 ---
 
@@ -203,21 +215,21 @@ JWT_SECRET=...
 ```
 deltabox/
 ├── backend/
-│   ├── src/                  # Spring Boot — APIs, auth, DB, ProcessBuilder ML integration
+│   ├── src/                  # Spring Boot — APIs, auth, DB, ML HTTP client
 │   └── ml/
-│       ├── predict.py        # ML inference entrypoint, invoked via subprocess
-│       ├── scripts/          # ai_orchestrator.py, telemetry_analysis.py
-│       ├── models/           # .pkl model files
+│       ├── app.py            # Flask app entrypoint
+│       ├── predict.py        # ML inference logic
+│       ├── models/           # .pkl model files (XGBoost, Random Forest)
 │       └── requirements.txt
 ├── frontend/                 # React + Tailwind — dashboard, charts, prediction UI
-└── db/                       # PostgreSQL schema + 2026 season seed data
+└── db/                       # Neon Postgres schema + 2026 season seed data
 ```
 
 ---
 
 ## Roadmap
 
-- [ ] **Delta Analyst** — Groq-powered conversational AI assistant for natural-language race/telemetry analysis (in active development)
+- [ ] **F1 RAG capstone integration** — connecting DeltaBox's prediction layer with a retrieval-augmented Q&A system over historical F1 data, to present both projects as a cohesive ML systems portfolio
 
 ---
 
