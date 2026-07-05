@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RequireFeatureAccess from "./routes/RequireFeatureAccess";
 import MainLayout from "./layout/MainLayout";
+import Logo from "./components/Logo";
 
 // Lazy load pages for code splitting
 const Login = lazy(() => import("./pages/Login"));
@@ -17,26 +18,20 @@ const Profile = lazy(() => import("./pages/Profile"));
 const RaceEngineerPage = lazy(() => import("./pages/RaceEngineerPage"));
 
 const LoadingFallback = () => (
-  <div style={{
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100vh',
-    background: '#0a0a0f'
-  }}>
-    <style>{`
-      @keyframes spin {
-        to { transform: rotate(360deg); }
-      }
-    `}</style>
-    <div style={{
-      width: '32px',
-      height: '32px',
-      border: '3px solid rgba(232,0,45,0.3)',
-      borderTop: '3px solid #e8002d',
-      borderRadius: '50%',
-      animation: 'spin 0.8s linear infinite'
-    }} />
+  <div className="fixed inset-0 flex flex-col items-center justify-center bg-[var(--color-bg-base)]">
+    <div className="relative">
+      <Logo size={48} className="animate-pulse [animation-duration:2s]" />
+      <div className="absolute inset-0 bg-accentRed/20 blur-2xl rounded-full -z-10" />
+    </div>
+    <p className="mt-6 font-display font-semibold text-sm uppercase tracking-[0.3em] text-text-muted animate-pulse">
+      Loading
+    </p>
+    <div className="mt-4 flex gap-1.5">
+      {[0,1,2].map(i => (
+        <div key={i} className="h-1.5 w-1.5 rounded-full bg-accentRed animate-bounce"
+             style={{ animationDelay: `${i * 0.15}s` }} />
+      ))}
+    </div>
   </div>
 );
 

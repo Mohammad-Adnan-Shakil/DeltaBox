@@ -40,17 +40,17 @@ export const Modal = ({
             className={`
               fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2
               ${sizes[size]} w-full mx-4
-              bg-gray-900 border border-gray-800 rounded-lg
-              shadow-xl z-50
+              bg-[var(--color-bg-card)] border border-[var(--color-border-default)] rounded-[var(--radius-lg)]
+              shadow-[var(--shadow-xl)] z-50 max-sm:bottom-0 max-sm:top-auto max-sm:translate-x-0 max-sm:translate-y-0 max-sm:rounded-b-none
             `}
           >
             {/* Header */}
             {title && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800">
-                <h2 className="text-xl font-bold text-white">{title}</h2>
+              <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border-default)]">
+                <h2 className="text-xl font-bold text-whitePrimary">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="text-gray-400 hover:text-white transition"
+                  className="text-text-muted hover:text-whitePrimary transition"
                 >
                   ✕
                 </button>
@@ -62,7 +62,7 @@ export const Modal = ({
 
             {/* Footer */}
             {footer && (
-              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-800">
+              <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[var(--color-border-default)]">
                 {footer}
               </div>
             )}

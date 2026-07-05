@@ -12,10 +12,10 @@ const MainLayout = ({ children }) => {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-bgPrimary text-whitePrimary">
-      <div className="lg:hidden flex h-14 items-center justify-between border-b border-borderSoft px-4 sticky top-0 bg-bgPrimary z-50">
+    <div className="min-h-screen bg-[var(--color-bg-base)] text-whitePrimary">
+      <div className="lg:hidden flex h-14 items-center justify-between border-b border-[var(--color-border-default)] px-4 sticky top-0 bg-[var(--color-bg-elevated)] z-50 backdrop-blur-lg">
         <button
-          className="rounded-lg border border-borderSoft bg-bgElevated p-2 text-whiteMuted"
+          className="rounded-lg border border-[var(--color-border-default)] bg-[var(--color-bg-hover)] p-2 text-text-secondary"
           onClick={() => setMobileNavOpen((prev) => !prev)}
           aria-label="Toggle menu"
         >
@@ -24,19 +24,19 @@ const MainLayout = ({ children }) => {
         <div className="flex items-center gap-2 flex-nowrap whitespace-nowrap">
           <Logo size={26} />
           <div className="hidden sm:block">
-            <span className="text-red-500 font-black tracking-widest text-xl">DELTA</span>
-            <span className="text-white font-black tracking-widest text-xl">BOX</span>
+            <span className="text-accentRed font-black tracking-widest text-xl">DELTA</span>
+            <span className="text-whitePrimary font-black tracking-widest text-xl">BOX</span>
           </div>
         </div>
-        <p className="text-xs text-whiteMuted">{user?.username || "User"}</p>
+        <p className="text-xs text-text-muted">{user?.username || "User"}</p>
       </div>
 
       <div className="flex">
         <Sidebar mobileOpen={mobileNavOpen} onNavigate={() => setMobileNavOpen(false)} />
 
         <main className="min-w-0 flex-1">
-          <div className="hidden h-16 items-center justify-end border-b border-borderSoft px-6 lg:flex sticky top-0 bg-bgPrimary z-50">
-            <p className="text-sm text-whiteMuted">{user?.username || "User"}</p>
+          <div className="hidden h-16 items-center justify-end border-b border-[var(--color-border-default)] px-6 lg:flex sticky top-0 bg-[var(--color-bg-elevated)]/80 backdrop-blur-lg z-50">
+            <p className="text-sm text-text-secondary">{user?.username || "User"}</p>
           </div>
 
           <AnimatePresence mode="wait">

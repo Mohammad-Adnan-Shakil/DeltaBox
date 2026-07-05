@@ -36,7 +36,7 @@ const RaceDetails = () => {
       >
         <button
           onClick={() => navigate("/races")}
-          className="flex items-center gap-2 text-whiteMuted hover:text-whitePrimary transition-colors"
+          className="flex items-center gap-2 text-text-secondary hover:text-whitePrimary transition-colors"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Races
@@ -49,15 +49,15 @@ const RaceDetails = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Card className="bg-gradient-to-r from-accentRed/10 to-bgElevated" delay={0.1}>
+        <Card className="bg-gradient-to-r from-accentRed/10 to-[var(--color-bg-elevated)]" delay={0.1}>
           <div className="p-4 md:p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={`font-display font-bold uppercase tracking-wide flex h-12 w-12 items-center justify-center rounded-full border text-sm font-semibold ring-2 ring-red-500/30 ${
+                  <div className={`font-display font-bold uppercase tracking-wide flex h-12 w-12 items-center justify-center rounded-full border text-sm font-semibold ${
                     isCompleted
-                      ? "border-emerald-500 bg-emerald-900/50 text-emerald-400"
-                      : "border-gray-600 bg-gray-800 text-gray-400"
+                      ? "border-[var(--color-accent-green)] bg-[var(--color-accent-green)]/20 text-[var(--color-accent-green)]"
+                      : "border-[var(--color-border-default)] bg-[var(--color-bg-hover)] text-text-secondary"
                   }`}>
                     {race.round}
                   </div>
@@ -69,7 +69,7 @@ const RaceDetails = () => {
                   </div>
                 </div>
                 
-                <div className="space-y-2 text-sm text-whiteMuted">
+                <div className="space-y-2 text-sm text-text-secondary">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
                     {race.circuitName} · {race.location}, {race.country}
@@ -84,16 +84,16 @@ const RaceDetails = () => {
               <div className="text-right">
                 <div className="inline-flex items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold">
                   {isCompleted ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-900/50 border border-emerald-700 px-3 py-2 text-emerald-400">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-accent-green)]/20 border border-[var(--color-accent-green)]/40 px-3 py-2 text-[var(--color-accent-green)]">
                       <Flag className="h-4 w-4" /> COMPLETED
                     </span>
                   ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gray-800 border border-gray-600 px-3 py-2 text-gray-400">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-bg-hover)] border border-[var(--color-border-default)] px-3 py-2 text-text-secondary">
                       <Clock className="h-4 w-4" /> UPCOMING
                     </span>
                   )}
                 </div>
-                <div className="mt-2 text-xs text-whiteMuted">
+                <div className="mt-2 text-xs text-text-muted">
                   Round {race.round} of 2026 Season
                 </div>
               </div>
@@ -102,7 +102,7 @@ const RaceDetails = () => {
         </Card>
       </motion.div>
 
-      {/* Race Results */}
+      {/* Race Results - Podium */}
       {isCompleted && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -125,22 +125,17 @@ const RaceDetails = () => {
           </h2>
           
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <p className="text-sm text-whiteMuted mb-1">Circuit</p>
-              <p className="font-semibold text-whitePrimary">{race.circuitName}</p>
-            </div>
-            <div>
-              <p className="text-sm text-whiteMuted mb-1">Location</p>
-              <p className="font-semibold text-whitePrimary">{race.location}, {race.country}</p>
-            </div>
-            <div>
-              <p className="text-sm text-whiteMuted mb-1">Round</p>
-              <p className="font-semibold text-whitePrimary">{race.round}</p>
-            </div>
-            <div>
-              <p className="text-sm text-whiteMuted mb-1">Status</p>
-              <p className="font-semibold text-whitePrimary">{race.status}</p>
-            </div>
+            {[
+              { label: "Circuit", value: race.circuitName, icon: null },
+              { label: "Location", value: `${race.location}, ${race.country}`, icon: MapPin },
+              { label: "Round", value: race.round, icon: null },
+              { label: "Status", value: race.status, icon: null },
+            ].map((item) => (
+              <div key={item.label} className="rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] p-4">
+                <p className="text-xs text-text-muted uppercase tracking-wider mb-1">{item.label}</p>
+                <p className="font-semibold text-whitePrimary">{item.value}</p>
+              </div>
+            ))}
           </div>
         </Card>
       </motion.div>

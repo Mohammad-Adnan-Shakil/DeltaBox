@@ -4,13 +4,14 @@
   variant = "primary",
   size = "md",
   disabled = false,
+  loading = false,
   className = "",
   ...props
 }) => {
   const variants = {
-    primary: "bg-accentRed text-whitePrimary hover:brightness-110",
-    secondary: "bg-bgElevated text-whitePrimary border border-borderSoft hover:bg-white/10",
-    ghost: "bg-transparent text-whiteMuted border border-borderSoft hover:text-whitePrimary hover:bg-white/5",
+    primary: "bg-accentRed text-whitePrimary hover:brightness-110 hover:shadow-[0_0_20px_rgba(232,0,45,0.3)]",
+    secondary: "bg-[var(--color-bg-elevated)] text-whitePrimary border border-[var(--color-border-default)] hover:bg-white/10",
+    ghost: "bg-transparent text-whiteMuted border border-[var(--color-border-default)] hover:text-whitePrimary hover:bg-white/5",
     danger: "bg-accentRed/90 text-whitePrimary hover:brightness-110",
   };
 
@@ -23,17 +24,22 @@
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
+      disabled={disabled || loading}
       className={`
-        rounded-xl2 font-semibold tracking-wide transition-all duration-200
+        rounded-[var(--radius-md)] font-semibold tracking-wide transition-all duration-200 focus-visible:outline-2 focus-visible:outline-accentRed focus-visible:outline-offset-2
         ${variants[variant]} ${sizes[size]}
         disabled:opacity-50 disabled:cursor-not-allowed
-        active:scale-[0.98]
+        active:scale-[0.97]
         ${className}
       `}
       {...props}
     >
-      {children}
+      {loading ? (
+        <span className="flex items-center gap-2">
+          <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          {children}
+        </span>
+      ) : children}
     </button>
   );
 };

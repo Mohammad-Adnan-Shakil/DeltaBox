@@ -6,7 +6,7 @@ export const Card = ({ children, className = "", hover = true, delay = 0 }) => {
       initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay }}
-      whileHover={hover ? { scale: 1.01 } : undefined}
+      whileHover={hover ? { y: -2, transition: { duration: 0.2 } } : undefined}
       className={`f1-card ${className}`}
     >
       {children}

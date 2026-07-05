@@ -47,7 +47,7 @@ const Sidebar = ({ mobileOpen = false, onNavigate = () => {} }) => {
 
       <aside
         className={`
-          fixed inset-y-0 left-0 z-50 border-r border-borderSoft bg-bgPrimary
+          fixed inset-y-0 left-0 z-50 border-r border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] backdrop-blur-lg
           transition-transform duration-200 lg:sticky lg:top-0 lg:h-screen
           ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
           w-[240px] lg:w-[84px] xl:w-[240px]
@@ -55,12 +55,12 @@ const Sidebar = ({ mobileOpen = false, onNavigate = () => {} }) => {
       >
         <div className="flex h-full flex-col justify-between">
           <div>
-            <div className="border-b border-borderSoft px-5 py-6 lg:px-4 xl:px-5">
+            <div className="border-b border-[var(--color-border-default)] px-5 py-6 lg:px-4 xl:px-5">
               <div className="flex items-center gap-2 justify-center lg:justify-center xl:justify-start">
                 <Logo size={26} />
                 <div className="hidden xl:block">
-                  <span className="text-red-500 font-black tracking-widest text-xl">DELTA</span>
-                  <span className="text-white font-black tracking-widest text-xl">BOX</span>
+                  <span className="text-accentRed font-black tracking-widest text-xl">DELTA</span>
+                  <span className="text-whitePrimary font-black tracking-widest text-xl">BOX</span>
                 </div>
               </div>
             </div>
@@ -72,45 +72,37 @@ const Sidebar = ({ mobileOpen = false, onNavigate = () => {} }) => {
                   {({ isActive }) => (
                     <div
                       className={`
-                        flex items-center gap-3 rounded-xl2 px-3 py-3 text-sm transition-all duration-200
-                        ${isActive ? "bg-accentRed/10 text-whitePrimary" : "text-whiteMuted hover:bg-white/5 hover:text-whitePrimary"}
+                        flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-3 text-sm transition-all duration-200
+                        ${isActive
+                          ? "bg-gradient-to-r from-[var(--color-accent-red)]/15 to-transparent text-whitePrimary border-l-2 border-accentRed"
+                          : "text-text-secondary hover:bg-[var(--color-bg-hover)] hover:text-whitePrimary"}
                       `}
                     >
-                      <Icon className="h-4 w-4 shrink-0" />
+                      <div className="w-8 flex items-center justify-center shrink-0">
+                        <Icon className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                      </div>
                       <span className="font-display font-semibold uppercase tracking-wide lg:hidden xl:inline">{label}</span>
-
-                      {isActive ? (
-                        <motion.div
-                          layoutId="active-nav-underline"
-                          className="absolute -bottom-px left-3 right-3 h-[2px] rounded-full bg-accentRed"
-                        />
-                      ) : null}
-
-                                          </div>
+                    </div>
                   )}
                 </NavLink>
               ))}
 
-              {/* Protected Navigation Items */}
               {/* AI Prediction - Special handling */}
               <NavLink to="/ai" onClick={onNavigate} className="group relative mb-1 block">
                 {({ isActive }) => (
                   <div
                     className={`
-                      flex items-center gap-3 rounded-xl2 px-3 py-3 text-sm transition-all duration-200
-                      ${isActive ? "bg-accentRed/10 text-whitePrimary" : "text-whiteMuted hover:bg-white/5 hover:text-whitePrimary"}
+                      flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-3 text-sm transition-all duration-200
+                      ${isActive
+                        ? "bg-gradient-to-r from-[var(--color-accent-red)]/15 to-transparent text-whitePrimary border-l-2 border-accentRed"
+                        : "text-text-secondary hover:bg-[var(--color-bg-hover)] hover:text-whitePrimary"}
                     `}
                   >
-                    <Brain className="h-4 w-4 shrink-0" />
+                    <div className="w-8 flex items-center justify-center shrink-0">
+                      <Brain className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                    </div>
                     <span className="font-display font-semibold uppercase tracking-wide lg:hidden xl:inline">AI Prediction</span>
-                    {!isAuthenticated && <Lock className="h-3 w-3 ml-auto lg:ml-0 xl:ml-auto" />}
-                    
-                    {isActive ? (
-                      <motion.div
-                        layoutId="active-nav-underline"
-                        className="absolute -bottom-px left-3 right-3 h-[2px] rounded-full bg-accentRed"
-                      />
-                    ) : null}
+                    {!isAuthenticated && <Lock className="h-3 w-3 ml-auto lg:ml-0 xl:ml-auto text-text-muted" />}
                   </div>
                 )}
               </NavLink>
@@ -121,21 +113,17 @@ const Sidebar = ({ mobileOpen = false, onNavigate = () => {} }) => {
                   {({ isActive }) => (
                     <div
                       className={`
-                        flex items-center gap-3 rounded-xl2 px-3 py-3 text-sm transition-all duration-200
-                        ${isActive ? "bg-accentRed/10 text-whitePrimary" : "text-whiteMuted hover:bg-white/5 hover:text-whitePrimary"}
+                        flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-3 text-sm transition-all duration-200
+                        ${isActive
+                          ? "bg-gradient-to-r from-[var(--color-accent-red)]/15 to-transparent text-whitePrimary border-l-2 border-accentRed"
+                          : "text-text-secondary hover:bg-[var(--color-bg-hover)] hover:text-whitePrimary"}
                       `}
                     >
-                      <Icon className="h-4 w-4 shrink-0" />
+                      <div className="w-8 flex items-center justify-center shrink-0">
+                        <Icon className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                      </div>
                       <span className="font-display font-semibold uppercase tracking-wide lg:hidden xl:inline">{label}</span>
-
-                      {isActive ? (
-                        <motion.div
-                          layoutId="active-nav-underline"
-                          className="absolute -bottom-px left-3 right-3 h-[2px] rounded-full bg-accentRed"
-                        />
-                      ) : null}
-
-                                          </div>
+                    </div>
                   )}
                 </NavLink>
               ))}
@@ -146,34 +134,37 @@ const Sidebar = ({ mobileOpen = false, onNavigate = () => {} }) => {
                   {({ isActive }) => (
                     <div
                       className={`
-                        flex items-center gap-3 rounded-xl2 px-3 py-3 text-sm transition-all duration-200
-                        ${isActive ? "bg-accentRed/10 text-whitePrimary" : "text-whiteMuted hover:bg-white/5 hover:text-whitePrimary"}
+                        flex items-center gap-3 rounded-[var(--radius-md)] px-3 py-3 text-sm transition-all duration-200
+                        ${isActive
+                          ? "bg-gradient-to-r from-[var(--color-accent-red)]/15 to-transparent text-whitePrimary border-l-2 border-accentRed"
+                          : "text-text-secondary hover:bg-[var(--color-bg-hover)] hover:text-whitePrimary"}
                       `}
                     >
-                      <User className="h-4 w-4 shrink-0" />
+                      <div className="w-8 flex items-center justify-center shrink-0">
+                        <User className="h-4 w-4 group-hover:scale-110 transition-transform" />
+                      </div>
                       <span className="font-display font-semibold uppercase tracking-wide lg:hidden xl:inline">Profile</span>
-
-                      {isActive ? (
-                        <motion.div
-                          layoutId="active-nav-underline"
-                          className="absolute -bottom-px left-3 right-3 h-[2px] rounded-full bg-accentRed"
-                        />
-                      ) : null}
-
-                                          </div>
+                    </div>
                   )}
                 </NavLink>
               )}
             </nav>
           </div>
 
-          <div className="border-t border-borderSoft p-3">
+          <div className="border-t border-[var(--color-border-default)] p-3">
             {isAuthenticated ? (
               <>
                 {/* User Info */}
                 <div className="px-3 py-2 mb-2 rounded-lg bg-white/5 lg:hidden xl:block">
-                  <p className="text-xs text-whiteMuted truncate">Signed in as:</p>
-                  <p className="text-sm font-medium text-whitePrimary truncate">{user?.username || "User"}</p>
+                  <div className="flex items-center gap-2">
+                    <div className="h-8 w-8 rounded-full bg-accentRed/20 flex items-center justify-center text-xs font-bold text-accentRed">
+                      {(user?.username || "U")[0].toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-xs text-text-muted truncate">Signed in as:</p>
+                      <p className="text-sm font-medium text-whitePrimary truncate">{user?.username || "User"}</p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Logout Button */}
@@ -182,9 +173,9 @@ const Sidebar = ({ mobileOpen = false, onNavigate = () => {} }) => {
                     logout();
                     navigate("/dashboard");
                   }}
-                  className="flex w-full items-center gap-3 rounded-xl2 px-3 py-3 text-left text-sm text-accentRed transition hover:bg-accentRed/10"
+                  className="flex w-full items-center gap-3 rounded-[var(--radius-md)] px-3 py-3 text-left text-sm text-accentRed transition hover:bg-accentRed/10"
                 >
-                  <LogOut className="h-4 w-4" />
+                  <LogOut className="h-4 w-4 shrink-0" />
                   <span className="font-display font-semibold uppercase tracking-wide lg:hidden xl:inline">Logout</span>
                 </button>
               </>
@@ -193,18 +184,18 @@ const Sidebar = ({ mobileOpen = false, onNavigate = () => {} }) => {
                 {/* Sign In Button */}
                 <button
                   onClick={() => navigate("/login")}
-                  className="flex w-full items-center gap-3 rounded-xl2 px-3 py-3 text-left text-sm bg-accentRed text-white font-medium transition hover:bg-accentRed/90 mb-2"
+                  className="flex w-full items-center gap-3 rounded-[var(--radius-md)] px-3 py-3 text-left text-sm bg-accentRed text-white font-medium transition hover:bg-accentRed/90 hover:shadow-[0_0_20px_rgba(232,0,45,0.3)] mb-2"
                 >
-                  <LogIn className="h-4 w-4" />
+                  <LogIn className="h-4 w-4 shrink-0" />
                   <span className="font-display font-semibold uppercase tracking-wide lg:hidden xl:inline">Sign In</span>
                 </button>
 
                 {/* Sign Up Button */}
                 <button
                   onClick={() => navigate("/register")}
-                  className="flex w-full items-center gap-3 rounded-xl2 px-3 py-3 text-left text-sm border border-borderSoft text-whiteMuted font-medium transition hover:bg-white/5"
+                  className="flex w-full items-center gap-3 rounded-[var(--radius-md)] px-3 py-3 text-left text-sm border border-[var(--color-border-default)] text-text-secondary font-medium transition hover:bg-white/5"
                 >
-                  <User className="h-4 w-4" />
+                  <User className="h-4 w-4 shrink-0" />
                   <span className="font-display font-semibold uppercase tracking-wide lg:hidden xl:inline">Sign Up</span>
                 </button>
               </>
