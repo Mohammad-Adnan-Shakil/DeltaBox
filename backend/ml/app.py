@@ -1,6 +1,6 @@
 import os
 import json
-import pickle
+import joblib
 import math
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -33,11 +33,12 @@ def load_models():
     """Load all ML models on startup"""
     global models
     try:
-        models["rf"] = pickle.load(open(os.path.join(MODELS_DIR, "rf_model.pkl"), "rb"))
-        models["xgb"] = pickle.load(open(os.path.join(MODELS_DIR, "xgb_model.pkl"), "rb"))
-        models["le_constructor"] = pickle.load(open(os.path.join(MODELS_DIR, "le_constructor.pkl"), "rb"))
-        models["le_driver"] = pickle.load(open(os.path.join(MODELS_DIR, "le_driver.pkl"), "rb"))
-        models["le_track"] = pickle.load(open(os.path.join(MODELS_DIR, "le_track.pkl"), "rb"))
+        models["rf"] = joblib.load(os.path.join(MODELS_DIR, "random_forest_model_v2.pkl"))
+        models["xgb"] = joblib.load(os.path.join(MODELS_DIR, "xgboost_model_v2.pkl"))
+        models["feature_names"] = joblib.load(os.path.join(MODELS_DIR, "feature_names_v2.pkl"))
+        models["le_constructor"] = joblib.load(os.path.join(MODELS_DIR, "le_constructor.pkl"))
+        models["le_driver"] = joblib.load(os.path.join(MODELS_DIR, "le_driver.pkl"))
+        models["le_track"] = joblib.load(os.path.join(MODELS_DIR, "le_track.pkl"))
         print("✅ All models loaded successfully")
     except Exception as e:
         print(f"❌ Error loading models: {e}")
@@ -461,25 +462,21 @@ def run_prediction(input_data: Dict[str, Any]) -> Dict[str, Any]:
         # Convert std to a consistency score (0-100)
         consistency = max(0, 100 - (std_last5 * 10)) if std_last5 > 0 else 50
         
-        # Get confidence and clamp to minimum 5%
-        confidence = xgb_result["confidence"]
-        confidence = max(0.05, confidence)  # Clamp to minimum 5%
+        # Calculate confidence based on model agreement (RF vs XGB)
+        disagreement = abs(rf_pred - xgb_pred)
         
-        # Apply trend-aware confidence adjustment
-        if trend == "DECLINING":
-            confidence *= 0.7  # Reduce confidence for declining trend
-            confidence = max(0.05, confidence)  # Still clamp to minimum 5%
-        
-        # Apply divergence-based confidence adjustment
-        confidence = adjust_confidence_divergence(confidence, career_avg, recent_avg)
-        
-        # Update confidence label based on adjusted confidence
-        if confidence > 0.75:
-            confidence_label = "high"
-        elif confidence > 0.5:
-            confidence_label = "medium"
+        if disagreement <= 1.0:
+            confidence = 0.85
+            confidence_label = "HIGH"
+        elif disagreement <= 3.0:
+            confidence = 0.65
+            confidence_label = "MEDIUM"
+        elif disagreement <= 5.0:
+            confidence = 0.40
+            confidence_label = "LOW"
         else:
-            confidence_label = "low"
+            confidence = 0.20
+            confidence_label = "VERY LOW"
         
         # Calculate average prediction
         avg_prediction = (rf_pred + xgb_pred) / 2

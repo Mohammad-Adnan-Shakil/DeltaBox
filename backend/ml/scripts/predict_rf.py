@@ -19,19 +19,23 @@ def predict(input_data: dict, model=None, le_constructor=None, le_driver=None, l
     """Predict using Random Forest model"""
     # Load models if not provided
     if model is None:
-        model = joblib.load(os.path.join(MODEL_DIR, "rf_model.pkl"))
+        model = joblib.load(os.path.join(MODEL_DIR, "random_forest_model_v2.pkl"))
     if le_driver is None:
         le_driver = joblib.load(os.path.join(MODEL_DIR, "le_driver.pkl"))
     
-    driver_encoded = encode_safe(le_driver, input_data["driver_id"])
-    
     features = pd.DataFrame([{
-        "driver_id": driver_encoded,
-        "avg_last_5": input_data["avg_last_5"],
-        "std_last_5": input_data["std_last_5"],
-        "avg_last_10": input_data["avg_last_10"],
-        "std_last_10": input_data["std_last_10"],
-        "last_race_position": input_data["last_race_position"]
+        "career_avg_finish": input_data.get("career_avg_finish", 0.0),
+        "career_wins": input_data.get("career_wins", 0),
+        "career_poles": input_data.get("career_poles", 0),
+        "recent_5_avg": input_data.get("recent_5_avg", input_data.get("avg_last_5", 10.0)),
+        "recent_10_avg": input_data.get("recent_10_avg", input_data.get("avg_last_10", 10.0)),
+        "circuit_avg_finish": input_data.get("circuit_avg_finish", 10.0),
+        "circuit_appearances": input_data.get("circuit_appearances", 0),
+        "season_avg_finish": input_data.get("season_avg_finish", 10.0),
+        "grid_position": input_data.get("grid_position", input_data.get("qualifying_position", 10)),
+        "team_avg_finish": input_data.get("team_avg_finish", 10.0),
+        "years_experience": input_data.get("years_experience", 1),
+        "championship_position": input_data.get("championship_position", 10)
     }])
     
     prediction = model.predict(features)[0]

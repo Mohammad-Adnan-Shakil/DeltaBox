@@ -15,16 +15,13 @@ def safe_encode(encoder, value):
         return 0
 
 
-# Feature names must match training order
+# Feature names matching v2 training
 feature_names = [
-    "qualifying_position",
-    "constructor_id",
-    "track_id",
-    "season_year",
-    "recent_avg_position_last_5",
-    "recent_std_last_5",
-    "grid_position",
-    "is_home_race"
+    "career_avg_finish", "career_wins", "career_poles",
+    "recent_5_avg", "recent_10_avg",
+    "circuit_avg_finish", "circuit_appearances",
+    "season_avg_finish", "grid_position",
+    "team_avg_finish", "years_experience", "championship_position"
 ]
 
 
@@ -32,24 +29,21 @@ def predict(input_data: dict, model=None, le_constructor=None, le_driver=None, l
     """Predict using XGBoost model"""
     # Load models if not provided
     if model is None:
-        model = joblib.load(os.path.join(MODEL_DIR, "xgb_model.pkl"))
-    if le_constructor is None:
-        le_constructor = joblib.load(os.path.join(MODEL_DIR, "le_constructor.pkl"))
-    if le_track is None:
-        le_track = joblib.load(os.path.join(MODEL_DIR, "le_track.pkl"))
+        model = joblib.load(os.path.join(MODEL_DIR, "xgboost_model_v2.pkl"))
     
-    constructor_encoded = safe_encode(le_constructor, input_data["constructor_id"])
-    track_encoded = safe_encode(le_track, input_data["track_id"])
-    
-    features = np.array([[ 
-        float(input_data["qualifying_position"]),
-        float(constructor_encoded),
-        float(track_encoded),
-        float(input_data["season_year"]),
-        float(input_data["recent_avg_position_last_5"]),
-        float(input_data["recent_std_last_5"]),
-        float(input_data["grid_position"]),
-        float(input_data["is_home_race"])
+    features = np.array([[
+        float(input_data.get("career_avg_finish", 0.0)),
+        float(input_data.get("career_wins", 0)),
+        float(input_data.get("career_poles", 0)),
+        float(input_data.get("recent_5_avg", input_data.get("avg_last_5", 10.0))),
+        float(input_data.get("recent_10_avg", input_data.get("avg_last_10", 10.0))),
+        float(input_data.get("circuit_avg_finish", 10.0)),
+        float(input_data.get("circuit_appearances", 0)),
+        float(input_data.get("season_avg_finish", 10.0)),
+        float(input_data.get("grid_position", input_data.get("qualifying_position", 10))),
+        float(input_data.get("team_avg_finish", 10.0)),
+        float(input_data.get("years_experience", 1)),
+        float(input_data.get("championship_position", 10))
     ]])
     
     prediction = float(model.predict(features)[0])
@@ -69,31 +63,31 @@ def predict(input_data: dict, model=None, le_constructor=None, le_driver=None, l
         for feature_name, importance in sorted_features[:3]:
             feature_value = input_data.get(feature_name)
             
-            # Generate human-readable explanation
             explanation = ""
-            if feature_name == "qualifying_position":
-                explanation = f"Grid position: Starting from P{int(feature_value) if feature_value else 'unknown'}"
-            elif feature_name == "recent_avg_position_last_5":
-                explanation = f"Recent form: Average finish of P{feature_value:.1f} in last 5 races" if feature_value else "Recent form: Insufficient data"
-            elif feature_name == "recent_std_last_5":
-                if feature_value is None or feature_value == 0:
-                    explanation = "Consistency: Very consistent performances"
-                elif feature_value < 2:
-                    explanation = "Consistency: Highly consistent"
-                elif feature_value < 4:
-                    explanation = "Consistency: Moderate variability"
-                else:
-                    explanation = "Consistency: Highly variable performance"
+            if feature_name == "career_avg_finish":
+                explanation = f"Career avg: P{feature_value:.1f}" if feature_value else "Career avg: No data"
+            elif feature_name == "career_wins":
+                explanation = f"Career wins: {int(feature_value) if feature_value else 0}"
+            elif feature_name == "recent_5_avg":
+                explanation = f"Last 5 avg: P{feature_value:.1f}" if feature_value else "Last 5 avg: No data"
+            elif feature_name == "recent_10_avg":
+                explanation = f"Last 10 avg: P{feature_value:.1f}" if feature_value else "Last 10 avg: No data"
             elif feature_name == "grid_position":
-                explanation = f"Qualifying: P{int(feature_value) if feature_value else 'unknown'}"
-            elif feature_name == "season_year":
-                explanation = f"Season: {int(feature_value) if feature_value else 'unknown'}"
-            elif feature_name == "constructor_id":
-                explanation = "Constructor: Team performance factor"
-            elif feature_name == "track_id":
-                explanation = "Circuit: Track-specific strengths"
-            elif feature_name == "is_home_race":
-                explanation = "Home race: Competing in home country"
+                explanation = f"Grid: P{int(feature_value) if feature_value else 'unknown'}"
+            elif feature_name == "season_avg_finish":
+                explanation = f"Season avg: P{feature_value:.1f}" if feature_value else "Season avg: No data"
+            elif feature_name == "team_avg_finish":
+                explanation = f"Team avg finish: P{feature_value:.1f}" if feature_value else "Team avg: No data"
+            elif feature_name == "circuit_avg_finish":
+                explanation = f"Circuit avg: P{feature_value:.1f}" if feature_value else "Circuit avg: No data"
+            elif feature_name == "years_experience":
+                explanation = f"Experience: {int(feature_value) if feature_value else 0} seasons"
+            elif feature_name == "championship_position":
+                explanation = f"Standings: P{int(feature_value) if feature_value else 'unknown'}"
+            elif feature_name == "career_poles":
+                explanation = f"Career poles: {int(feature_value) if feature_value else 0}"
+            elif feature_name == "circuit_appearances":
+                explanation = f"Circuit appearances: {int(feature_value) if feature_value else 0}"
             
             top_features.append({
                 "feature": feature_name,
@@ -101,22 +95,8 @@ def predict(input_data: dict, model=None, le_constructor=None, le_driver=None, l
                 "explanation": explanation
             })
     
-    # Confidence (heuristic)
-    variance_proxy = float(np.std(features))
-    confidence = 1 / (1 + variance_proxy)
-    confidence = max(0.0, min(1.0, confidence))
-    
-    if confidence > 0.75:
-        confidence_label = "high"
-    elif confidence > 0.5:
-        confidence_label = "medium"
-    else:
-        confidence_label = "low"
-    
     output = {
         "predicted_position": round(prediction, 2),
-        "confidence": round(confidence, 3),
-        "confidence_label": confidence_label,
         "feature_importances": feature_importances,
         "top_features": top_features
     }
@@ -127,9 +107,7 @@ def predict(input_data: dict, model=None, le_constructor=None, le_driver=None, l
 # Legacy subprocess support (for backward compatibility)
 if __name__ == "__main__":
     try:
-        model = joblib.load(os.path.join(MODEL_DIR, "xgb_model.pkl"))
-        le_constructor = joblib.load(os.path.join(MODEL_DIR, "le_constructor.pkl"))
-        le_track = joblib.load(os.path.join(MODEL_DIR, "le_track.pkl"))
+        model = joblib.load(os.path.join(MODEL_DIR, "xgboost_model_v2.pkl"))
     except Exception as e:
         print(json.dumps({"error": f"Model loading failed: {str(e)}"}))
         sys.exit(1)
@@ -140,22 +118,5 @@ if __name__ == "__main__":
         print(json.dumps({"error": f"Invalid input: {str(e)}"}))
         sys.exit(1)
     
-    required_fields = [
-        "qualifying_position",
-        "constructor_id",
-        "track_id",
-        "season_year",
-        "recent_avg_position_last_5",
-        "recent_std_last_5",
-        "grid_position",
-        "is_home_race"
-    ]
-    
-    missing_fields = [f for f in required_fields if f not in input_json]
-    
-    if missing_fields:
-        print(json.dumps({"error": f"Missing fields: {missing_fields}"}))
-        sys.exit(1)
-    
-    result = predict(input_json, model, le_constructor, None, le_track)
+    result = predict(input_json, model)
     print(json.dumps(result))
