@@ -34,6 +34,11 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
             return;
         }
 
+        System.err.println("=== DELTABOX DB DEBUG ===");
+        System.err.println("Final URL: " + normalized.jdbcUrl());
+        System.err.println("Username: " + normalized.username());
+        System.err.println("=========================");
+
         Map<String, Object> properties = new HashMap<>();
         properties.put("spring.datasource.url", normalized.jdbcUrl());
 
