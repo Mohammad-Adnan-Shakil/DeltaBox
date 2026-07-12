@@ -105,7 +105,18 @@ public class DatabaseUrlEnvironmentPostProcessor implements EnvironmentPostProce
     }
 
     private static String normalizeQuery(String query) {
-        return query.replace("channel_binding=", "channelBinding=");
+        String[] pairs = query.split("&");
+        StringBuilder filtered = new StringBuilder();
+        for (String pair : pairs) {
+            if (pair.startsWith("channel_binding=") || pair.startsWith("channelBinding=")) {
+                continue;
+            }
+            if (!filtered.isEmpty()) {
+                filtered.append("&");
+            }
+            filtered.append(pair);
+        }
+        return filtered.toString();
     }
 
     private static boolean hasTextProperty(ConfigurableEnvironment environment, String propertyName) {
