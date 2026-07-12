@@ -66,6 +66,7 @@ const Teams = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search constructor"
+              aria-label="Search constructor"
               className="surface-input pl-10"
             />
           </div>
@@ -75,7 +76,7 @@ const Teams = () => {
       <section className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {standings.map((team, index) => {
           const isLeader = index === 0;
-          const accent = isLeader ? "#ffd700" : teamColor(team.name);
+          const accent = isLeader ? "var(--color-accent-gold)" : teamColor(team.name);
           const leadGap = index === 0 ? null : standings[0].points - team.points;
 
           return (
@@ -97,7 +98,7 @@ const Teams = () => {
                     </p>
                   </div>
                   <div className="text-right relative z-10">
-                    <p className="font-mono text-3xl font-black" style={{ color: isLeader ? '#ffd700' : accent }}>{Math.round(team.points)}</p>
+                    <p className="font-mono text-3xl font-black" style={{ color: accent }}>{Math.round(team.points)}</p>
                     {leadGap !== null && <p className="font-mono text-[11px] text-text-muted">-{leadGap}</p>}
                   </div>
                   {/* Watermark position */}

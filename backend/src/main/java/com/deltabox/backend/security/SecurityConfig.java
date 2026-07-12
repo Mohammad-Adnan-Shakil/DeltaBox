@@ -59,7 +59,9 @@ public class SecurityConfig {
                 
                 // ✅ Authorization rules
                 .authorizeHttpRequests(auth -> auth
-                        // Public endpoints - Authentication
+                        // Public endpoints - Health & Auth
+                        .requestMatchers("/api/health").permitAll()
+                        .requestMatchers("/api/").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()

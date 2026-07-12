@@ -1,51 +1,10 @@
-﻿import { useEffect, useMemo, useState, memo, useRef } from "react";
-import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { Flag, Trophy, Users, Zap, ArrowUp, ArrowDown, Minus } from "lucide-react";
-import { Card, AnimatedCount, LoadingState, ErrorState, EmptyState } from "../components/common";
+﻿import { useEffect, useMemo, useState } from "react";
+import { Card, ErrorState } from "../components/common";
 import SkeletonLoader from "../components/SkeletonLoader";
 import LiveClock from "../components/LiveClock";
-import { useInView } from "../hooks/useInView";
-import useFetch from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
 import { dashboardDataPromise, racesDataPromise } from "../main";
-
-const StatCard = memo(({ icon: Icon, label, value, subValue, accentClass = "text-whitePrimary", delay = 0, loading = false, accent = "red" }) => {
-  const accentColors = {
-    blue: { bg: "bg-[var(--color-accent-blue)]/20", text: "text-[var(--color-accent-blue)]", gradient: "from-[var(--color-accent-blue)]/70 via-[var(--color-accent-blue)] to-transparent" },
-    green: { bg: "bg-[var(--color-accent-green)]/20", text: "text-[var(--color-accent-green)]", gradient: "from-[var(--color-accent-green)]/70 via-[var(--color-accent-green)] to-transparent" },
-    gold: { bg: "bg-[var(--color-accent-gold)]/20", text: "text-[var(--color-accent-gold)]", gradient: "from-[var(--color-accent-gold)]/70 via-[var(--color-accent-gold)] to-transparent" },
-    purple: { bg: "bg-[var(--color-accent-purple)]/20", text: "text-[var(--color-accent-purple)]", gradient: "from-[var(--color-accent-purple)]/70 via-[var(--color-accent-purple)] to-transparent" },
-    red: { bg: "bg-accentRed/20", text: "text-accentRed", gradient: "from-accentRed/70 via-accentRed to-transparent" },
-  };
-  const c = accentColors[accent] || accentColors.red;
-
-  return (
-    <Card delay={delay} className="relative overflow-hidden p-5">
-      <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-full ${c.bg}`} />
-      <div className="mb-4 flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${c.bg} ${c.text}`}>
-          <Icon className="h-4 w-4" />
-        </div>
-        <p className="section-label">{label}</p>
-      </div>
-
-      {loading ? (
-        <SkeletonLoader height="48px" width="80px" />
-      ) : typeof value === "number" ? (
-        <p className={`hero-number text-[42px] ${accentClass}`}>
-          <AnimatedCount value={value} />
-        </p>
-      ) : (
-        <p className={`text-2xl font-semibold ${accentClass}`}>{value}</p>
-      )}
-
-      {subValue && !loading && (
-        <p className="mt-1 text-sm text-text-secondary">{subValue}</p>
-      )}
-      <div className={`absolute inset-x-0 bottom-0 h-[3px] bg-gradient-to-r ${c.gradient}`} />
-    </Card>
-  );
-});
+import { StatCardsRow, NextRaceWidget, StandingsChart } from "../components/dashboard";
 
 const HeroSection = () => (
   <section className="flex flex-col justify-between gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-gradient-to-br from-[var(--color-bg-card)] to-[var(--color-bg-elevated)] p-4 md:flex-row md:items-center md:p-6 relative overflow-hidden">
@@ -73,37 +32,9 @@ const HeroSection = () => (
   </section>
 );
 
-const StatCardsSection = ({ drivers, races, loading }) => {
-  const driverList = drivers || [];
-  const raceList = (races || []).slice().sort((a, b) => (a.round ?? 999) - (b.round ?? 999));
-  const completedRaces = raceList.filter((race) => race.status === "COMPLETED");
-  
-  const topDriver = driverList[0] || { name: "Andrea Kimi Antonelli", points: 72 };
-  const topTeam = useMemo(() => {
-    const grouped = Object.values(
-      driverList.reduce((acc, driver) => {
-        const key = driver.team || "Mercedes";
-        if (!acc[key]) acc[key] = { name: key, points: 0 };
-        acc[key].points += Number(driver.points || 0);
-        return acc;
-      }, {})
-    ).sort((a, b) => b.points - a.points);
-    return grouped[0] || { name: "Mercedes", points: 135 };
-  }, [driverList]);
-
-  return (
-    <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-      <StatCard icon={Users} label="Drivers" value={driverList.length || 22} delay={0.05} loading={loading} accent="blue" />
-      <StatCard icon={Flag} label="Completed Races" value={completedRaces.length || 3} accentClass="text-[var(--color-accent-green)]" delay={0.1} loading={loading} accent="green" />
-      <StatCard icon={Trophy} label="Top Driver" value={topDriver.name} subValue={<span className="font-mono">{Math.round(topDriver.points || 0)} pts</span>} delay={0.15} loading={loading} accent="gold" />
-      <StatCard icon={Zap} label="Top Team" value={topTeam.name} subValue={<span className="font-mono">{Math.round(topTeam.points || 0)} pts</span>} delay={0.2} loading={loading} accent="purple" />
-    </section>
-  );
-};
-
 const ChartsSection = ({ drivers, races, loading }) => {
   const [chartsVisible, setChartsVisible] = useState(false);
-  
+
   useEffect(() => {
     const timer = setTimeout(() => setChartsVisible(true), 100);
     return () => clearTimeout(timer);
@@ -151,15 +82,15 @@ const ChartsSection = ({ drivers, races, loading }) => {
                   <span className={`font-display font-bold text-sm uppercase tracking-wide ${isTop ? 'text-[var(--color-accent-gold)]' : 'text-text-secondary'}`}>
                     {isTop ? 'P1' : `P${index + 1}`}
                   </span>
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: driver.teamColor || '#666' }} />
+                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: driver.teamColor || 'var(--color-data-neutral)' }} />
                   <div className="h-10 overflow-hidden rounded-lg bg-white/5">
                     <div
                       className="h-full rounded-lg transition-all duration-700 relative overflow-hidden"
                       style={{
                         width: `${widthPct}%`,
                         background: isTop
-                          ? "linear-gradient(90deg,#ffd700,#ffeb85)"
-                          : "linear-gradient(90deg,#e8002d,#ff4d6d)",
+                        ? "linear-gradient(90deg,var(--color-accent-gold),#ffeb85)"
+                            : "linear-gradient(90deg,var(--color-accent-500),#ff4d6d)",
                       }}
                     >
                       {isTop && (
@@ -195,105 +126,18 @@ const ChartsSection = ({ drivers, races, loading }) => {
         </div>
 
         {chartsVisible && !loading ? (
-          <ResponsiveContainer width="100%" height={280}>
-            <AreaChart data={progressData}>
-              <defs>
-                <linearGradient id="raceProgressFill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="rgba(232,0,45,0.3)" />
-                  <stop offset="100%" stopColor="rgba(232,0,45,0)" />
-                </linearGradient>
-              </defs>
-              <CartesianGrid stroke="rgba(255,255,255,0.08)" strokeDasharray="3 3" />
-              <XAxis dataKey="round" stroke="rgba(255,255,255,0.6)" tick={{ fontFamily: 'DM Mono, monospace', fontSize: 12 }} />
-              <YAxis hide allowDecimals={false} domain={[0, raceList.length]} />
-              <Tooltip
-                contentStyle={{
-                  background: 'rgba(17, 19, 30, 0.9)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 12,
-                  backdropFilter: 'blur(12px)',
-                }}
-                formatter={(value) => [`${value} completed races`, "Progress"]}
-              />
-              <Area type="monotone" dataKey="progress" stroke="#e8002d" strokeWidth={3} fill="url(#raceProgressFill)" dot={({ cx, cy, payload }) => (
-                <circle
-                  cx={cx}
-                  cy={cy}
-                  r={payload.status === "COMPLETED" ? 6 : 4}
-                  fill={payload.status === "COMPLETED" ? "#e8002d" : "var(--color-bg-card)"}
-                  stroke={payload.status === "COMPLETED" ? "#e8002d" : "rgba(255,255,255,0.4)"}
-                  strokeWidth={2}
-                />
-              )} />
-              {progressData.filter(r => r.status === "COMPLETED").length > 0 && (
-                <Area type="monotone" dataKey="progress" stroke="#e8002d" strokeWidth={3} fill="url(#raceProgressFill)" />
-              )}
-            </AreaChart>
-          </ResponsiveContainer>
+          <StandingsChart
+            data={progressData}
+            dataKey="progress"
+            xKey="round"
+            color="var(--color-accent-500)"
+            gradientId="raceProgressGradient"
+          />
         ) : (
           <SkeletonLoader height="300px" />
         )}
       </Card>
     </section>
-  );
-};
-
-const UpcomingRacesSection = ({ races, loading }) => {
-  const [ref, inView] = useInView({ threshold: 0.1 });
-  const raceList = (races || []).slice().sort((a, b) => (a.round ?? 999) - (b.round ?? 999));
-  const upcomingRaces = raceList.filter((race) => race.status !== "COMPLETED");
-
-  return (
-    <div ref={ref}>
-      {inView ? (
-        <Card delay={0.35}>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-display font-semibold text-xl uppercase tracking-wider text-whitePrimary">Upcoming Races</h2>
-            <p className="section-label">Next 6</p>
-          </div>
-
-          {loading ? (
-            <div className="space-y-2">
-              {[...Array(4)].map((_, i) => (
-                <SkeletonLoader key={i} height="60px" />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {upcomingRaces.slice(0, 6).map((race, idx) => {
-                const isNext = idx === 0;
-                return (
-                  <div
-                    key={race.raceId}
-                    className="rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-[var(--color-bg-elevated)] px-4 py-3 relative overflow-hidden"
-                    style={{
-                      borderLeftColor: isNext ? 'var(--color-accent-gold)' : 'var(--color-border-default)',
-                      borderLeftWidth: isNext ? 3 : 1,
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <span className="font-mono text-lg text-text-muted">{String(race.round).padStart(2, '0')}</span>
-                        <div>
-                          <p className="font-mono text-sm font-semibold text-whitePrimary">
-                            R{race.round} · {race.raceName}
-                            {isNext && <span className="ml-2 text-[10px] uppercase tracking-wider text-[var(--color-accent-gold)] font-bold">NEXT RACE</span>}
-                          </p>
-                          <p className="text-xs text-text-secondary">{race.circuitName} · {race.location}, {race.country}</p>
-                        </div>
-                      </div>
-                      <p className="font-mono text-xs text-text-muted">{race.date ? new Date(race.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }).toUpperCase() : ''}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Card>
-      ) : (
-        <SkeletonLoader height="400px" />
-      )}
-    </div>
   );
 };
 
@@ -319,20 +163,24 @@ const Dashboard = () => {
   }, []);
 
   if (error && !drivers && !races) {
-    return (
-      <ErrorState
-        message={error}
-        onRetry={() => window.location.reload()}
-      />
-    );
+    return <ErrorState message={error} onRetry={() => window.location.reload()} />;
   }
+
+  const driverList = drivers || [];
+  const raceList = (races || []).slice().sort((a, b) => (a.round ?? 999) - (b.round ?? 999));
+  const completedRaces = raceList.filter((race) => race.status === "COMPLETED");
 
   return (
     <div className="space-y-6">
       <HeroSection />
-      <StatCardsSection drivers={drivers} races={races} loading={loading} />
+      <StatCardsRow
+        driversCount={driverList.length || 22}
+        totalRaces={raceList.length}
+        completedRaces={completedRaces.length || 0}
+        modelAccuracy={85}
+      />
       <ChartsSection drivers={drivers} races={races} loading={loading} />
-      <UpcomingRacesSection races={races} loading={loading} />
+      <NextRaceWidget races={races || []} />
     </div>
   );
 };

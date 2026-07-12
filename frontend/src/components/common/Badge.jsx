@@ -1,24 +1,29 @@
-export const Badge = ({ children, variant = "default", size = "md" }) => {
+export const Badge = ({ children, variant = "default", size = "sm" }) => {
   const variants = {
-    default: "bg-[var(--color-bg-hover)] text-text-secondary",
-    success: "bg-[var(--color-accent-green)]/20 text-[var(--color-accent-green)]",
-    warning: "bg-[var(--color-accent-gold)]/20 text-[var(--color-accent-gold)]",
-    danger: "bg-[var(--color-accent-red)]/20 text-[var(--color-accent-red)]",
-    info: "bg-[var(--color-accent-blue)]/20 text-[var(--color-accent-blue)]",
+    default: "bg-[var(--color-base-600)] text-[var(--color-text-secondary)]",
+    success: "bg-[var(--color-data-success)]/20 text-[var(--color-data-success)]",
+    warning: "bg-[var(--color-data-warning)]/20 text-[var(--color-data-warning)]",
+    danger: "bg-[var(--color-data-danger)]/20 text-[var(--color-data-danger)]",
+    info: "bg-[var(--color-data-primary)]/20 text-[var(--color-data-primary)]",
+    completed: "bg-[var(--color-data-success)]/20 text-[var(--color-data-success)]",
+    scheduled: "bg-[var(--color-base-600)] text-[var(--color-text-secondary)]",
+    p1: "bg-[var(--color-data-warning)]/20 text-[var(--color-data-warning)]",
+    p2: "bg-[var(--color-text-secondary)]/20 text-[var(--color-text-secondary)]",
+    p3: "bg-[var(--color-data-danger)]/20 text-[var(--color-data-danger)]",
   };
 
   const sizes = {
     sm: "px-2 py-0.5 text-[11px]",
-    md: "px-3 py-1 text-sm",
-    lg: "px-4 py-2 text-base",
+    md: "px-3 py-1 text-xs",
   };
 
   return (
     <span
       className={`
-        ${variants[variant]}
+        ${variants[variant] || variants.default}
         ${sizes[size]}
-        font-semibold rounded-full inline-block tracking-wide
+        inline-block rounded-[var(--radius-sm)]
+        font-medium uppercase tracking-wide
       `}
     >
       {children}

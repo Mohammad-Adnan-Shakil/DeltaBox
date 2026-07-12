@@ -3,93 +3,85 @@ package com.deltabox.backend.ai.dto;
 import java.util.List;
 import java.util.Map;
 
-/**
- * ✅ Production-Ready Prediction Response DTO
- * 
- * Contains:
- * - predictedPosition: Finishing position (1-20)
- * - confidence: Confidence level (0.0 - 1.0, where 1.0 = 100%)
- * - confidenceLabel: "low", "medium", or "high"
- * - predictedRange: e.g., "P1–P3", "P5–P10"
- * - trend: "IMPROVING", "DECLINING", or "STABLE"
- * - insights: List of insight strings
- * - topFeatures: List of feature importance maps
- */
 public class PredictionResponseDTO {
 
     private double predictedPosition;
-    
-    // ✅ FIXED: Changed from String to double for proper calculation
-    // Now frontend can correctly calculate: confidence * 100 = percentage
     private double confidence;
-    
     private String confidenceLabel;
+    private double rfPrediction;
+    private double xgbPrediction;
+    private boolean modelAgreement;
     private String predictedRange;
     private String trend;
+    private String finalInsight;
     private List<String> insights;
     private List<Map<String, Object>> topFeatures;
+    private List<Map<String, Object>> probabilityDistribution;
+    private List<String> uncertaintyFactors;
+    private Map<String, Double> performanceBreakdown;
+    private Map<String, Double> appliedWeights;
+    private Map<String, Object> divergence;
+    private String confidenceReason;
+    private String simulationImpact;
 
     public PredictionResponseDTO() {}
-    
+
     public PredictionResponseDTO(double predictedPosition, double confidence) {
         this.predictedPosition = predictedPosition;
         this.confidence = confidence;
     }
 
-    public double getPredictedPosition() {
-        return predictedPosition;
-    }
+    public double getPredictedPosition() { return predictedPosition; }
+    public void setPredictedPosition(double predictedPosition) { this.predictedPosition = predictedPosition; }
 
-    public void setPredictedPosition(double predictedPosition) {
-        this.predictedPosition = predictedPosition;
-    }
+    public double getConfidence() { return confidence; }
+    public void setConfidence(double confidence) { this.confidence = confidence; }
 
-    // ✅ FIXED: Now returns double instead of String
-    public double getConfidence() {
-        return confidence;
-    }
+    public String getConfidenceLabel() { return confidenceLabel; }
+    public void setConfidenceLabel(String confidenceLabel) { this.confidenceLabel = confidenceLabel; }
 
-    public void setConfidence(double confidence) {
-        this.confidence = confidence;
-    }
+    public double getRfPrediction() { return rfPrediction; }
+    public void setRfPrediction(double rfPrediction) { this.rfPrediction = rfPrediction; }
 
-    public String getConfidenceLabel() {
-        return confidenceLabel;
-    }
+    public double getXgbPrediction() { return xgbPrediction; }
+    public void setXgbPrediction(double xgbPrediction) { this.xgbPrediction = xgbPrediction; }
 
-    public void setConfidenceLabel(String confidenceLabel) {
-        this.confidenceLabel = confidenceLabel;
-    }
+    public boolean isModelAgreement() { return modelAgreement; }
+    public void setModelAgreement(boolean modelAgreement) { this.modelAgreement = modelAgreement; }
 
-    public String getPredictedRange() {
-        return predictedRange;
-    }
+    public String getPredictedRange() { return predictedRange; }
+    public void setPredictedRange(String predictedRange) { this.predictedRange = predictedRange; }
 
-    public void setPredictedRange(String predictedRange) {
-        this.predictedRange = predictedRange;
-    }
+    public String getTrend() { return trend; }
+    public void setTrend(String trend) { this.trend = trend; }
 
-    public String getTrend() {
-        return trend;
-    }
+    public String getFinalInsight() { return finalInsight; }
+    public void setFinalInsight(String finalInsight) { this.finalInsight = finalInsight; }
 
-    public void setTrend(String trend) {
-        this.trend = trend;
-    }
+    public List<String> getInsights() { return insights; }
+    public void setInsights(List<String> insights) { this.insights = insights; }
 
-    public List<String> getInsights() {
-        return insights;
-    }
+    public List<Map<String, Object>> getTopFeatures() { return topFeatures; }
+    public void setTopFeatures(List<Map<String, Object>> topFeatures) { this.topFeatures = topFeatures; }
 
-    public void setInsights(List<String> insights) {
-        this.insights = insights;
-    }
+    public List<Map<String, Object>> getProbabilityDistribution() { return probabilityDistribution; }
+    public void setProbabilityDistribution(List<Map<String, Object>> probabilityDistribution) { this.probabilityDistribution = probabilityDistribution; }
 
-    public List<Map<String, Object>> getTopFeatures() {
-        return topFeatures;
-    }
+    public List<String> getUncertaintyFactors() { return uncertaintyFactors; }
+    public void setUncertaintyFactors(List<String> uncertaintyFactors) { this.uncertaintyFactors = uncertaintyFactors; }
 
-    public void setTopFeatures(List<Map<String, Object>> topFeatures) {
-        this.topFeatures = topFeatures;
-    }
+    public Map<String, Double> getPerformanceBreakdown() { return performanceBreakdown; }
+    public void setPerformanceBreakdown(Map<String, Double> performanceBreakdown) { this.performanceBreakdown = performanceBreakdown; }
+
+    public Map<String, Double> getAppliedWeights() { return appliedWeights; }
+    public void setAppliedWeights(Map<String, Double> appliedWeights) { this.appliedWeights = appliedWeights; }
+
+    public Map<String, Object> getDivergence() { return divergence; }
+    public void setDivergence(Map<String, Object> divergence) { this.divergence = divergence; }
+
+    public String getConfidenceReason() { return confidenceReason; }
+    public void setConfidenceReason(String confidenceReason) { this.confidenceReason = confidenceReason; }
+
+    public String getSimulationImpact() { return simulationImpact; }
+    public void setSimulationImpact(String simulationImpact) { this.simulationImpact = simulationImpact; }
 }

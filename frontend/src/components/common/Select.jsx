@@ -1,14 +1,14 @@
-﻿export const Input = ({
+import { ChevronDown } from "lucide-react";
+
+export const Select = ({
   label,
-  type = "text",
-  placeholder = "",
   value,
   onChange,
-  error = "",
+  options = [],
+  placeholder = "Select...",
   disabled = false,
+  error = "",
   className = "",
-  icon = null,
-  ...props
 }) => {
   return (
     <div className="w-full">
@@ -18,31 +18,34 @@
         </label>
       )}
       <div className="relative">
-        {icon ? (
-          <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-tertiary)]">
-            {icon}
-          </div>
-        ) : null}
-        <input
-          type={type}
+        <select
           value={value}
           onChange={onChange}
-          placeholder={placeholder}
           disabled={disabled}
           className={`
             w-full h-11 rounded-[var(--radius-md)]
             bg-[var(--color-base-700)] border
-            px-4 py-3 text-sm text-[var(--color-text-primary)]
-            placeholder:text-[var(--color-text-tertiary)]
+            appearance-none cursor-pointer
+            px-4 py-3 pr-10 text-sm text-[var(--color-text-primary)]
             outline-none transition-all duration-150 ease-out
             focus:border-[var(--color-accent-500)] focus:ring-[3px] focus:ring-[var(--color-accent-500)]/15
             disabled:opacity-50 disabled:cursor-not-allowed
-            ${icon ? "pl-10" : ""}
             ${error ? "border-[var(--color-data-danger)]" : "border-[var(--color-base-500)]"}
             ${className}
           `}
-          {...props}
-        />
+        >
+          {placeholder && (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          )}
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+        <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--color-text-tertiary)]" />
       </div>
       {error && (
         <p className="mt-1 text-xs text-[var(--color-data-danger)]">{error}</p>
@@ -51,4 +54,4 @@
   );
 };
 
-export default Input;
+export default Select;

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import api from "../services/api";
-import { Radio, Send, Mic, Zap } from "lucide-react";
+import { Radio, Send, Mic } from "lucide-react";
 
 const RaceEngineerPage = () => {
   const [raceContext, setRaceContext] = useState({
@@ -82,7 +82,6 @@ const RaceEngineerPage = () => {
         ]);
       }
     } catch (err) {
-      console.error("❌ Engineer error:", err);
       const errorMsg = err.response?.data?.error || err.message || "Failed to get engineer advice";
       setError(errorMsg);
       setConversation(prev => [
@@ -215,7 +214,7 @@ const RaceEngineerPage = () => {
                   {[...Array(20)].map((_, i) => (
                     <div key={i} className="flex-1 rounded-t-sm" style={{
                       height: `${Math.random() * 60 + 20}%`,
-                      background: `linear-gradient(to top, ${i < 6 ? '#00D4A0' : i < 13 ? '#FFD700' : '#E8002D'}, transparent)`,
+                      background: `linear-gradient(to top, ${i < 6 ? 'var(--color-data-success)' : i < 13 ? 'var(--color-data-warning)' : 'var(--color-data-danger)'}, transparent)`,
                       opacity: 0.3 + Math.random() * 0.3,
                     }} />
                   ))}

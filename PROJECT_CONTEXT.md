@@ -47,14 +47,14 @@ A production-grade, AI-powered Formula 1 intelligence platform that predicts rac
 - **Gotcha**: Flyway is disabled in production — seed scripts were run manually during Neon migration
 
 ## Where I Left Off
-- Last thing: Added explanatory comment for Flyway disabled in production (b9bac48)
-- Next: Continue expanding test coverage (especially AI controllers)
+- Last thing: Retrained v2 ML models on 1,951 real F1 races (1950-2026). RF MAE 2.19 / R² 0.66, XGB MAE 2.24 / R² 0.64. Confidence now uses inter-model agreement instead of variance heuristic. Fixed `team: null` bug in Driver API response. Verified local frontend + backend + 14/14 tests passing. (ad2a7db)
+- Next: Full frontend UI rebuild approved — see ## Frontend Rebuild below
 - Known: Old `backend/ml/` directory still has the deprecated FastAPI version of the ML service (the active one is now `ml-service/`)
 
 ## Git & Deployment
 - Remote: `https://github.com/Mohammad-Adnan-Shakil/deltabox.git`
 - Branch: main
-- Last commit: "docs: add explanatory comment for Flyway disabled in production"
+- Last commit: "fix: resolve team null in driver response and verify local environment"
 
 ## Context for AI Assistants
 - ML is a decoupled HTTP microservice (Flask), NOT a subprocess. This was a deliberate refactor from the old ProcessBuilder approach — the `PythonExecutor` class was removed in commit 3df0ecc
@@ -66,3 +66,51 @@ A production-grade, AI-powered Formula 1 intelligence platform that predicts rac
 - The `db/` directory contains SQL seed scripts that were run manually; the Flyway migrations serve as documentation
 - Project was recently renamed from `com.f1pulse.backend` to `com.deltabox.backend` (commit d3828d0)
 - 33 markdown docs in `documentation/` — useful for understanding historical decisions
+
+## Frontend Rebuild
+
+### Decision
+Full frontend UI rebuild approved. Not a patch — a complete visual overhaul while keeping all existing React component logic, API integrations, and routing intact. The goal is to transform the UI from a basic dashboard into a premium, portfolio-quality interface.
+
+### Design Direction
+- Primary design language: Linear/Vercel dark aesthetic (obsidian backgrounds, sharp typography, data-forward layouts)
+- Supporting style: Glassmorphism for cards and panels only — not the whole UI
+- Primary emotion: Confidence
+- Secondary emotion: Speed
+- Animation level: 3 (Interactive) — purposeful motion, not decoration
+- Color: Near-black base, F1 red accent, white for data, subtle grid lines
+- Typography: Inter or Geist, tight letter-spacing on headings, tabular numbers for all statistics
+- Reference feel: "Mercedes AMG telemetry dashboard" — not generic SaaS
+
+### What to keep
+- All React component logic
+- All API service calls and axios config
+- All routing (React Router, protected routes, auth flow)
+- All existing Framer Motion instances (upgrade, don't replace)
+- All Recharts integrations (restyle, don't rebuild)
+
+### What to rebuild
+- Every page's visual layout
+- Color system (new dark theme replacing current)
+- Typography scale
+- Card designs
+- Background treatments
+- Navigation/sidebar styling
+- Loading states and skeletons
+- Empty states
+- All Tailwind classes (full replacement)
+
+### Stack constraints
+- React 19, Vite 8, Tailwind CSS 3.4.3
+- Framer Motion 12.38 already installed — use it
+- Recharts 3.8 already installed — restyle, don't replace
+- No new heavy dependencies without a clear reason
+- Keep bundle size in check — current build is 15.47s, don't regress significantly
+
+### Master prompt
+A 3-stage frontend master prompt has been written covering:
+Stage 1A: Product discovery and design intelligence
+Stage 1B: Frontend architecture and blueprint
+Stage 2: Implementation and iterative development
+Stage 3: Production readiness audit
+The IDE should follow this sequence without skipping stages.

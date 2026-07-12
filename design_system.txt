@@ -1,0 +1,406 @@
+
+DELTABOX DESIGN SYSTEM
+Version 1.0
+Project: DeltaBox — AI-Powered F1 Intelligence Platform
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DESIGN PHILOSOPHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DeltaBox should feel like opening a real F1 team's telemetry 
+dashboard — not a student project, not a generic SaaS tool.
+
+Every design decision must reinforce two emotions:
+  Primary:   Confidence
+  Secondary: Speed
+
+Reference products for visual quality bar:
+  Linear, Vercel, Apple, Stripe
+
+Reference aesthetic:
+  Mercedes AMG F1 telemetry dashboard
+  Dark, precise, data-forward, purposeful
+
+If a design decision does not reinforce confidence or speed,
+reject it.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COLOR SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Base (backgrounds — layered dark system)
+  --color-base-950:  #0a0a0f   (deepest background, page base)
+  --color-base-900:  #0f0f17   (primary surface)
+  --color-base-800:  #16161f   (elevated surface, cards)
+  --color-base-700:  #1e1e2a   (raised surface, modals)
+  --color-base-600:  #252535   (borders, dividers)
+  --color-base-500:  #32324a   (subtle borders)
+
+Accent (F1 red — use sparingly, high impact moments only)
+  --color-accent-600:  #cc1e1e   (dark accent)
+  --color-accent-500:  #e31e1e   (primary accent)
+  --color-accent-400:  #ff2d2d   (hover state)
+  --color-accent-300:  #ff6b6b   (soft accent, backgrounds)
+  --color-accent-glow: rgba(227, 30, 30, 0.15)  (glow effect)
+
+Data colors (for charts, stats, ML outputs)
+  --color-data-primary:   #3b82f6   (blue — RF model)
+  --color-data-secondary: #f59e0b   (amber — XGB model)
+  --color-data-success:   #10b981   (green — high confidence)
+  --color-data-warning:   #f59e0b   (amber — medium confidence)
+  --color-data-danger:    #ef4444   (red — low confidence)
+  --color-data-neutral:   #6b7280   (gray — neutral data)
+
+Text
+  --color-text-primary:   #f8f8ff   (primary content)
+  --color-text-secondary: #a0a0b8   (secondary content)
+  --color-text-tertiary:  #606078   (placeholder, disabled)
+  --color-text-accent:    #e31e1e   (accent text)
+  --color-text-data:      #e2e8f0   (numbers, stats)
+
+Glass (for glassmorphism cards and panels)
+  --color-glass-bg:      rgba(255, 255, 255, 0.03)
+  --color-glass-border:  rgba(255, 255, 255, 0.08)
+  --color-glass-hover:   rgba(255, 255, 255, 0.06)
+  --color-glass-glow:    rgba(227, 30, 30, 0.08)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TYPOGRAPHY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Font Family
+  Primary:  'Inter', system-ui, sans-serif
+  Mono:     'JetBrains Mono', 'Fira Code', monospace
+            (use for: lap times, position numbers, 
+             model outputs, confidence scores, 
+             any numerical data)
+
+Font Scale
+  --text-xs:   0.75rem  / 12px   line-height: 1rem
+  --text-sm:   0.875rem / 14px   line-height: 1.25rem
+  --text-base: 1rem     / 16px   line-height: 1.5rem
+  --text-lg:   1.125rem / 18px   line-height: 1.75rem
+  --text-xl:   1.25rem  / 20px   line-height: 1.75rem
+  --text-2xl:  1.5rem   / 24px   line-height: 2rem
+  --text-3xl:  1.875rem / 30px   line-height: 2.25rem
+  --text-4xl:  2.25rem  / 36px   line-height: 2.5rem
+  --text-5xl:  3rem     / 48px   line-height: 1.1
+  --text-6xl:  3.75rem  / 60px   line-height: 1.05
+
+Font Weight
+  --font-normal:   400
+  --font-medium:   500
+  --font-semibold: 600
+  --font-bold:     700
+  --font-black:    900   (hero headings only)
+
+Letter Spacing
+  --tracking-tighter: -0.05em   (large headings)
+  --tracking-tight:   -0.025em  (subheadings)
+  --tracking-normal:   0em      (body)
+  --tracking-wide:     0.05em   (labels, badges, caps)
+  --tracking-widest:   0.1em    (section labels, eyebrows)
+
+Rules
+  All statistics and numerical data use monospace font
+  All headings use tight or tighter tracking
+  Section labels use wide tracking + uppercase
+  Body text uses normal tracking
+  Never use font-black below text-3xl
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SPACING SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Base unit: 4px
+
+  --space-1:   4px
+  --space-2:   8px
+  --space-3:   12px
+  --space-4:   16px
+  --space-5:   20px
+  --space-6:   24px
+  --space-8:   32px
+  --space-10:  40px
+  --space-12:  48px
+  --space-16:  64px
+  --space-20:  80px
+  --space-24:  96px
+  --space-32:  128px
+
+Card internal padding:     24px (space-6)
+Section padding vertical:  80px (space-20)
+Page horizontal padding:   24px mobile, 48px tablet, 64px desktop
+Component gap:             16px (space-4)
+Grid gap:                  24px (space-6)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BORDER RADIUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  --radius-sm:   4px    (badges, tags, small elements)
+  --radius-md:   8px    (buttons, inputs)
+  --radius-lg:   12px   (cards, panels)
+  --radius-xl:   16px   (large cards, modals)
+  --radius-2xl:  24px   (hero elements, feature cards)
+  --radius-full: 9999px (pills, avatars, circular elements)
+
+Rule: Be consistent. Never mix radius sizes within the same 
+component family. Cards are always radius-lg. Buttons are 
+always radius-md. Never use border-radius-none on interactive 
+elements.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ELEVATION & SHADOWS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  --shadow-sm:     0 1px 2px rgba(0,0,0,0.4)
+  --shadow-md:     0 4px 6px rgba(0,0,0,0.4), 
+                   0 1px 3px rgba(0,0,0,0.3)
+  --shadow-lg:     0 10px 15px rgba(0,0,0,0.5), 
+                   0 4px 6px rgba(0,0,0,0.3)
+  --shadow-xl:     0 20px 25px rgba(0,0,0,0.6), 
+                   0 8px 10px rgba(0,0,0,0.4)
+  --shadow-glow:   0 0 20px rgba(227, 30, 30, 0.3)
+  --shadow-glow-sm: 0 0 10px rgba(227, 30, 30, 0.2)
+  --shadow-data:   0 0 15px rgba(59, 130, 246, 0.2)
+
+Use glow shadows only on:
+  Active prediction results
+  High confidence outputs
+  Primary CTA buttons
+  Accent elements on hover
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+GLASSMORPHISM SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Glass is a supporting style — not the primary style.
+Use glass for cards and panels only.
+Never use glass for page backgrounds or navigation.
+
+Standard glass card:
+  background:   var(--color-glass-bg)
+  border:       1px solid var(--color-glass-border)
+  backdrop-filter: blur(12px)
+  border-radius: var(--radius-lg)
+
+Hover glass card:
+  background:   var(--color-glass-hover)
+  border-color: rgba(255, 255, 255, 0.12)
+  box-shadow:   var(--shadow-lg)
+
+Accent glass card (prediction results, key outputs):
+  background:   var(--color-glass-bg)
+  border:       1px solid rgba(227, 30, 30, 0.2)
+  box-shadow:   var(--shadow-glow-sm)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ANIMATION SYSTEM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Animation Level: 3 — Interactive
+
+Philosophy:
+  Animation must serve a purpose.
+  Never animate for decoration alone.
+  Every animation must do at least one of:
+    - Communicate state change
+    - Guide user attention  
+    - Improve perceived performance
+    - Provide feedback
+    - Reinforce speed/confidence emotion
+
+Durations
+  --duration-instant:  100ms   (immediate feedback)
+  --duration-fast:     150ms   (hover states)
+  --duration-normal:   250ms   (state changes)
+  --duration-slow:     350ms   (page elements entering)
+  --duration-slower:   500ms   (complex transitions)
+  --duration-cinematic: 800ms  (hero, dramatic reveals)
+
+Easing
+  --ease-default:  cubic-bezier(0.4, 0, 0.2, 1)
+  --ease-in:       cubic-bezier(0.4, 0, 1, 1)
+  --ease-out:      cubic-bezier(0, 0, 0.2, 1)
+  --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1)
+  --ease-sharp:    cubic-bezier(0.4, 0, 0.6, 1)
+
+Approved animations
+  Page transitions:     fade + slight Y translate (20px → 0)
+  Cards entering:       fade + Y translate, staggered 50ms
+  Hover on cards:       translateY(-2px), shadow increase
+  Hover on buttons:     brightness increase + glow
+  Prediction result:    scale in from 0.95, fade, duration-slow
+  Confidence ring:      stroke-dashoffset animation, duration-cinematic
+  Data numbers:         count up animation on enter
+  Skeleton loading:     shimmer left to right
+  Route change:         fade out 150ms, fade in 250ms
+
+Forbidden animations
+  Constant floating/bobbing elements
+  Particle systems as background
+  Rotation on data elements
+  Animations longer than 800ms on UI chrome
+  Animations that block interaction
+  More than 3 simultaneous animations on screen
+
+Reduced motion:
+  Always respect prefers-reduced-motion
+  Fallback: instant state change, no transition
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMPONENT RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Buttons
+  Primary:    accent background, white text, radius-md
+              hover: brightness(1.1) + glow shadow
+              active: scale(0.98)
+  Secondary:  glass background, white text, glass border
+              hover: glass-hover background
+  Ghost:      transparent, white text, no border
+              hover: glass background appears
+  Danger:     same as primary but --color-data-danger
+  All buttons: min-height 40px, horizontal padding 16px
+  Icon buttons: 40x40px minimum touch target
+
+Cards
+  Default:    glass card styles
+  Stat card:  accent glass card for key ML outputs
+  Race card:  standard glass, red left border on COMPLETED
+  Driver card: glass + hover lift (translateY -2px)
+  All cards:  radius-lg, shadow-md, 24px padding
+
+Inputs
+  Background:   --color-base-700
+  Border:       1px solid --color-base-500
+  Focus border: 1px solid --color-accent-500
+  Border radius: radius-md
+  Text:         --color-text-primary
+  Placeholder:  --color-text-tertiary
+  Height:       44px minimum
+
+Badges / Tags
+  Radius:   radius-sm (4px)
+  Padding:  4px 8px
+  Font:     text-xs, tracking-wide, uppercase, font-medium
+  P1 badge: gold background
+  P2 badge: silver background  
+  P3 badge: bronze background
+  COMPLETED: green subtle background
+  SCHEDULED: base-600 background
+
+Navigation / Sidebar
+  Background:   --color-base-900
+  Border-right: 1px solid --color-base-600
+  Active item:  accent left border + glass background
+  Hover item:   glass background
+  Icons:        20px, consistent style throughout
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BACKGROUND TREATMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Page base:
+  background: --color-base-950
+  
+Subtle grid (optional, very low opacity):
+  SVG grid pattern at 3-5% opacity
+  Color: white
+  Cell size: 32px
+
+Aurora accent (hero/dashboard only, not every page):
+  Two radial gradients, very subtle
+  --color-accent-glow at 20-30% opacity maximum
+  --color-data-primary (blue) at 10% opacity
+  Position: top-right and bottom-left corners
+  Never center the aurora — keep it peripheral
+
+Noise texture (optional):
+  Very subtle noise overlay at 2-3% opacity
+  Adds depth without visual noise
+
+Rule: Backgrounds should recede, not compete with content.
+If the background is distracting, reduce opacity by 50%.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DATA VISUALIZATION RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+All charts use Recharts (already installed — do not replace)
+
+Chart colors follow data color system:
+  RF Model data:    --color-data-primary (blue)
+  XGB Model data:   --color-data-secondary (amber)
+  Blended output:   --color-accent-500 (red)
+  Positive trend:   --color-data-success (green)
+  Negative trend:   --color-data-danger (red)
+
+Chart backgrounds:  transparent (inherits card background)
+Chart grid lines:   --color-base-600 at 50% opacity
+Chart text:         --color-text-secondary
+Chart tooltips:     glass card style
+
+Confidence ring (prediction output):
+  SVG circle, stroke animation
+  High (>70%):    --color-data-success stroke
+  Medium (40-70%): --color-data-warning stroke  
+  Low (<40%):     --color-data-danger stroke
+  Track color:    --color-base-600
+  Stroke width:   6px
+  Size:           120px diameter
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LAYOUT RULES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Sidebar width:        240px desktop, hidden on mobile
+Main content:         fluid, max-width 1400px
+Content padding:      24px mobile, 32px tablet, 48px desktop
+
+Grid systems:
+  Stats row:          4 columns desktop, 2 tablet, 1 mobile
+  Cards grid:         3 columns desktop, 2 tablet, 1 mobile
+  Bento dashboard:    CSS grid with named areas
+  Prediction layout:  2 column (form left, result right) 
+                      desktop, stacked mobile
+
+Hierarchy rule:
+  One primary action per screen
+  Maximum two secondary actions visible at once
+  Everything else is tertiary or hidden in overflow
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT THIS SYSTEM FORBIDS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Never use:
+  White or light backgrounds anywhere
+  Generic blue as primary accent (blue is data-only)
+  Rounded corners above radius-2xl on cards
+  More than 3 font weights on one screen
+  Animations longer than 800ms on UI chrome
+  Particle systems as primary background effect
+  Neumorphism (too subtle for dark backgrounds)
+  Gradients on body text
+  More than 2 accent colors visible simultaneously
+  Comic Sans (obviously)
+  Box shadows on text
+  Borders thicker than 1px on cards
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+QUALITY BAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before shipping any screen ask:
+
+Would this feel at home on Linear.app?
+Would a senior designer at Stripe approve this?
+Does this feel like F1 — fast, precise, premium?
+Does every element have a reason to exist?
+Is the data the hero, not the decoration?
+
+If the answer to any question is NO — improve it.
+
+---

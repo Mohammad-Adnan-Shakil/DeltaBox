@@ -8,9 +8,6 @@ import api from "./utils/axios.js";
 // Auth Context
 import { AuthProvider } from "./context/AuthContext.jsx";
 
-// Google OAuth
-import { GoogleOAuthProvider } from "@react-oauth/google";
-
 // CRITICAL: Preload dashboard API data before components mount
 // This ensures data is partially/fully loaded by the time Dashboard renders
 // Uses configured API instance with JWT token interceptor
@@ -44,12 +41,10 @@ import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || "YOUR_GOOGLE_CLIENT_ID"}>
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-    </GoogleOAuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );

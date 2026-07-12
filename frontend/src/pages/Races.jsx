@@ -1,7 +1,7 @@
 ﻿import { useMemo, useState } from "react";
 import { CalendarClock, Search } from "lucide-react";
 import { EmptyState, ErrorState, LoadingState } from "../components/common";
-import { RaceCard } from "../components/races";
+import { RaceCardFilterBar, RaceCardGrid } from "../components/races";
 import useFetch from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
 
@@ -26,7 +26,7 @@ const Races = () => {
       );
     });
     if (filter === "completed") return filteredRaces.filter(r => r.status === "COMPLETED");
-    if (filter === "upcoming") return filteredRaces.filter(r => r.status !== "COMPLETED");
+    if (filter === "scheduled") return filteredRaces.filter(r => r.status !== "COMPLETED");
     return filteredRaces;
   }, [races, search, filter]);
 
@@ -56,41 +56,21 @@ const Races = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search race, circuit or location"
+                aria-label="Search race, circuit or location"
                 className="surface-input pl-10"
               />
             </div>
           </div>
         </div>
-        {/* Filter chips */}
-        <div className="flex gap-2 mt-4">
-          {["all", "completed", "upcoming"].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-all uppercase tracking-wider ${
-                filter === f
-                  ? 'bg-accentRed text-white'
-                  : 'bg-[var(--color-bg-hover)] text-text-secondary hover:text-whitePrimary'
-              }`}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="mt-4">
+          <RaceCardFilterBar value={filter} onChange={setFilter} />
         </div>
       </section>
 
       {filtered.length === 0 ? (
         <EmptyState title="No matching races" description="Try different keywords or clear filters." />
       ) : (
-        <section className="space-y-3">
-          {filtered.map((race, index) => (
-            <RaceCard
-              key={race.raceId || `${race.round}-${index}`}
-              race={race}
-              index={index}
-            />
-          ))}
-        </section>
+        <RaceCardGrid races={filtered} filter="all" />
       )}
     </div>
   );

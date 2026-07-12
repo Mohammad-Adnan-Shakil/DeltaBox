@@ -1,9 +1,8 @@
-import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Calendar, MapPin, Clock, Flag } from "lucide-react";
 import { Card, EmptyState, ErrorState, LoadingState } from "../components/common";
-import RacePodium from "../components/RacePodium";
+import { PodiumDisplay, CountdownTimer, ResultsTable } from "../components/races";
 import useFetch from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
 import { formatRaceDate } from "../utils/formatters";
@@ -96,6 +95,11 @@ const RaceDetails = () => {
                 <div className="mt-2 text-xs text-text-muted">
                   Round {race.round} of 2026 Season
                 </div>
+                {!isCompleted && (
+                  <div className="mt-4">
+                    <CountdownTimer targetDate={race.date} />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -109,7 +113,17 @@ const RaceDetails = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <RacePodium results={podiumResults} delay={0.3} />
+          <PodiumDisplay results={podiumResults} />
+        </motion.div>
+      )}
+
+      {isCompleted && results && results.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <ResultsTable results={results} />
         </motion.div>
       )}
 

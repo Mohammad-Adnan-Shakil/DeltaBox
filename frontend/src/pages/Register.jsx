@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/axios";
 import { Eye, EyeOff } from "lucide-react";
-import { GoogleLogin } from "@react-oauth/google";
+import { Button } from "../components/common";
+
 
 const Register = () => {
   useEffect(() => {
@@ -57,23 +58,6 @@ const Register = () => {
     }
   };
 
-  const handleGoogleLogin = async (credentialResponse) => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const res = await api.post("/auth/google", {
-        idToken: credentialResponse.credential,
-      });
-      login(res.data);
-      navigate("/dashboard");
-    } catch (err) {
-      setError(err.response?.data?.message || "Google authentication failed");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const getPasswordStrength = (pw) => {
     if (!pw) return 0;
     let score = 0;
@@ -100,16 +84,16 @@ const Register = () => {
               <h1 className="text-[80px] font-black text-accentRed" style={{ textShadow: "0 0 40px rgba(232, 0, 45, 0.5)" }}>
                 Delta
               </h1>
-              <h1 className="text-[80px] font-black text-whitePrimary" style={{ textShadow: "0 0 40px rgba(255, 255, 255, 0.3)" }}>
+              <h1 className="text-[80px] font-black text-[var(--color-text-primary)]" style={{ textShadow: "0 0 40px rgba(255, 255, 255, 0.3)" }}>
                 Box
               </h1>
             </div>
 
-            <p className="mt-6 text-xl font-medium text-whitePrimary">AI-Powered F1 Intelligence</p>
+            <p className="mt-6 text-xl font-medium text-[var(--color-text-primary)]">AI-Powered F1 Intelligence</p>
 
             <div className="mt-10 flex flex-wrap gap-3 justify-center">
               {["Race Prediction", "Performance Insights", "What-if Simulation"].map((feat) => (
-                <div key={feat} className="px-5 py-2.5 rounded-full border border-accentRed/50 bg-accentRed/15 text-whitePrimary text-xs font-semibold shadow-[0_0_20px_rgba(232,0,45,0.3)]">
+                <div key={feat} className="px-5 py-2.5 rounded-full border border-accentRed/50 bg-accentRed/15 text-[var(--color-text-primary)] text-xs font-semibold shadow-[0_0_20px_rgba(232,0,45,0.3)]">
                   {feat}
                 </div>
               ))}
@@ -139,7 +123,7 @@ const Register = () => {
               <h1 className="text-5xl font-black text-accentRed" style={{ textShadow: "0 0 40px rgba(232, 0, 45, 0.5)" }}>
                 Delta
               </h1>
-              <h1 className="text-5xl font-black text-whitePrimary" style={{ textShadow: "0 0 40px rgba(255, 255, 255, 0.3)" }}>
+              <h1 className="text-5xl font-black text-[var(--color-text-primary)]" style={{ textShadow: "0 0 40px rgba(255, 255, 255, 0.3)" }}>
                 Box
               </h1>
             </div>
@@ -149,7 +133,7 @@ const Register = () => {
                 New Member
               </p>
 
-              <h2 className="mt-2 text-3xl font-bold text-whitePrimary">
+              <h2 className="mt-2 text-3xl font-bold text-[var(--color-text-primary)]">
                 Create Account
               </h2>
 
@@ -191,7 +175,7 @@ const Register = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-whitePrimary transition"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-[var(--color-text-primary)] transition"
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -229,7 +213,7 @@ const Register = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-whitePrimary transition"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-[var(--color-text-primary)] transition"
                   >
                     {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
@@ -243,43 +227,16 @@ const Register = () => {
                   <p className="mt-3 text-center text-sm text-[var(--color-accent-green)]">{success}</p>
                 )}
 
-                <button
+                <Button
                   type="submit"
                   disabled={loading}
-                  className="mt-6 w-full py-3.5 bg-accentRed text-white font-bold rounded-[var(--radius-md)] transition-all duration-200 disabled:opacity-75 disabled:cursor-not-allowed active:scale-[0.97] hover:shadow-[0_0_20px_rgba(232,0,45,0.3)] uppercase tracking-wider"
+                  loading={loading}
+                  size="lg"
+                  className="mt-6 w-full uppercase tracking-wider"
                 >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      CREATING...
-                    </span>
-                  ) : (
-                    "Create Account"
-                  )}
-                </button>
+                  {loading ? "CREATING..." : "Create Account"}
+                </Button>
               </form>
-
-              <div className="relative mt-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[var(--color-border-default)]"></div>
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-[var(--color-bg-card)] text-text-muted">or continue with</span>
-                </div>
-              </div>
-
-              <div className="mt-4 flex justify-center">
-                <GoogleLogin
-                  onSuccess={handleGoogleLogin}
-                  onError={() => setError("Google login failed")}
-                  useOneTap
-                  theme="filled_black"
-                  text="signup_with"
-                  shape="rectangular"
-                  width="100%"
-                  disabled={loading}
-                />
-              </div>
 
               <p className="text-center text-text-muted text-sm mt-6">
                 Already have an account?{" "}

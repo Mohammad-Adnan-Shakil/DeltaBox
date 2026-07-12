@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import RaceEngineerPage from './RaceEngineerPage';
@@ -11,6 +11,10 @@ vi.mock('../services/api', () => ({
 }));
 
 describe('RaceEngineerPage', () => {
+  beforeEach(() => {
+    Element.prototype.scrollIntoView = vi.fn();
+  });
+
   it('should render race engineer page title', () => {
     render(
       <BrowserRouter>
@@ -28,17 +32,17 @@ describe('RaceEngineerPage', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByPlaceholderText(/Lap/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Position/i)).toBeInTheDocument();
+    expect(screen.getByText("Lap")).toBeInTheDocument();
+    expect(screen.getByText("Position")).toBeInTheDocument();
   });
 
-  it('should have Send button', () => {
+  it('should have Transmit button', () => {
     render(
       <BrowserRouter>
         <RaceEngineerPage />
       </BrowserRouter>
     );
 
-    expect(screen.getByText(/Send/i)).toBeInTheDocument();
+    expect(screen.getByText(/Transmit/i)).toBeInTheDocument();
   });
 });

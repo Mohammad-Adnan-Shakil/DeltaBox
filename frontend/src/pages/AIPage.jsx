@@ -1,48 +1,14 @@
 ﻿import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Brain, Cpu, Lightbulb, LoaderCircle, Trophy, TrendingDown, TrendingUp, ChevronDown, ChevronUp
+  Brain, Cpu, Lightbulb, LoaderCircle, TrendingDown, TrendingUp, ChevronDown, ChevronUp
 } from "lucide-react";
 import { Card, Button, LoadingState, ErrorState, EmptyState } from "../components/common";
 import { useFetch, usePost } from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
-import { confidenceToPercent, formatImpact, impactIcon, roundAverage, roundPosition, teamColor } from "../utils/formatters";
+import { confidenceToPercent, formatImpact, impactIcon, roundPosition, teamColor } from "../utils/formatters";
+import { ConfidenceRing } from "../components/ai";
 import PredictionDistributionChart from "../components/PredictionDistributionChart";
-
-const ConfidenceRing = ({ percent }) => {
-  const radius = 46;
-  const circumference = 2 * Math.PI * radius;
-  const dash = (percent / 100) * circumference;
-
-  return (
-    <div className="relative h-28 w-28">
-      <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-        <circle cx="60" cy="60" r={radius} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="10" />
-        <motion.circle
-          cx="60"
-          cy="60"
-          r={radius}
-          fill="none"
-          stroke="#e8002d"
-          strokeWidth="10"
-          strokeLinecap="round"
-          strokeDasharray={`${dash} ${circumference - dash}`}
-          initial={{ strokeDasharray: `0 ${circumference}` }}
-          animate={{ strokeDasharray: `${dash} ${circumference - dash}` }}
-          transition={{ duration: 1, ease: "easeOut" }}
-        />
-      </svg>
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center text-xl font-semibold text-whitePrimary"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-      >
-        {percent}%
-      </motion.div>
-    </div>
-  );
-};
 
 const resultColorByPosition = (pos) => {
   if (pos <= 3) return "text-[var(--color-accent-gold)]";
@@ -78,7 +44,7 @@ const EmptyPredictionState = () => (
     >
       <svg width="96" height="96" viewBox="0 0 96 96" fill="none" className="mb-4 opacity-70">
         <circle cx="48" cy="48" r="44" stroke="rgba(255,255,255,0.14)" strokeWidth="2" />
-        <path d="M26 55C26 41 36 31 50 31C60 31 68 37 72 46" stroke="#e8002d" strokeWidth="4" strokeLinecap="round" />
+        <path d="M26 55C26 41 36 31 50 31C60 31 68 37 72 46" stroke="var(--color-accent-500)" strokeWidth="4" strokeLinecap="round" />
         <path d="M24 56H74V65C65 68 31 68 24 65V56Z" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2" />
         <path d="M48 65V75M42 70H54" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeLinecap="round" />
       </svg>
@@ -95,11 +61,11 @@ const AIPage = () => {
 
   const { data: drivers, loading: driversLoading, error: driversError, refetch: refetchDrivers } = useFetch("/drivers");
   const { data: races, loading: racesLoading, error: racesError, refetch: refetchRaces } = useFetch("/races");
-  const { execute: runPrediction, loading: predictionLoading } = usePost("/ai/intelligence");
+  const { execute: runPrediction, loading: predictionLoading } = usePost("/ai/predict");
 
   const [selectedDriver, setSelectedDriver] = useState("");
   const [selectedRace, setSelectedRace] = useState("");
-  const [simulatedPosition, setSimulatedPosition] = useState(10);
+  const [gridPosition, setGridPosition] = useState(10);
   const [result, setResult] = useState(null);
   const [actionError, setActionError] = useState("");
   const [insightsOpen, setInsightsOpen] = useState(false);
@@ -135,9 +101,10 @@ const AIPage = () => {
       const response = await runPrediction({
         driverId: Number(selectedDriver),
         raceId: Number(selectedRace),
-        simulatedPosition,
+        gridPosition,
       });
       setResult(response);
+      setActionError("");
     } catch (err) {
       setActionError(err.message || "Prediction failed");
     }
@@ -145,7 +112,7 @@ const AIPage = () => {
 
   const handleCompare = async (pos) => {
     if (!selectedDriver || !selectedRace) return;
-    setSimulatedPosition(pos);
+    setGridPosition(pos);
     await handlePrediction();
   };
 
@@ -167,24 +134,24 @@ const AIPage = () => {
     return <EmptyState title="No prediction inputs available" description="Driver or race data is empty." />;
   }
 
-  const predictedRange = result?.prediction?.predictedRange || "P5–P10";
-  const confidencePercent = confidenceToPercent(result?.prediction?.confidence);
-  const roundedAvgFinish = roundPosition(result?.insights?.averageFinish);
-  const consistencyPercent = confidenceToPercent(result?.insights?.consistencyScore);
+  const predictedRange = result?.predictedRange || "P5–P10";
+  const confidencePercent = confidenceToPercent(result?.confidence);
+  const roundedAvgFinish = roundPosition(Number(result?.performanceBreakdown?.weighted) || result?.predictedPosition || 10);
+  const consistencyPercent = confidenceToPercent(result?.confidence);
 
-  const trend = String(result?.prediction?.trend || result?.insights?.trend || "STABLE").toUpperCase();
+  const trend = String(result?.trend || "STABLE").toUpperCase();
   const trendImproving = trend === "IMPROVING";
   const trendDeclining = trend === "DECLINING";
 
-  const simOld = roundAverage(result?.simulation?.oldAverage);
-  const simNew = roundAverage(result?.simulation?.newAverage);
-  const simImpact = result?.simulation?.impact;
+  const simOld = result?.performanceBreakdown?.career || result?.predictedPosition || 10;
+  const simNew = result?.predictedPosition || simOld;
+  const simImpact = result?.simulationImpact;
   const verdict = verdictForPosition(Number(roundedAvgFinish || 20));
 
-  const sliderPercent = ((simulatedPosition - 1) / 19) * 100;
+  const sliderPercent = ((gridPosition - 1) / 19) * 100;
 
   const getSafeMostLikely = () => {
-    const distribution = result?.prediction?.probabilityDistribution;
+    const distribution = result?.probabilityDistribution;
     if (!distribution || distribution.length === 0) {
       const [min, max] = predictedRange.replace("P", "").split("–").map(Number);
       return Math.round((min + max) / 2);
@@ -274,16 +241,16 @@ const AIPage = () => {
             <div>
               <div className="mb-3 flex items-center justify-between">
                 <label className="section-label">Grid Position</label>
-                <span className="text-xs text-text-muted font-mono">P{simulatedPosition}</span>
+                <span className="text-xs text-text-muted font-mono">P{gridPosition}</span>
               </div>
-              <div className="relative flex gap-1">
+              <div className="grid grid-cols-5 gap-1 sm:grid-cols-10 md:grid-cols-5 lg:grid-cols-10">
                 {[...Array(20)].map((_, i) => (
                   <button
                     key={i}
                     type="button"
-                    onClick={() => setSimulatedPosition(i + 1)}
-                    className={`h-8 flex-1 text-[10px] font-mono font-bold rounded-[var(--radius-sm)] transition-all ${
-                      i + 1 === simulatedPosition
+                    onClick={() => setGridPosition(i + 1)}
+                    className={`h-8 text-[10px] font-mono font-bold rounded-[var(--radius-sm)] transition-all ${
+                      i + 1 === gridPosition
                         ? 'bg-accentRed text-white shadow-[0_0_8px_rgba(232,0,45,0.4)] scale-110'
                         : 'bg-[var(--color-bg-hover)] text-text-muted hover:bg-white/10'
                     }`}
@@ -294,7 +261,7 @@ const AIPage = () => {
               </div>
             </div>
 
-            {actionError ? <p className="text-sm text-accentRed">{actionError}</p> : null}
+            {actionError && !result ? <p className="text-sm text-accentRed">{actionError}</p> : null}
 
             <Button
               onClick={handlePrediction}
@@ -322,7 +289,7 @@ const AIPage = () => {
                       type="button"
                       onClick={() => handleCompare(pos)}
                       className={`flex-1 py-2 text-xs font-mono font-bold rounded-[var(--radius-sm)] transition-all ${
-                        simulatedPosition === pos
+                        gridPosition === pos
                           ? 'bg-accentRed/20 text-accentRed border border-accentRed/40'
                           : 'bg-[var(--color-bg-hover)] text-text-muted border border-[var(--color-border-default)] hover:bg-white/10'
                       }`}
@@ -356,7 +323,7 @@ const AIPage = () => {
               <Card delay={0.1} className="border-accentRed/40 bg-accentRed/10">
                 <p className="text-sm text-whitePrimary leading-relaxed">
                   Based on {selectedDriverData?.name || "this driver's"} recent form and starting from{" "}
-                  <span className="font-mono font-semibold">P{simulatedPosition}</span>
+                  <span className="font-mono font-semibold">P{gridPosition}</span>
                   {selectedRaceData?.raceName ? ` at ${selectedRaceData.raceName}` : ""}, our models estimate a likely finish in the{" "}
                   <span className="font-mono font-semibold">{predictedRange}</span> range with{" "}
                   <span className="font-semibold">{confidencePercent}% confidence</span>.{" "}
@@ -397,7 +364,7 @@ const AIPage = () => {
                   </motion.span>
                 </div>
                 <div className="text-center">
-                  <ConfidenceRing percent={confidencePercent} />
+                  <ConfidenceRing percentage={confidencePercent} size={112} strokeWidth={10} />
                   <p className="mt-2 text-xs text-text-muted uppercase tracking-[0.2em]">
                     {confidenceLabel(confidencePercent)}
                   </p>
@@ -408,44 +375,52 @@ const AIPage = () => {
               </Card>
 
               {/* Model Comparison */}
-              {result?.prediction?.modelPredictions && (
+              {(result?.rfPrediction || result?.xgbPrediction) && (
                 <Card delay={0.13}>
                   <p className="section-label">Model Comparison</p>
                   <div className="mt-3 space-y-2">
-                    {Object.entries(result.prediction.modelPredictions).map(([model, pred]) => (
-                      <div key={model} className="flex items-center gap-3">
-                        <span className="font-mono text-xs font-bold text-text-secondary w-20">{model}</span>
+                    {[
+                      { name: "RF Model", value: result.rfPrediction },
+                      { name: "XGB Model", value: result.xgbPrediction }
+                    ].map(({ name, value }) => value ? (
+                      <div key={name} className="flex items-center gap-3">
+                        <span className="font-mono text-xs font-bold text-text-secondary w-24">{name}</span>
                         <div className="flex-1 h-6 rounded-md bg-white/5 overflow-hidden">
                           <motion.div
                             className="h-full rounded-md flex items-center px-2"
-                            style={{ background: `linear-gradient(90deg, #e8002d, #ff4d6d)`, width: `${Math.min(100, (Number(pred) / 20) * 100)}%` }}
+                            style={{ background: `linear-gradient(90deg, var(--color-accent-500), #ff4d6d)`, width: `${Math.min(100, (Number(value) / 20) * 100)}%` }}
                             initial={{ width: 0 }}
-                            animate={{ width: `${Math.min(100, (Number(pred) / 20) * 100)}%` }}
+                            animate={{ width: `${Math.min(100, (Number(value) / 20) * 100)}%` }}
                             transition={{ duration: 0.8, delay: 0.2 }}
                           >
-                            <span className="text-xs font-mono font-bold text-white">P{pred}</span>
+                            <span className="text-xs font-mono font-bold text-white">P{Math.round(value)}</span>
                           </motion.div>
                         </div>
                       </div>
-                    ))}
+                    ) : null)}
+                    {result?.modelAgreement !== undefined && (
+                      <p className="text-xs text-text-muted mt-2">
+                        Models {result.modelAgreement ? "agree" : "disagree"} on this prediction
+                      </p>
+                    )}
                   </div>
                 </Card>
               )}
 
               {/* Distribution Chart */}
-              {result?.prediction?.probabilityDistribution && result.prediction.probabilityDistribution.length > 0 && (
-                <PredictionDistributionChart data={result.prediction.probabilityDistribution} />
+              {result?.probabilityDistribution && result.probabilityDistribution.length > 0 && (
+                <PredictionDistributionChart data={result.probabilityDistribution} />
               )}
 
               {/* Low confidence warning */}
-              {confidencePercent < 30 && result?.prediction?.uncertaintyFactors && result.prediction.uncertaintyFactors.length > 0 && (
+              {confidencePercent < 30 && result?.uncertaintyFactors && result.uncertaintyFactors.length > 0 && (
                 <Card delay={0.14} className="border-accentRed/30 bg-accentRed/5">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 text-lg">⚠️</div>
                     <div className="flex-1">
                       <p className="section-label mb-2 text-accentRed">Why Low Confidence?</p>
                       <p className="text-sm text-text-secondary">
-                        {result?.prediction?.confidenceReason || "Prediction uncertainty due to performance variability"}
+                        {result?.confidenceReason || "Prediction uncertainty due to performance variability"}
                       </p>
                     </div>
                   </div>
@@ -484,16 +459,16 @@ const AIPage = () => {
               </div>
 
               {/* Performance Breakdown */}
-              {result?.prediction?.performanceBreakdown && (
+              {result?.performanceBreakdown && (
                 <Card delay={0.26}>
                   <p className="section-label">Performance Breakdown</p>
                   <p className="text-xs text-text-muted mb-4">Prediction dynamically adjusts weighting between long-term skill, current season form, and recent race performance based on driver trend and consistency</p>
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                     {[
-                      { label: "Career Form", value: result.prediction.performanceBreakdown.career, className: "bg-[var(--color-bg-elevated)] border-[var(--color-border-default)]" },
-                      { label: "Season Form", value: result.prediction.performanceBreakdown.season, className: "bg-[var(--color-bg-elevated)] border-[var(--color-border-default)]" },
-                      { label: "Recent Form", value: result.prediction.performanceBreakdown.recent, className: "bg-[var(--color-bg-elevated)] border-[var(--color-border-default)]" },
-                      { label: "Weighted Avg", value: result.prediction.performanceBreakdown.weighted, className: "border-accentRed/30 bg-accentRed/10" },
+                      { label: "Career Form", value: result.performanceBreakdown.career, className: "bg-[var(--color-bg-elevated)] border-[var(--color-border-default)]" },
+                      { label: "Season Form", value: result.performanceBreakdown.season, className: "bg-[var(--color-bg-elevated)] border-[var(--color-border-default)]" },
+                      { label: "Recent Form", value: result.performanceBreakdown.recent, className: "bg-[var(--color-bg-elevated)] border-[var(--color-border-default)]" },
+                      { label: "Weighted Avg", value: result.performanceBreakdown.weighted, className: "border-accentRed/30 bg-accentRed/10" },
                     ].map((item) => (
                       <div key={item.label} className={`rounded-[var(--radius-md)] border p-3 ${item.className}`}>
                         <p className="text-xs text-text-muted">{item.label}</p>
@@ -501,11 +476,11 @@ const AIPage = () => {
                       </div>
                     ))}
                   </div>
-                  {result?.prediction?.appliedWeights && (
+                  {result?.appliedWeights && (
                     <div className="mt-4 rounded-[var(--radius-md)] border border-[var(--color-border-default)] bg-black/30 p-3">
                       <p className="text-xs text-text-muted mb-2">Weights Applied:</p>
                       <div className="flex flex-wrap gap-3">
-                        {Object.entries(result.prediction.appliedWeights).map(([key, val]) => (
+                        {Object.entries(result.appliedWeights).map(([key, val]) => (
                           <span key={key} className="text-sm">
                             <span className="text-text-muted">{key.charAt(0).toUpperCase() + key.slice(1)}:</span>{" "}
                             <span className="font-mono font-semibold text-[var(--color-accent-gold)]">{(val * 100).toFixed(0)}%</span>
@@ -518,14 +493,14 @@ const AIPage = () => {
               )}
 
               {/* Insights */}
-              {result?.prediction?.insights && result.prediction.insights.length > 0 && (
+              {result?.insights && result.insights.length > 0 && (
                 <Card delay={0.27} className="border-[var(--color-accent-gold)]/30 bg-[var(--color-accent-gold)]/5">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 text-lg">🧠</div>
                     <div className="flex-1">
                       <p className="section-label mb-2 text-[var(--color-accent-gold)]">Model Insights</p>
                       <ul className="space-y-1">
-                        {result.prediction.insights.map((insight, idx) => (
+                        {result.insights.map((insight, idx) => (
                           <li key={idx} className="text-sm text-whitePrimary">• {insight}</li>
                         ))}
                       </ul>
@@ -535,16 +510,16 @@ const AIPage = () => {
               )}
 
               {/* Divergence */}
-              {result?.prediction?.divergence && result.prediction.divergence.diff > 2 && (
+              {result?.divergence && result.divergence.diff > 2 && (
                 <Card delay={0.275} className="border-accentRed/30 bg-accentRed/5">
                   <div className="flex items-start gap-3">
                     <div className="flex-shrink-0 text-lg">⚠️</div>
                     <div className="flex-1">
                       <p className="section-label mb-2 text-accentRed">Performance Divergence</p>
                       <p className="text-sm text-text-secondary">
-                        Career: P{result.prediction.performanceBreakdown?.career?.toFixed(1) || "N/A"} vs Recent: P{result.prediction.performanceBreakdown?.recent?.toFixed(1) || "N/A"}
+                        Career: P{result.performanceBreakdown?.career?.toFixed(1) || "N/A"} vs Recent: P{result.performanceBreakdown?.recent?.toFixed(1) || "N/A"}
                       </p>
-                      <p className="mt-1 text-xs text-accentRed">{result.prediction.divergence.message}</p>
+                      <p className="mt-1 text-xs text-accentRed">{result.divergence.message}</p>
                     </div>
                   </div>
                 </Card>
@@ -567,7 +542,7 @@ const AIPage = () => {
                   {impactIcon(simImpact)} {formatImpact(simImpact)}
                 </p>
                 <p className="mt-2 text-sm text-text-secondary">
-                  Starting from <span className="font-mono">P{simulatedPosition}</span> instead of the current average grid context is projected to{" "}
+                  Starting from <span className="font-mono">P{gridPosition}</span> instead of the current average grid context is projected to{" "}
                   {typeof simOld === "number" && typeof simNew === "number"
                     ? `${simNew > simOld ? "cost" : "improve"} about ${Math.abs((simNew - simOld)).toFixed(1)} positions on average finish`
                     : "have a measurable impact on average finish"}

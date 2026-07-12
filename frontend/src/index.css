@@ -4,29 +4,140 @@
 
 @layer base {
   :root {
-    --color-bg-base: #07080A;
-    --color-bg-elevated: #0D0E15;
-    --color-bg-card: #11131E;
-    --color-bg-hover: #1A1D2E;
-    --color-accent-red: #E8002D;
-    --color-accent-gold: #FFD700;
-    --color-accent-green: #00D4A0;
-    --color-accent-blue: #4F8CFF;
-    --color-accent-purple: #8B5CF6;
-    --color-text-primary: #FFFFFF;
-    --color-text-secondary: rgba(255,255,255,0.72);
-    --color-text-muted: rgba(255,255,255,0.48);
-    --color-border-default: rgba(255,255,255,0.08);
-    --color-border-hover: rgba(255,255,255,0.12);
-    --ease-exaggerate: cubic-bezier(0.16, 1, 0.3, 1);
-    --radius-sm: 6px;
-    --radius-md: 10px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
-    --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
-    --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
-    --shadow-lg: 0 8px 24px rgba(0,0,0,0.5);
-    --shadow-xl: 0 16px 48px rgba(0,0,0,0.6);
+    /*
+     * DELTABOX DESIGN SYSTEM — v1.0
+     * Source of truth: design_system.txt
+     * Every value here is the single source of truth.
+     * Do not hardcode colors, spacing, or radius in components.
+     */
+
+    /* ── Base backgrounds (layered dark system) ── */
+    --color-base-950: #0a0a0f;
+    --color-base-900: #0f0f17;
+    --color-base-800: #16161f;
+    --color-base-700: #1e1e2a;
+    --color-base-600: #252535;
+    --color-base-500: #32324a;
+
+    /* ── Accent (F1 red — sparing use, high impact) ── */
+    --color-accent-600: #cc1e1e;
+    --color-accent-500: #e31e1e;
+    --color-accent-400: #ff2d2d;
+    --color-accent-300: #ff6b6b;
+    --color-accent-glow: rgba(227, 30, 30, 0.15);
+
+    /* ── Data colors (charts, stats, ML outputs) ── */
+    --color-data-primary: #3b82f6;
+    --color-data-secondary: #f59e0b;
+    --color-data-success: #10b981;
+    --color-data-warning: #f59e0b;
+    --color-data-danger: #ef4444;
+    --color-data-neutral: #6b7280;
+
+    /* ── Text colors ── */
+    --color-text-primary: #f8f8ff;
+    --color-text-secondary: #a0a0b8;
+    --color-text-tertiary: #606078;
+    --color-text-accent: #e31e1e;
+    --color-text-data: #e2e8f0;
+
+    /* ── Glass (supporting style for cards/panels) ── */
+    --color-glass-bg: rgba(255, 255, 255, 0.03);
+    --color-glass-border: rgba(255, 255, 255, 0.08);
+    --color-glass-hover: rgba(255, 255, 255, 0.06);
+    --color-glass-glow: rgba(227, 30, 30, 0.08);
+
+    /* ── Typography ── */
+    --font-primary: 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+    --text-xs: 0.75rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --text-3xl: 1.875rem;
+    --text-4xl: 2.25rem;
+    --text-5xl: 3rem;
+    --text-6xl: 3.75rem;
+
+    --font-normal: 400;
+    --font-medium: 500;
+    --font-semibold: 600;
+    --font-bold: 700;
+    --font-black: 900;
+
+    --tracking-tighter: -0.05em;
+    --tracking-tight: -0.025em;
+    --tracking-normal: 0em;
+    --tracking-wide: 0.05em;
+    --tracking-widest: 0.1em;
+
+    /* ── Spacing (base unit: 4px) ── */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+    --space-20: 80px;
+    --space-24: 96px;
+    --space-32: 128px;
+
+    /* ── Border radius ── */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 24px;
+    --radius-full: 9999px;
+
+    /* ── Elevation & shadows ── */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5), 0 4px 6px rgba(0, 0, 0, 0.3);
+    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.6), 0 8px 10px rgba(0, 0, 0, 0.4);
+    --shadow-glow: 0 0 20px rgba(227, 30, 30, 0.3);
+    --shadow-glow-sm: 0 0 10px rgba(227, 30, 30, 0.2);
+    --shadow-data: 0 0 15px rgba(59, 130, 246, 0.2);
+
+    /* ── Animation durations ── */
+    --duration-instant: 100ms;
+    --duration-fast: 150ms;
+    --duration-normal: 250ms;
+    --duration-slow: 350ms;
+    --duration-slower: 500ms;
+    --duration-cinematic: 800ms;
+
+    /* ── Animation easings ── */
+    --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-sharp: cubic-bezier(0.4, 0, 0.6, 1);
+
+    /*
+     * ── Legacy compatibility aliases ──
+     * Deprecated: will be removed as components are migrated.
+     * Map old tokens to new design_system values.
+     */
+    --color-bg-base: var(--color-base-950);
+    --color-bg-elevated: var(--color-base-900);
+    --color-bg-card: var(--color-base-800);
+    --color-bg-hover: var(--color-base-700);
+    --color-accent-red: var(--color-accent-500);
+    --color-accent-gold: #ffd700;
+    --color-accent-green: #00d4a0;
+    --color-accent-blue: var(--color-data-primary);
+    --color-text-muted: var(--color-text-secondary);
+    --color-border-default: var(--color-glass-border);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --ease-exaggerate: var(--ease-spring);
   }
 
   html {
@@ -34,11 +145,15 @@
   }
 
   body {
-    @apply font-sans bg-[var(--color-bg-base)] text-whitePrimary antialiased;
+    font-family: var(--font-primary);
+    background-color: var(--color-base-950);
+    color: var(--color-text-primary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
     background-image:
-      radial-gradient(circle at 10% 0%, rgba(232, 0, 45, 0.12), transparent 35%),
-      radial-gradient(circle at 90% 20%, rgba(255, 255, 255, 0.04), transparent 35%);
+      radial-gradient(circle at 10% 0%, rgba(227, 30, 30, 0.08), transparent 35%),
+      radial-gradient(circle at 90% 20%, rgba(255, 255, 255, 0.03), transparent 35%);
   }
 
   * {
@@ -46,7 +161,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-sans;
+    font-family: var(--font-primary);
   }
 
   ::-webkit-scrollbar {
@@ -56,26 +171,26 @@
 
   ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.16);
-    border-radius: 9999px;
+    border-radius: var(--radius-full);
   }
 
   ::-webkit-scrollbar-track {
-    background: var(--color-bg-base);
+    background: var(--color-base-950);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent-red);
+    outline: 2px solid var(--color-accent-500);
     outline-offset: 2px;
     border-radius: var(--radius-sm);
   }
 
   ::selection {
-    background: rgba(232, 0, 45, 0.3);
+    background: rgba(227, 30, 30, 0.3);
     color: white;
   }
 
   img {
-    @apply transition-opacity duration-300;
+    transition: opacity var(--duration-normal) ease;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -90,68 +205,55 @@
 
 @layer components {
   .section-label {
-    @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-whiteMuted;
+    font-size: 11px;
+    font-weight: var(--font-semibold);
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-text-secondary);
   }
 
   .hero-number {
-    @apply text-[48px] md:text-[64px] lg:text-[72px] font-bold leading-none;
-    letter-spacing: -0.04em;
+    font-size: 48px;
+    font-weight: var(--font-bold);
+    line-height: 1;
+    letter-spacing: var(--tracking-tighter);
   }
 
-  .f1-card {
-    background: var(--color-bg-card);
-    border: 1px solid var(--color-border-default);
-    border-radius: var(--radius-lg);
-    padding: 24px;
-    transition: all 0.2s ease;
-    box-shadow: var(--shadow-sm);
+  @media (min-width: 768px) {
+    .hero-number {
+      font-size: 64px;
+    }
   }
 
-  .f1-card:hover {
-    border-color: rgba(232, 0, 45, 0.3);
-    box-shadow: 0 0 0 1px rgba(232, 0, 45, 0.25), var(--shadow-md);
+  @media (min-width: 1024px) {
+    .hero-number {
+      font-size: 72px;
+    }
   }
 
   .surface-input {
-    @apply w-full border bg-[var(--color-bg-elevated)] px-4 py-3 text-sm text-whitePrimary placeholder:text-whiteMuted outline-none transition;
+    width: 100%;
+    border: 1px solid var(--color-glass-border);
+    background: var(--color-base-700);
+    padding: 12px 16px;
+    font-size: var(--text-sm);
+    color: var(--color-text-primary);
+    outline: none;
+    transition: all var(--duration-fast) var(--ease-default);
     border-radius: var(--radius-md);
-    border-color: var(--color-border-default);
+  }
+
+  .surface-input::placeholder {
+    color: var(--color-text-tertiary);
   }
 
   .surface-input:focus {
-    border-color: rgba(232, 0, 45, 0.5);
-    box-shadow: 0 0 0 3px rgba(232, 0, 45, 0.15);
-  }
-}
-
-@layer utilities {
-  .glass {
-    background: rgba(17, 19, 30, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  .text-gradient-red {
-    background: linear-gradient(135deg, #E8002D, #FF4D6D);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .glow-red {
-    box-shadow: 0 0 24px rgba(232, 0, 45, 0.25);
+    border-color: var(--color-accent-500);
+    box-shadow: 0 0 0 3px rgba(227, 30, 30, 0.15);
   }
 
   .text-text-secondary {
     color: var(--color-text-secondary);
-  }
-
-  .text-text-muted {
-    color: var(--color-text-muted);
-  }
-
-  .bg-text-muted {
-    background-color: var(--color-text-muted);
   }
 }
 
@@ -159,4 +261,3 @@
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-

@@ -14,6 +14,7 @@ const normalizeApiBaseUrl = (rawUrl) => {
 
 const api = axios.create({
   baseURL: `${normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)}/api`,
+  timeout: 10000,
 });
 
 // REQUEST INTERCEPTOR: Add JWT token to every request

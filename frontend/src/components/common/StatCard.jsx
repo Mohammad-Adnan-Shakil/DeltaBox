@@ -1,26 +1,38 @@
-import Card from "./Card";
+import AnimatedCount from "./AnimatedCount";
+
+const colorMap = {
+  red: "text-[var(--color-text-accent)]",
+  blue: "text-[var(--color-data-primary)]",
+  green: "text-[var(--color-data-success)]",
+  yellow: "text-[var(--color-data-warning)]",
+};
 
 export const StatCard = ({ label, value, icon: Icon, trend = null, color = "red" }) => {
-  const colorClasses = {
-    red: "text-red-500",
-    blue: "text-blue-500",
-    green: "text-green-500",
-    yellow: "text-yellow-500",
-  };
+  const colorClass = colorMap[color] || colorMap.red;
 
   return (
-    <Card hover className="flex items-start justify-between">
-      <div>
-        <p className="text-gray-400 text-sm font-medium">{label}</p>
-        <p className={`text-4xl font-bold ${colorClasses[color]} mt-2`}>{value}</p>
-        {trend && (
-          <p className={`text-xs mt-2 ${trend > 0 ? "text-green-500" : "text-red-500"}`}>
-            {trend > 0 ? "↑" : "↓"} {Math.abs(trend)}% from last season
+    <div className="rounded-[var(--radius-lg)] p-[var(--space-6)] bg-[var(--color-glass-bg)] border border-[var(--color-accent-500)]/20 shadow-[var(--shadow-glow-sm)] transition-shadow duration-150 ease-out hover:shadow-lg">
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">
+            {label}
           </p>
+          <p className={`mt-2 text-4xl font-bold leading-none ${colorClass}`}>
+            <AnimatedCount value={value || 0} duration={500} />
+          </p>
+          {trend !== null && (
+            <p className={`mt-2 text-xs font-medium ${trend > 0 ? "text-[var(--color-data-success)]" : "text-[var(--color-data-danger)]"}`}>
+              {trend > 0 ? "\u2191" : "\u2193"} {Math.abs(trend)}% from last season
+            </p>
+          )}
+        </div>
+        {Icon && (
+          <div className={`shrink-0 opacity-50 ${colorClass}`}>
+            <Icon className="h-8 w-8" />
+          </div>
         )}
       </div>
-      {Icon && <Icon className={`text-3xl ${colorClasses[color]} opacity-50`} />}
-    </Card>
+    </div>
   );
 };
 

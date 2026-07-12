@@ -40,7 +40,6 @@ const Profile = () => {
       const profile = response.data?.data || response.data;
       setFavouriteDriverId(profile?.favoriteDriver || "");
     } catch (error) {
-      console.error("Failed to update favorite driver:", error);
     } finally {
       setIsUpdating(false);
     }

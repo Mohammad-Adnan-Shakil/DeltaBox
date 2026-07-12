@@ -74,6 +74,7 @@ const Drivers = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search drivers"
+                aria-label="Search drivers"
                 className="surface-input pl-10"
               />
             </div>

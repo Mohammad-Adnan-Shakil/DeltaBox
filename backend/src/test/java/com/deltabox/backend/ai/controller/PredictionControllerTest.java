@@ -3,7 +3,6 @@ package com.deltabox.backend.ai.controller;
 import com.deltabox.backend.ai.dto.PredictionRequestDTO;
 import com.deltabox.backend.ai.dto.PredictionResponseDTO;
 import com.deltabox.backend.ai.service.PredictionService;
-import com.deltabox.backend.dto.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,17 +44,20 @@ public class PredictionControllerTest {
     void predict_HappyPath_ValidInput_ReturnsPredictionResponse() throws Exception {
         // Arrange
         PredictionRequestDTO request = new PredictionRequestDTO();
+        request.setDriverId(1L);
+        request.setRaceId(1L);
         request.setGridPosition(5);
-        request.setDriverForm(8);
-        request.setTeamPerformance(7);
-        request.setTrackAffinity(6);
 
         PredictionResponseDTO mockResponse = new PredictionResponseDTO();
         mockResponse.setPredictedPosition(3);
         mockResponse.setConfidence(0.85);
         mockResponse.setConfidenceLabel("HIGH");
+        mockResponse.setRfPrediction(2.8);
+        mockResponse.setXgbPrediction(3.2);
+        mockResponse.setModelAgreement(true);
         mockResponse.setPredictedRange("P1-P5");
         mockResponse.setTrend("IMPROVING");
+        mockResponse.setFinalInsight("Strong performance expected");
         mockResponse.setInsights(List.of("Strong performance expected"));
         mockResponse.setTopFeatures(List.of(Map.of("feature", "grid_position", "importance", 0.9)));
 
@@ -72,6 +74,9 @@ public class PredictionControllerTest {
                 .andExpect(jsonPath("$.data.predictedPosition").value(3))
                 .andExpect(jsonPath("$.data.confidence").value(0.85))
                 .andExpect(jsonPath("$.data.confidenceLabel").value("HIGH"))
+                .andExpect(jsonPath("$.data.rfPrediction").value(2.8))
+                .andExpect(jsonPath("$.data.xgbPrediction").value(3.2))
+                .andExpect(jsonPath("$.data.modelAgreement").value(true))
                 .andExpect(jsonPath("$.data.predictedRange").value("P1-P5"))
                 .andExpect(jsonPath("$.data.trend").value("IMPROVING"))
                 .andExpect(jsonPath("$.data.insights").isArray())
@@ -79,13 +84,12 @@ public class PredictionControllerTest {
     }
 
     @Test
-    void predict_InvalidInput_MissingGridPosition_ReturnsBadRequest() throws Exception {
-        // Arrange - missing gridPosition (violates @NotNull)
+    void predict_InvalidInput_MissingDriverId_ReturnsBadRequest() throws Exception {
+        // Arrange - missing driverId (violates @NotNull)
         String invalidRequest = """
                 {
-                    "driverForm": 8,
-                    "teamPerformance": 7,
-                    "trackAffinity": 6
+                    "raceId": 1,
+                    "gridPosition": 5
                 }
                 """;
 
@@ -101,10 +105,9 @@ public class PredictionControllerTest {
         // Arrange - gridPosition exceeds max (20)
         String invalidRequest = """
                 {
-                    "gridPosition": 25,
-                    "driverForm": 8,
-                    "teamPerformance": 7,
-                    "trackAffinity": 6
+                    "driverId": 1,
+                    "raceId": 1,
+                    "gridPosition": 25
                 }
                 """;
 
@@ -119,16 +122,18 @@ public class PredictionControllerTest {
     void predict_ModelDisagreement_DivergingPredictions_ReturnsLowConfidence() throws Exception {
         // Arrange
         PredictionRequestDTO request = new PredictionRequestDTO();
+        request.setDriverId(1L);
+        request.setRaceId(1L);
         request.setGridPosition(10);
-        request.setDriverForm(5);
-        request.setTeamPerformance(5);
-        request.setTrackAffinity(5);
 
         // Mock response indicating model disagreement (low confidence)
         PredictionResponseDTO mockResponse = new PredictionResponseDTO();
         mockResponse.setPredictedPosition(8);
-        mockResponse.setConfidence(0.35); // Low confidence due to disagreement
+        mockResponse.setConfidence(0.35);
         mockResponse.setConfidenceLabel("LOW");
+        mockResponse.setRfPrediction(5.0);
+        mockResponse.setXgbPrediction(11.0);
+        mockResponse.setModelAgreement(false);
         mockResponse.setPredictedRange("P5-P12");
         mockResponse.setTrend("STABLE");
         mockResponse.setInsights(List.of("Models disagree on prediction", "High uncertainty"));
@@ -148,25 +153,28 @@ public class PredictionControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.confidence").value(0.35))
                 .andExpect(jsonPath("$.data.confidenceLabel").value("LOW"))
+                .andExpect(jsonPath("$.data.modelAgreement").value(false))
                 .andExpect(jsonPath("$.data.insights[0]").value("Models disagree on prediction"))
                 .andExpect(jsonPath("$.data.insights[1]").value("High uncertainty"));
     }
 
     @Test
     void predict_MissingFeatureData_InsufficientHistory_ReturnsGracefulDegradation() throws Exception {
-        // Arrange - driver with low form (simulating insufficient history)
+        // Arrange - driver with limited history
         PredictionRequestDTO request = new PredictionRequestDTO();
+        request.setDriverId(1L);
+        request.setRaceId(1L);
         request.setGridPosition(15);
-        request.setDriverForm(2); // Low form = insufficient history
-        request.setTeamPerformance(3);
-        request.setTrackAffinity(2);
 
-        // Mock response with graceful degradation (moderate confidence, conservative range)
+        // Mock response with graceful degradation
         PredictionResponseDTO mockResponse = new PredictionResponseDTO();
         mockResponse.setPredictedPosition(14);
-        mockResponse.setConfidence(0.55); // Moderate confidence due to limited data
+        mockResponse.setConfidence(0.55);
         mockResponse.setConfidenceLabel("MEDIUM");
-        mockResponse.setPredictedRange("P10-P18"); // Wider range due to uncertainty
+        mockResponse.setRfPrediction(13.5);
+        mockResponse.setXgbPrediction(14.5);
+        mockResponse.setModelAgreement(true);
+        mockResponse.setPredictedRange("P10-P18");
         mockResponse.setTrend("STABLE");
         mockResponse.setInsights(List.of("Limited historical data available", "Prediction based on grid position only"));
         mockResponse.setTopFeatures(List.of(Map.of("feature", "grid_position", "importance", 0.95)));

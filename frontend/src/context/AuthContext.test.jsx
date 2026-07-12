@@ -17,10 +17,10 @@ describe('AuthContext', () => {
     const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
     
     act(() => {
-      result.current.login('test-token', { username: 'testuser', role: 'USER' });
+      result.current.login({ token: 'test-token', username: 'testuser', role: 'USER' });
     });
 
-    expect(result.current.user).toEqual({ username: 'testuser', role: 'USER' });
+    expect(result.current.user).toEqual({ username: 'testuser', email: undefined, role: 'USER' });
     expect(result.current.isAuthenticated).toBe(true);
     expect(localStorage.getItem('token')).toBe('test-token');
   });
@@ -29,7 +29,7 @@ describe('AuthContext', () => {
     const { result } = renderHook(() => useAuth(), { wrapper: AuthProvider });
     
     act(() => {
-      result.current.login('test-token', { username: 'testuser', role: 'USER' });
+      result.current.login({ token: 'test-token', username: 'testuser', role: 'USER' });
     });
 
     act(() => {
