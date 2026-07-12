@@ -1,5 +1,6 @@
-C:\projects\DeltaBox\backend\src\test\java\com\f1pulse\backend\AuthIntegrationTest.java
-C:\projects\DeltaBox\backend\src\test\java\com\f1pulse\backend\BackendApplicationTests.java
-C:\projects\DeltaBox\backend\src\test\java\com\f1pulse\backend\service\HistoricalDataIngestionServiceTest.java
-C:\projects\DeltaBox\backend\src\test\java\com\f1pulse\backend\config\DatabaseUrlEnvironmentPostProcessorTest.java
-C:\projects\DeltaBox\backend\src\test\java\com\f1pulse\backend\service\AuthServiceTest.java
+C:\projects\DeltaBox\backend\src\test\java\com\deltabox\backend\AuthIntegrationTest.java
+C:\projects\DeltaBox\backend\src\test\java\com\deltabox\backend\service\HistoricalDataIngestionServiceTest.java
+C:\projects\DeltaBox\backend\src\test\java\com\deltabox\backend\service\AuthServiceTest.java
+C:\projects\DeltaBox\backend\src\test\java\com\deltabox\backend\BackendApplicationTests.java
+C:\projects\DeltaBox\backend\src\test\java\com\deltabox\backend\config\DatabaseUrlEnvironmentPostProcessorTest.java
+C:\projects\DeltaBox\backend\src\test\java\com\deltabox\backend\ai\controller\PredictionControllerTest.java

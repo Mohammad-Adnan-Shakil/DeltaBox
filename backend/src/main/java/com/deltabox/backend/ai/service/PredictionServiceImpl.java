@@ -48,6 +48,9 @@ public class PredictionServiceImpl implements PredictionService {
         payload.put("track_id", "unknown");
         payload.put("season_year", 2026);
         payload.put("driver_id", "0");
+        payload.put("recent_avg_position_last_5", 20.0 - (request.getDriverForm() * 1.5));
+        payload.put("recent_std_last_5", Math.max(0.2, (10.0 - request.getDriverForm()) / 3.5));
+        payload.put("is_home_race", false);
         
         // Call ML service
         var mlResponse = mlClientService.predict(payload);

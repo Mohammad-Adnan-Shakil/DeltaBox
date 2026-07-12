@@ -1,6 +1,7 @@
 package com.deltabox.backend.config;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import com.deltabox.backend.model.Race;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@Order(2)
 public class DatabaseInitializer implements CommandLineRunner {
 
     private final RaceRepository raceRepository;

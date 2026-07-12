@@ -15,6 +15,7 @@ dist-ssr
 # Environment variables
 .env
 .env.production
+backend/GROQ_API_KEY*
 
 # Editor directories and files
 .vscode/*

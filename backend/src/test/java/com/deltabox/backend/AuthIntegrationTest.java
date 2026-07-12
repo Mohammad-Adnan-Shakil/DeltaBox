@@ -1,5 +1,6 @@
 package com.deltabox.backend;
 
+import com.deltabox.backend.dto.AuthResponse;
 import com.deltabox.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,23 +35,26 @@ public class AuthIntegrationTest {
 
     @Test
     void registerLoginAndAccessProtectedEndpoint() {
-        AuthRequest authRequest = new AuthRequest("itest", "1234");
+        AuthRequest authRequest = new AuthRequest();
+        authRequest.setUsername("itest");
+        authRequest.setIdentifier("itest@example.com");
+        authRequest.setPassword("1234");
 
-        ResponseEntity<String> registerResponse = restTemplate.postForEntity(
-                "/api/auth/register", authRequest, String.class);
+        ResponseEntity<AuthResponse> registerResponse = restTemplate.postForEntity(
+                "/api/auth/register", authRequest, AuthResponse.class);
         assertThat(registerResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(registerResponse.getBody()).isEqualTo("User registered");
+        assertThat(registerResponse.getBody()).isNotNull();
 
-        ResponseEntity<String> loginResponse = restTemplate.postForEntity(
-                "/api/auth/login", authRequest, String.class);
+        ResponseEntity<AuthResponse> loginResponse = restTemplate.postForEntity(
+                "/api/auth/login", authRequest, AuthResponse.class);
         assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(loginResponse.getBody()).isNotNull();
-        assertThat(loginResponse.getBody()).contains(".");
+        assertThat(loginResponse.getBody().getToken()).isNotNull();
 
-        String token = loginResponse.getBody();
+        String token = loginResponse.getBody().getToken();
 
         ResponseEntity<String> unauthorizedResponse = restTemplate.getForEntity(
-                "/api/f1/drivers/db", String.class);
+                "/api/user/profile", String.class);
         assertThat(unauthorizedResponse.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
 
         HttpHeaders headers = new HttpHeaders();
@@ -58,12 +62,13 @@ public class AuthIntegrationTest {
         HttpEntity<Void> authorizedEntity = new HttpEntity<>(headers);
 
         ResponseEntity<String> protectedResponse = restTemplate.exchange(
-                "/api/f1/drivers/db", HttpMethod.GET, authorizedEntity, String.class);
+                "/api/user/profile", HttpMethod.GET, authorizedEntity, String.class);
         assertThat(protectedResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     private static class AuthRequest {
         private String username;
+        private String identifier;
         private String password;
 
         public AuthRequest() {
@@ -80,6 +85,14 @@ public class AuthIntegrationTest {
 
         public void setUsername(String username) {
             this.username = username;
+        }
+
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        public void setIdentifier(String identifier) {
+            this.identifier = identifier;
         }
 
         public String getPassword() {

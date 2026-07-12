@@ -75,7 +75,7 @@ public class AuthServiceTest {
         // Assert
         assertThat(response).isNotNull();
         assertThat(response.getToken()).isEqualTo("jwt.token");
-        assertThat(response.getUsername()).isEqualTo("new@example.com");
+        assertThat(response.getUsername()).isEqualTo("newuser");
         assertThat(response.getRole()).isEqualTo("USER");
 
         verify(userRepository).save(any(User.class));
@@ -118,7 +118,7 @@ public class AuthServiceTest {
         // Assert
         assertThat(response).isNotNull();
         assertThat(response.getToken()).isEqualTo("jwt.token");
-        assertThat(response.getUsername()).isEqualTo("test@example.com");
+        assertThat(response.getUsername()).isEqualTo("testuser");
         assertThat(response.getRole()).isEqualTo("USER");
 
         verify(authenticationManager).authenticate(any(UsernamePasswordAuthenticationToken.class));

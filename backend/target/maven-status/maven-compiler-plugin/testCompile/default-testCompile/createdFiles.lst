@@ -1,5 +1,7 @@
-com\f1pulse\backend\AuthIntegrationTest$AuthRequest.class
-com\f1pulse\backend\BackendApplicationTests.class
-com\f1pulse\backend\service\HistoricalDataIngestionServiceTest.class
-com\f1pulse\backend\service\AuthServiceTest.class
-com\f1pulse\backend\AuthIntegrationTest.class
+com\deltabox\backend\config\DatabaseUrlEnvironmentPostProcessorTest.class
+com\deltabox\backend\AuthIntegrationTest$AuthRequest.class
+com\deltabox\backend\BackendApplicationTests.class
+com\deltabox\backend\service\HistoricalDataIngestionServiceTest.class
+com\deltabox\backend\ai\controller\PredictionControllerTest.class
+com\deltabox\backend\AuthIntegrationTest.class
+com\deltabox\backend\service\AuthServiceTest.class

@@ -97,6 +97,7 @@ public class SyncService {
                     Team mappedTeam = teamsByName.get(dto.getTeam());
                     if (mappedTeam != null) {
                         driver.setTeamId(mappedTeam.getId());
+                        driver.setTeam(mappedTeam.getName());
                     }
 
                     drivers.add(driver);
@@ -108,6 +109,7 @@ public class SyncService {
                     Team mappedTeam = teamsByName.get(dto.getTeam());
                     if (mappedTeam != null) {
                         existingDriver.setTeamId(mappedTeam.getId());
+                        existingDriver.setTeam(mappedTeam.getName());
                     }
 
                     drivers.add(existingDriver);
