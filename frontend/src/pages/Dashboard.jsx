@@ -1,4 +1,4 @@
-﻿import { useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { Card, ErrorState } from "../components/common";
 import SkeletonLoader from "../components/SkeletonLoader";
 import LiveClock from "../components/LiveClock";
