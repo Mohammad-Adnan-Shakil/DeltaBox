@@ -16,6 +16,9 @@ public class MLServiceKeepAlive {
     @Value("${ml.service.url}")
     private String mlServiceUrl;
 
+    @Value("${server.port:10000}")
+    private String serverPort;
+
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Scheduled(fixedDelay = 600000) // every 10 minutes
@@ -25,6 +28,19 @@ public class MLServiceKeepAlive {
             log.debug("ML service keep-alive ping successful");
         } catch (Exception e) {
             log.warn("ML service keep-alive ping failed: {}", e.getMessage());
+        }
+    }
+
+    @Scheduled(fixedDelay = 600000) // every 10 minutes
+    public void pingSelf() {
+        try {
+            restTemplate.getForObject(
+                "http://localhost:" + serverPort + "/api/health",
+                String.class
+            );
+            log.debug("Backend self keep-alive ping successful");
+        } catch (Exception e) {
+            log.warn("Backend self ping failed: {}", e.getMessage());
         }
     }
 }
