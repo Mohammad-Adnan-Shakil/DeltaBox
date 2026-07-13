@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.LinkedHashMap;
@@ -83,6 +84,10 @@ public class MLClientService {
             
             return mapToIntelligenceResponse(body);
             
+        } catch (HttpClientErrorException.TooManyRequests e) {
+            throw new RuntimeException("ML service is temporarily unavailable due to rate limiting. Please wait a moment and try again.", e);
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("ML service returned error: " + e.getStatusCode(), e);
         } catch (Exception e) {
             log.error("Error calling ML service predict endpoint", e);
             throw new RuntimeException("Failed to get ML prediction: " + e.getMessage(), e);
