@@ -211,21 +211,20 @@ public class HistoricalDataIngestionService {
             }
 
             Map<String, Object> mrData = (Map<String, Object>) response.get("MRData");
-            List<Map<String, Object>> seasons = (List<Map<String, Object>>) mrData.get("SeasonTable");
+            Map<String, Object> raceTable = (Map<String, Object>) mrData.get("RaceTable");
+            if (raceTable == null) return null;
 
-            if (seasons == null || seasons.isEmpty()) {
-                return null;
-            }
+            List<Map<String, Object>> races = (List<Map<String, Object>>) raceTable.get("Races");
+            if (races == null || races.isEmpty()) return null;
 
-            Map<String, Object> season = seasons.get(0);
             Map<String, Object> result = new HashMap<>();
             result.put("year", year);
-            result.put("totalRounds", Integer.parseInt((String) season.getOrDefault("round", "0")));
+            result.put("totalRounds", races.size());
 
             return result;
 
         } catch (Exception e) {
-            log.warn("⚠️  Could not fetch season data for {}: {}", year, e.getMessage());
+            log.warn("Could not fetch season data for {}: {}", year, e.getMessage());
             return null;
         }
     }
@@ -251,16 +250,16 @@ public class HistoricalDataIngestionService {
                 }
 
                 Map<String, Object> mrData = (Map<String, Object>) response.get("MRData");
-                List<Map<String, Object>> raceTable = (List<Map<String, Object>>) 
-                        mrData.getOrDefault("RaceTable", new ArrayList<>());
+                Map<String, Object> raceTable = (Map<String, Object>) mrData.get("RaceTable");
+                if (raceTable == null) break;
 
-                if (raceTable.isEmpty()) {
+                List<Map<String, Object>> raceList = (List<Map<String, Object>>) raceTable.get("Races");
+                if (raceList == null || raceList.isEmpty()) {
                     hasMore = false;
                 } else {
-                    races.addAll(raceTable);
+                    races.addAll(raceList);
                     offset += limit;
-                    // Check if we got less than limit (indicating end of data)
-                    if (raceTable.size() < limit) {
+                    if (raceList.size() < limit) {
                         hasMore = false;
                     }
                 }
@@ -271,7 +270,7 @@ public class HistoricalDataIngestionService {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException("Interrupted during race fetch", e);
             } catch (Exception e) {
-                log.warn("⚠️  Error fetching races for {}: {}", year, e.getMessage());
+                log.warn("Error fetching races for {}: {}", year, e.getMessage());
                 hasMore = false;
             }
         }
@@ -300,14 +299,15 @@ public class HistoricalDataIngestionService {
                 }
 
                 Map<String, Object> mrData = (Map<String, Object>) response.get("MRData");
-                List<Map<String, Object>> resultTable = (List<Map<String, Object>>) 
-                        mrData.getOrDefault("RaceTable", new ArrayList<>());
+                Map<String, Object> raceTable = (Map<String, Object>) mrData.get("RaceTable");
+                if (raceTable == null) break;
 
-                if (resultTable.isEmpty()) {
+                List<Map<String, Object>> raceList = (List<Map<String, Object>>) raceTable.get("Races");
+                if (raceList == null || raceList.isEmpty()) {
                     hasMore = false;
                 } else {
                     // Extract results from races
-                    for (Map<String, Object> race : resultTable) {
+                    for (Map<String, Object> race : raceList) {
                         List<Map<String, Object>> raceResults = (List<Map<String, Object>>) 
                                 race.getOrDefault("Results", new ArrayList<>());
                         raceResults.forEach(r -> {
@@ -317,7 +317,7 @@ public class HistoricalDataIngestionService {
                     }
 
                     offset += limit;
-                    if (resultTable.size() < limit) {
+                    if (raceList.size() < limit) {
                         hasMore = false;
                     }
                 }
@@ -328,7 +328,7 @@ public class HistoricalDataIngestionService {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException("Interrupted during results fetch", e);
             } catch (Exception e) {
-                log.warn("⚠️  Error fetching results for {}: {}", year, e.getMessage());
+                log.warn("Error fetching results for {}: {}", year, e.getMessage());
                 hasMore = false;
             }
         }
@@ -357,14 +357,15 @@ public class HistoricalDataIngestionService {
                 }
 
                 Map<String, Object> mrData = (Map<String, Object>) response.get("MRData");
-                List<Map<String, Object>> raceTable = (List<Map<String, Object>>) 
-                        mrData.getOrDefault("RaceTable", new ArrayList<>());
+                Map<String, Object> raceTable = (Map<String, Object>) mrData.get("RaceTable");
+                if (raceTable == null) break;
 
-                if (raceTable.isEmpty()) {
+                List<Map<String, Object>> raceList = (List<Map<String, Object>>) raceTable.get("Races");
+                if (raceList == null || raceList.isEmpty()) {
                     hasMore = false;
                 } else {
                     // Extract qualifying from races
-                    for (Map<String, Object> race : raceTable) {
+                    for (Map<String, Object> race : raceList) {
                         List<Map<String, Object>> raceQualifying = (List<Map<String, Object>>) 
                                 race.getOrDefault("QualifyingResults", new ArrayList<>());
                         raceQualifying.forEach(q -> {
@@ -374,7 +375,7 @@ public class HistoricalDataIngestionService {
                     }
 
                     offset += limit;
-                    if (raceTable.size() < limit) {
+                    if (raceList.size() < limit) {
                         hasMore = false;
                     }
                 }
@@ -385,7 +386,7 @@ public class HistoricalDataIngestionService {
                 Thread.currentThread().interrupt();
                 throw new RuntimeException("Interrupted during qualifying fetch", e);
             } catch (Exception e) {
-                log.warn("⚠️  Error fetching qualifying for {}: {}", year, e.getMessage());
+                log.warn("Error fetching qualifying for {}: {}", year, e.getMessage());
                 hasMore = false;
             }
         }
@@ -406,15 +407,17 @@ public class HistoricalDataIngestionService {
 
             if (response != null && response.containsKey("MRData")) {
                 Map<String, Object> mrData = (Map<String, Object>) response.get("MRData");
-                List<Map<String, Object>> standingsTable = (List<Map<String, Object>>) 
-                        mrData.getOrDefault("StandingsTable", new ArrayList<>());
+                Map<String, Object> standingsTable = (Map<String, Object>) mrData.get("StandingsTable");
+                if (standingsTable == null) return standings;
 
-                if (!standingsTable.isEmpty()) {
-                    Map<String, Object> standingsList = standingsTable.get(0);
-                    List<Map<String, Object>> driverStandings = (List<Map<String, Object>>) 
-                            standingsList.getOrDefault("DriverStandings", new ArrayList<>());
-                    standings.addAll(driverStandings);
-                }
+                List<Map<String, Object>> standingsLists = (List<Map<String, Object>>)
+                        standingsTable.get("StandingsLists");
+                if (standingsLists == null || standingsLists.isEmpty()) return standings;
+
+                Map<String, Object> standingsList = standingsLists.get(0);
+                List<Map<String, Object>> driverStandings = (List<Map<String, Object>>)
+                        standingsList.getOrDefault("DriverStandings", new ArrayList<>());
+                standings.addAll(driverStandings);
             }
 
             Thread.sleep(RATE_LIMIT_DELAY_MS);
@@ -423,7 +426,7 @@ public class HistoricalDataIngestionService {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted during driver standings fetch", e);
         } catch (Exception e) {
-            log.warn("⚠️  Error fetching driver standings for {}: {}", year, e.getMessage());
+            log.warn("Error fetching driver standings for {}: {}", year, e.getMessage());
         }
 
         return standings;
@@ -442,15 +445,17 @@ public class HistoricalDataIngestionService {
 
             if (response != null && response.containsKey("MRData")) {
                 Map<String, Object> mrData = (Map<String, Object>) response.get("MRData");
-                List<Map<String, Object>> standingsTable = (List<Map<String, Object>>) 
-                        mrData.getOrDefault("StandingsTable", new ArrayList<>());
+                Map<String, Object> standingsTable = (Map<String, Object>) mrData.get("StandingsTable");
+                if (standingsTable == null) return standings;
 
-                if (!standingsTable.isEmpty()) {
-                    Map<String, Object> standingsList = standingsTable.get(0);
-                    List<Map<String, Object>> constructorStandings = (List<Map<String, Object>>) 
-                            standingsList.getOrDefault("ConstructorStandings", new ArrayList<>());
-                    standings.addAll(constructorStandings);
-                }
+                List<Map<String, Object>> standingsLists = (List<Map<String, Object>>)
+                        standingsTable.get("StandingsLists");
+                if (standingsLists == null || standingsLists.isEmpty()) return standings;
+
+                Map<String, Object> standingsList = standingsLists.get(0);
+                List<Map<String, Object>> constructorStandings = (List<Map<String, Object>>)
+                        standingsList.getOrDefault("ConstructorStandings", new ArrayList<>());
+                standings.addAll(constructorStandings);
             }
 
             Thread.sleep(RATE_LIMIT_DELAY_MS);
@@ -459,7 +464,7 @@ public class HistoricalDataIngestionService {
             Thread.currentThread().interrupt();
             throw new RuntimeException("Interrupted during constructor standings fetch", e);
         } catch (Exception e) {
-            log.warn("⚠️  Error fetching constructor standings for {}: {}", year, e.getMessage());
+            log.warn("Error fetching constructor standings for {}: {}", year, e.getMessage());
         }
 
         return standings;
