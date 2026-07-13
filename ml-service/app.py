@@ -338,156 +338,85 @@ def calculate_probability_distribution(avg_finish: float, confidence: float) -> 
 def run_prediction(input_data: Dict[str, Any]) -> Dict[str, Any]:
     """Run ML prediction using loaded models"""
     try:
-        # Random Forest prediction (inline)
-        def predict_rf(input_data: dict, model, le_driver):
-            """Predict using Random Forest model"""
-            import pandas as pd
-            
-            def encode_safe(le, val):
-                try:
-                    return le.transform([val])[0]
-                except:
-                    return 0
-            
-            driver_encoded = encode_safe(le_driver, input_data["driver_id"])
-            
-            features = pd.DataFrame([{
-                "driver_id": driver_encoded,
-                "avg_last_5": input_data["avg_last_5"],
-                "std_last_5": input_data["std_last_5"],
-                "avg_last_10": input_data["avg_last_10"],
-                "std_last_10": input_data["std_last_10"],
-                "last_race_position": input_data["last_race_position"]
-            }])
-            
-            prediction = model.predict(features)[0]
-            
-            return {
-                "predicted_next_position": round(float(prediction), 2)
-            }
-        
-        # XGBoost prediction (inline)
-        def predict_xgb(input_data: dict, model, le_constructor, le_track):
-            """Predict using XGBoost model"""
-            import numpy as np
-            
-            def safe_encode(encoder, value):
-                try:
-                    return encoder.transform([value])[0]
-                except:
-                    return 0
-            
-            # Feature names must match training order
-            feature_names = [
-                "qualifying_position",
-                "constructor_id", 
-                "track_id",
-                "season_year",
-                "recent_avg_position_last_5",
-                "recent_std_last_5",
-                "grid_position",
-                "is_home_race"
-            ]
-            
-            constructor_encoded = safe_encode(le_constructor, input_data["constructor_id"])
-            track_encoded = safe_encode(le_track, input_data["track_id"])
-            
-            features = np.array([[ 
-                float(input_data["qualifying_position"]),
-                float(constructor_encoded),
-                float(track_encoded),
-                float(input_data["season_year"]),
-                float(input_data["recent_avg_position_last_5"]),
-                float(input_data["recent_std_last_5"]),
-                float(input_data["grid_position"]),
-                float(input_data["is_home_race"])
-            ]])
-            
-            prediction = float(model.predict(features)[0])
-            
-            # Extract feature importances from XGBoost model
-            feature_importances = {}
-            if hasattr(model, 'feature_importances_'):
-                importances = model.feature_importances_
-                for i, name in enumerate(feature_names):
-                    if i < len(importances):
-                        feature_importances[name] = round(float(importances[i]), 4)
-            
-            # Get top 3 most important features with human-readable explanations
-            top_features = []
-            if feature_importances:
-                sorted_features = sorted(feature_importances.items(), key=lambda x: x[1], reverse=True)
-                for feature_name, importance in sorted_features[:3]:
-                    feature_value = input_data.get(feature_name)
-                    
-                    # Generate human-readable explanation
-                    explanation = ""
-                    if feature_name == "qualifying_position":
-                        explanation = f"Grid position: Starting from P{int(feature_value) if feature_value else 'unknown'}"
-                    elif feature_name == "recent_avg_position_last_5":
-                        explanation = f"Recent form: Average finish of P{feature_value:.1f} in last 5 races" if feature_value else "Recent form: Insufficient data"
-                    elif feature_name == "recent_std_last_5":
-                        if feature_value is None or feature_value == 0:
-                            explanation = "Consistency: Very consistent performances"
-                        elif feature_value < 2:
-                            explanation = "Consistency: Highly consistent"
-                        elif feature_value < 4:
-                            explanation = "Consistency: Moderate variability"
-                        else:
-                            explanation = "Consistency: Highly variable performance"
-                    elif feature_name == "grid_position":
-                        explanation = f"Qualifying: P{int(feature_value) if feature_value else 'unknown'}"
-                    elif feature_name == "season_year":
-                        explanation = f"Season: {int(feature_value) if feature_value else 'unknown'}"
-                    elif feature_name == "constructor_id":
-                        explanation = "Constructor: Team performance factor"
-                    elif feature_name == "track_id":
-                        explanation = "Circuit: Track-specific strengths"
-                    elif feature_name == "is_home_race":
-                        explanation = "Home race: Competing in home country"
-                    
-                    top_features.append({
-                        "feature": feature_name,
-                        "importance": importance,
-                        "explanation": explanation
-                    })
-            
-            # Placeholder — overridden by inter-model agreement in run_prediction()
-            confidence = 0.5
-            
-            output = {
-                "predicted_position": round(prediction, 2),
-                "confidence": round(confidence, 3),
-                "top_features": top_features
-            }
-            
-            return output
-        
-        # Run RF prediction
-        rf_result = predict_rf(input_data, models["rf"], models["le_driver"])
-        
-        # Run XGBoost prediction  
-        xgb_result = predict_xgb(input_data, models["xgb"], models["le_constructor"], models["le_track"])
-        
-        rf_pred = rf_result["predicted_next_position"]
-        xgb_pred = xgb_result["predicted_position"]
-        
-        avg_last5 = input_data["avg_last_5"]
-        avg_last10 = input_data["avg_last_10"]
-        std_last5 = input_data["std_last_5"]
-        
-        # Get multi-timescale performance data
-        career_avg = input_data.get("career_avg_finish", avg_last5)
-        season_avg = input_data.get("season_avg_finish", avg_last5)
-        recent_avg = input_data.get("recent_avg_finish", avg_last5)
-        
-        # Fallback to legacy fields if new fields not provided
-        if career_avg == 0:
-            career_avg = avg_last5
-        if season_avg == 0:
-            season_avg = avg_last5
-        if recent_avg == 0:
-            recent_avg = avg_last5
+        import numpy as np
+
+        # 12 features in exact v2 model training order
+        feature_values = np.array([[
+            float(input_data.get("career_avg_finish", 10.0)),
+            int(input_data.get("career_wins", 0)),
+            int(input_data.get("career_poles", 0)),
+            float(input_data.get("recent_5_avg", 10.0)),
+            float(input_data.get("recent_10_avg", 10.0)),
+            float(input_data.get("circuit_avg_finish", 10.0)),
+            int(input_data.get("circuit_appearances", 0)),
+            float(input_data.get("season_avg_finish", 10.0)),
+            int(input_data.get("grid_position", 10)),
+            float(input_data.get("team_avg_finish", 10.0)),
+            int(input_data.get("years_experience", 3)),
+            int(input_data.get("championship_position", 10))
+        ]])
+
+        # Predict with both models using the same feature vector
+        rf_pred = float(models["rf"].predict(feature_values)[0])
+        xgb_pred = float(models["xgb"].predict(feature_values)[0])
+
+        # Extract feature importances from XGBoost model
+        feature_names = [
+            "career_avg_finish", "career_wins", "career_poles",
+            "recent_5_avg", "recent_10_avg", "circuit_avg_finish",
+            "circuit_appearances", "season_avg_finish", "grid_position",
+            "team_avg_finish", "years_experience", "championship_position"
+        ]
+        feature_importances = {}
+        if hasattr(models["xgb"], 'feature_importances_'):
+            importances = models["xgb"].feature_importances_
+            for i, name in enumerate(feature_names):
+                if i < len(importances):
+                    feature_importances[name] = round(float(importances[i]), 4)
+
+        # Get top 3 most important features with human-readable explanations
+        top_features = []
+        if feature_importances:
+            sorted_features = sorted(feature_importances.items(), key=lambda x: x[1], reverse=True)
+            for feature_name, importance in sorted_features[:3]:
+                feature_value = input_data.get(feature_name)
+                explanation = ""
+                if feature_name == "grid_position":
+                    explanation = f"Grid position: Starting from P{int(feature_value) if feature_value else 'unknown'}"
+                elif feature_name == "recent_5_avg":
+                    explanation = f"Recent form: Average finish of P{feature_value:.1f} in last 5 races" if feature_value else "Recent form: Insufficient data"
+                elif feature_name == "recent_10_avg":
+                    explanation = f"Mid-term form: Average finish of P{feature_value:.1f} in last 10 races" if feature_value else "Mid-term form: Insufficient data"
+                elif feature_name == "career_avg_finish":
+                    explanation = f"Career average: P{feature_value:.1f} finish position" if feature_value else "Career average: Insufficient data"
+                elif feature_name == "circuit_avg_finish":
+                    explanation = f"Track record: Average P{feature_value:.1f} at this circuit" if feature_value else "Track record: No history at this circuit"
+                elif feature_name == "circuit_appearances":
+                    explanation = f"Circuit experience: {int(feature_value)} previous races here" if feature_value else "Circuit experience: First appearance"
+                elif feature_name == "season_avg_finish":
+                    explanation = f"Season form: Average P{feature_value:.1f} this season" if feature_value else "Season form: Insufficient data"
+                elif feature_name == "team_avg_finish":
+                    explanation = f"Team performance: Average P{feature_value:.1f} across all drivers" if feature_value else "Team performance: Insufficient data"
+                elif feature_name == "championship_position":
+                    explanation = f"Standing: P{int(feature_value)} in championship" if feature_value else "Standing: Not classified"
+                elif feature_name == "career_wins":
+                    explanation = f"Race wins: {int(feature_value)} career victories" if feature_value else "Race wins: No career wins"
+                elif feature_name == "years_experience":
+                    explanation = f"Experience: {int(feature_value)} years in F1" if feature_value else "Experience: Rookie"
+                elif feature_name == "career_poles":
+                    explanation = f"Pole positions: {int(feature_value)} career poles" if feature_value else "Pole positions: No career poles"
+
+                top_features.append({
+                    "feature": feature_name,
+                    "importance": importance,
+                    "explanation": explanation
+                })
+
+        # Extract insight-relevant values from the 12 features
+        career_avg = float(input_data.get("career_avg_finish", 10.0))
+        season_avg = float(input_data.get("season_avg_finish", 10.0))
+        recent_avg = float(input_data.get("recent_5_avg", 10.0))
+        std_last5 = 3.0  # not in 12 features; use moderate default
         
         # Calculate trend using recent vs season performance
         trend = calculate_trend(recent_avg, season_avg)
@@ -560,14 +489,14 @@ def run_prediction(input_data: Dict[str, Any]) -> Dict[str, Any]:
         applied_weights = weights
         
         response = {
-            "driver_id": input_data["driver_id"],
+            "driver_id": str(input_data.get("driver_id", "0")),
             "rf_prediction": rf_pred,
             "xgb_prediction": xgb_pred,
             "confidence": confidence,
             "confidence_label": confidence_label,
             "simulation_impact": impact,
             "final_insight": final_insight,
-            "top_features": xgb_result.get("top_features", []),
+            "top_features": top_features,
             "predicted_range": predicted_range,
             "probability_distribution": probability_distribution,
             "trend": trend,

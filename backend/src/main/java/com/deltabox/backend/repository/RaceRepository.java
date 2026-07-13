@@ -19,4 +19,8 @@ public interface RaceRepository extends JpaRepository<Race, Long> {
     
     List<Race> findByRoundAndDriverIdIsNotNullOrderByPositionAsc(Integer round);
     
+    List<Race> findByDriverIdAndCircuitNameAndPositionIsNotNull(Long driverId, String circuitName);
+    
+    List<Race> findByDriverIdInAndPositionIsNotNull(List<Long> driverIds);
+    
     }

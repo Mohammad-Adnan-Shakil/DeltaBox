@@ -14,6 +14,7 @@ public interface DriverRepository extends JpaRepository<Driver, Long> {
     Driver findByCode(String code);
     Page<Driver> findAll(Pageable pageable);
     List<Driver> findBySeasonOrderByPointsDesc(Integer season);
+    List<Driver> findByTeam(String team);
     
     // Find unique drivers by code and season (to prevent duplicates)
     @Query("SELECT DISTINCT d FROM Driver d WHERE d.season = :season ORDER BY d.points DESC")

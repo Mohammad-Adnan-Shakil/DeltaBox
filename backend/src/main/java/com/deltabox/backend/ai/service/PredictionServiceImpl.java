@@ -5,12 +5,9 @@ import com.deltabox.backend.ai.dto.PredictionResponseDTO;
 import com.deltabox.backend.dto.DriverIntelligenceResponse;
 import com.deltabox.backend.model.Driver;
 import com.deltabox.backend.model.Race;
-import com.deltabox.backend.model.Team;
 import com.deltabox.backend.repository.DriverRepository;
 import com.deltabox.backend.repository.RaceRepository;
-import com.deltabox.backend.repository.TeamRepository;
 import com.deltabox.backend.service.MLClientService;
-import com.deltabox.backend.util.StatsUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -18,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PredictionServiceImpl implements PredictionService {
@@ -28,16 +25,13 @@ public class PredictionServiceImpl implements PredictionService {
     private final MLClientService mlClientService;
     private final DriverRepository driverRepository;
     private final RaceRepository raceRepository;
-    private final TeamRepository teamRepository;
 
     public PredictionServiceImpl(MLClientService mlClientService,
                                   DriverRepository driverRepository,
-                                  RaceRepository raceRepository,
-                                  TeamRepository teamRepository) {
+                                  RaceRepository raceRepository) {
         this.mlClientService = mlClientService;
         this.driverRepository = driverRepository;
         this.raceRepository = raceRepository;
-        this.teamRepository = teamRepository;
     }
 
     @Override
@@ -51,35 +45,98 @@ public class PredictionServiceImpl implements PredictionService {
         Driver driver = driverRepository.findById(driverId)
                 .orElseThrow(() -> new RuntimeException("Driver not found: " + driverId));
 
-        // Fetch recent race data for the driver
-        List<Race> recentRaces = raceRepository.findTop10ByDriverIdAndPositionIsNotNullOrderByDateDesc(driverId);
+        // Fetch the target race (for circuit & season info)
+        Race race = raceRepository.findById(request.getRaceId())
+                .orElseThrow(() -> new RuntimeException("Race not found: " + request.getRaceId()));
 
-        double avgLast5 = recentRaces.isEmpty() ? 10.0 : StatsUtil.calculateAverage(recentRaces, 5);
-        double stdLast5 = recentRaces.isEmpty() ? 2.0 : StatsUtil.calculateStdDev(recentRaces, 5);
-        double avgLast10 = recentRaces.isEmpty() ? 10.0 : StatsUtil.calculateAverage(recentRaces, 10);
-        double stdLast10 = recentRaces.isEmpty() ? 2.0 : StatsUtil.calculateStdDev(recentRaces, 10);
-        double lastRacePosition = recentRaces.isEmpty() ? gridPosition.doubleValue() : recentRaces.getFirst().getPosition();
-        int qualifyingPosition = gridPosition;
+        // Fetch all race results for this driver (career context)
+        List<Race> allDriverRaces = raceRepository.findByDriverIdAndPositionIsNotNullOrderByDateAsc(driverId);
 
-        String constructorId = resolveConstructorId(driver);
-        String trackId = resolveTrackId(request.getRaceId());
+        // 1. career_avg_finish
+        double careerAvgFinish = allDriverRaces.isEmpty() ? 10.0
+                : allDriverRaces.stream().mapToInt(Race::getPosition).average().orElse(10.0);
 
-        // Build ML service payload matching Flask /predict expectations
+        // 2. career_wins
+        long careerWins = allDriverRaces.stream().filter(r -> r.getPosition() == 1).count();
+
+        // 3. career_poles — not available, default 0
+        int careerPoles = 0;
+
+        // Fetch recent races (top 10 desc) for recent averages
+        List<Race> recentRacesDesc = raceRepository.findTop10ByDriverIdAndPositionIsNotNullOrderByDateDesc(driverId);
+
+        // 4. recent_5_avg
+        double recent5Avg = recentRacesDesc.isEmpty() ? 10.0
+                : recentRacesDesc.stream().limit(5).mapToInt(Race::getPosition).average().orElse(10.0);
+
+        // 5. recent_10_avg
+        double recent10Avg = recentRacesDesc.isEmpty() ? 10.0
+                : recentRacesDesc.stream().limit(10).mapToInt(Race::getPosition).average().orElse(10.0);
+
+        // Circuit-specific stats
+        String circuitName = race.getCircuitName();
+        List<Race> circuitRaces = (circuitName != null)
+                ? raceRepository.findByDriverIdAndCircuitNameAndPositionIsNotNull(driverId, circuitName)
+                : List.of();
+
+        // 6. circuit_avg_finish
+        double circuitAvgFinish = circuitRaces.isEmpty() ? careerAvgFinish
+                : circuitRaces.stream().mapToInt(Race::getPosition).average().orElse(careerAvgFinish);
+
+        // 7. circuit_appearances
+        int circuitAppearances = circuitRaces.size();
+
+        // 8. season_avg_finish
+        Integer seasonYear = race.getSeason() != null ? race.getSeason() : 2026;
+        List<Race> seasonRaces = allDriverRaces.stream()
+                .filter(r -> r.getSeason() != null && r.getSeason().equals(seasonYear))
+                .collect(Collectors.toList());
+        double seasonAvgFinish = seasonRaces.isEmpty() ? careerAvgFinish
+                : seasonRaces.stream().mapToInt(Race::getPosition).average().orElse(careerAvgFinish);
+
+        // 9. grid_position — from request
+
+        // 10. team_avg_finish — average finish of all drivers on the same team
+        String teamName = driver.getTeam();
+        double teamAvgFinish = 10.0;
+        if (teamName != null && !teamName.isBlank()) {
+            List<Driver> teamDrivers = driverRepository.findByTeam(teamName);
+            List<Long> teamDriverIds = teamDrivers.stream().map(Driver::getId).collect(Collectors.toList());
+            if (!teamDriverIds.isEmpty()) {
+                List<Race> teamRaces = raceRepository.findByDriverIdInAndPositionIsNotNull(teamDriverIds);
+                if (!teamRaces.isEmpty()) {
+                    teamAvgFinish = teamRaces.stream().mapToInt(Race::getPosition).average().orElse(10.0);
+                }
+            }
+        }
+
+        // 11. years_experience — approximate default
+        int yearsExperience = 3;
+
+        // 12. championship_position — derived from points standings
+        List<Driver> standings = driverRepository.findBySeasonOrderByPointsDesc(seasonYear);
+        int championshipPosition = 10;
+        for (int i = 0; i < standings.size(); i++) {
+            if (standings.get(i).getId().equals(driverId)) {
+                championshipPosition = i + 1;
+                break;
+            }
+        }
+
+        // Build ML service payload — exactly the 12 features in order
         Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("driver_id", String.valueOf(driverId));
-        payload.put("avg_last_5", round2(avgLast5));
-        payload.put("std_last_5", round2(stdLast5));
-        payload.put("avg_last_10", round2(avgLast10));
-        payload.put("std_last_10", round2(stdLast10));
-        payload.put("last_race_position", round2(lastRacePosition));
-        payload.put("qualifying_position", qualifyingPosition);
-        payload.put("constructor_id", constructorId);
-        payload.put("track_id", trackId);
-        payload.put("season_year", 2026);
-        payload.put("recent_avg_position_last_5", round2(avgLast5));
-        payload.put("recent_std_last_5", round2(stdLast5));
+        payload.put("career_avg_finish", round2(careerAvgFinish));
+        payload.put("career_wins", careerWins);
+        payload.put("career_poles", careerPoles);
+        payload.put("recent_5_avg", round2(recent5Avg));
+        payload.put("recent_10_avg", round2(recent10Avg));
+        payload.put("circuit_avg_finish", round2(circuitAvgFinish));
+        payload.put("circuit_appearances", circuitAppearances);
+        payload.put("season_avg_finish", round2(seasonAvgFinish));
         payload.put("grid_position", gridPosition);
-        payload.put("is_home_race", 0);
+        payload.put("team_avg_finish", round2(teamAvgFinish));
+        payload.put("years_experience", yearsExperience);
+        payload.put("championship_position", championshipPosition);
 
         // Call ML service
         DriverIntelligenceResponse mlResponse = mlClientService.predict(payload);
@@ -111,34 +168,6 @@ public class PredictionServiceImpl implements PredictionService {
                  response.getRfPrediction(), response.getXgbPrediction());
 
         return response;
-    }
-
-    private String resolveConstructorId(Driver driver) {
-        if (driver.getTeam() != null && !driver.getTeam().isBlank()) {
-            return normalizeToken(driver.getTeam());
-        }
-        if (driver.getTeamId() != null) {
-            Optional<Team> teamOpt = teamRepository.findById(driver.getTeamId());
-            if (teamOpt.isPresent()) {
-                return normalizeToken(teamOpt.get().getName());
-            }
-        }
-        return "unknown";
-    }
-
-    private String resolveTrackId(Long raceId) {
-        Optional<Race> raceOpt = raceRepository.findById(raceId);
-        if (raceOpt.isPresent() && raceOpt.get().getCircuitName() != null) {
-            return normalizeToken(raceOpt.get().getCircuitName());
-        }
-        return "unknown";
-    }
-
-    private static String normalizeToken(String value) {
-        if (value == null || value.isBlank()) {
-            return "unknown";
-        }
-        return value.toLowerCase().replace(" ", "_").replace('-', '_');
     }
 
     private static double round2(double value) {
