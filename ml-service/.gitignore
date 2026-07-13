@@ -34,6 +34,12 @@ ENV/
 
 # Model files (large binary files - should be downloaded in production)
 models/*.pkl
+!models/le_constructor.pkl
+!models/le_driver.pkl
+!models/le_track.pkl
+!models/random_forest_model_v2.pkl
+!models/xgboost_model_v2.pkl
+!models/feature_names_v2.pkl
 models/*.joblib
 
 # Data files (large)
