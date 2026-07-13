@@ -1,9 +1,9 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { Card, ErrorState } from "../components/common";
 import SkeletonLoader from "../components/SkeletonLoader";
 import LiveClock from "../components/LiveClock";
 import usePageTitle from "../hooks/usePageTitle";
-import { dashboardDataPromise, racesDataPromise } from "../main";
+import useFetch from "../hooks/useFetch";
 import { StatCardsRow, NextRaceWidget, StandingsChart } from "../components/dashboard";
 
 const HeroSection = () => (
@@ -144,43 +144,30 @@ const ChartsSection = ({ drivers, races, loading }) => {
 const Dashboard = () => {
   usePageTitle("Dashboard");
 
-  const [drivers, setDrivers] = useState(null);
-  const [races, setRaces] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data: drivers, loading: driversLoading, error: driversError } = useFetch('/drivers');
+  const { data: racesRaw, loading: racesLoading, error: racesError } = useFetch('/races');
 
-  useEffect(() => {
-    Promise.all([dashboardDataPromise, racesDataPromise])
-      .then(([driversData, racesData]) => {
-        setDrivers(driversData);
-        setRaces(racesData);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setLoading(false);
-      });
-  }, []);
+  const loading = driversLoading || racesLoading;
+  const error = driversError || racesError;
 
-  if (error && !drivers && !races) {
+  if (error && !drivers && !racesRaw) {
     return <ErrorState message={error} onRetry={() => window.location.reload()} />;
   }
 
-  const driverList = drivers || [];
-  const raceList = (races || []).slice().sort((a, b) => (a.round ?? 999) - (b.round ?? 999));
+  const raceList = (racesRaw || []).slice().sort((a, b) => (a.round ?? 999) - (b.round ?? 999));
   const completedRaces = raceList.filter((race) => race.status === "COMPLETED");
 
   return (
     <div className="space-y-6">
       <HeroSection />
       <StatCardsRow
-        driversCount={driverList.length || 22}
+        driversCount={drivers?.length || 22}
         totalRaces={raceList.length}
         completedRaces={completedRaces.length || 0}
         modelAccuracy={85}
       />
-      <ChartsSection drivers={drivers} races={races} loading={loading} />
-      <NextRaceWidget races={races || []} />
+      <ChartsSection drivers={drivers} races={racesRaw} loading={loading} />
+      <NextRaceWidget races={racesRaw || []} />
     </div>
   );
 };

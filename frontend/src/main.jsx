@@ -3,22 +3,8 @@ import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.jsx";
 import "./index.css";
-import api from "./utils/axios.js";
-
 // Auth Context
 import { AuthProvider } from "./context/AuthContext.jsx";
-
-// CRITICAL: Preload dashboard API data before components mount
-// This ensures data is partially/fully loaded by the time Dashboard renders
-// Uses configured API instance with JWT token interceptor
-
-export const dashboardDataPromise = api.get('/drivers')
-  .then(r => r.data)
-  .catch(() => null)
-
-export const racesDataPromise = api.get('/races')
-  .then(r => r.data)
-  .catch(() => null)
 
 // Web Vitals tracking — measure real Core Web Vitals metrics
 // Dynamic import to avoid blocking startup
