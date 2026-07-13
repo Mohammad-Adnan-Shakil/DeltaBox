@@ -26,7 +26,7 @@ public class HistoricalDataIngestionService {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(HistoricalDataIngestionService.class);
 
-    private static final String ERGAST_BASE_URL = "https://ergast.com/api/f1";
+    private static final String ERGAST_BASE_URL = "https://api.jolpi.ca/ergast/f1";
     private static final int RATE_LIMIT_DELAY_MS = 500;
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     
