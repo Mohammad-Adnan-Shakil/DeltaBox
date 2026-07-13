@@ -1,6 +1,7 @@
 ﻿import {
   Brain,
   Flag,
+  GitCompare,
   LayoutDashboard,
   LogOut,
   Shield,
@@ -20,6 +21,7 @@ const NAV_ITEMS_PUBLIC = [
   { to: "/drivers", label: "Drivers", icon: Users },
   { to: "/races", label: "Races", icon: Flag },
   { to: "/constructors", label: "Constructors", icon: Shield },
+  { to: "/delta-analyst", label: "Delta Analyst", icon: GitCompare },
 ];
 
 const NAV_ITEMS_PROTECTED = [

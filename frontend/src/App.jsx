@@ -16,6 +16,7 @@ const RaceDetails = lazy(() => import("./pages/RaceDetails"));
 const Constructors = lazy(() => import("./pages/Teams"));
 const Profile = lazy(() => import("./pages/Profile"));
 const RaceEngineerPage = lazy(() => import("./pages/RaceEngineerPage"));
+const DeltaAnalyst = lazy(() => import("./pages/DeltaAnalyst"));
 
 const LoadingFallback = () => (
   <div className="fixed inset-0 flex flex-col items-center justify-center bg-[var(--color-bg-base)]">
@@ -86,6 +87,15 @@ function App() {
         element={
           <MainLayout>
             <Constructors />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/delta-analyst"
+        element={
+          <MainLayout>
+            <DeltaAnalyst />
           </MainLayout>
         }
       />

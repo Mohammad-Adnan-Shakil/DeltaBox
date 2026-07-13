@@ -75,6 +75,9 @@ public class SecurityConfig {
                         // Public endpoints - Historical F1 Data (no login required)
                         .requestMatchers("/api/historical/**").permitAll()
                         
+                        // Public endpoints - Telemetry (no login required)
+                        .requestMatchers("/api/telemetry/**").permitAll()
+                        
                         // Debug endpoints (no login required)
                         .requestMatchers("/api/debug/**").permitAll()
                         
