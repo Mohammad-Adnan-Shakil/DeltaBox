@@ -148,8 +148,9 @@ public class TelemetryService {
             Instant lapStartB = Instant.parse(startB);
             Instant lapEndB = lapStartB.plusMillis((long) (durationB * 1000));
 
-            // Fetch car data for driver A
-            String urlA = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA;
+            // Fetch car data for driver A, scoped to lap time window
+            String urlA = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA
+                + "&date>=" + lapStartA.toString() + "&date<=" + lapEndA.toString();
             log.info("Fetching car_data A: {}", urlA);
             JsonNode allDataA = fetchAsJson(urlA);
 
@@ -160,8 +161,9 @@ public class TelemetryService {
                 Thread.currentThread().interrupt();
             }
 
-            // Fetch car data for driver B
-            String urlB = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB;
+            // Fetch car data for driver B, scoped to lap time window
+            String urlB = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB
+                + "&date>=" + lapStartB.toString() + "&date<=" + lapEndB.toString();
             log.info("Fetching car_data B: {}", urlB);
             JsonNode allDataB = fetchAsJson(urlB);
 
@@ -170,20 +172,14 @@ public class TelemetryService {
                 return errorResult("No telemetry available for this lap");
             }
 
-            // Filter car_data to lap time window
+            // Use fetched data directly — already scoped by date range
             List<JsonNode> filteredA = new ArrayList<>();
             List<JsonNode> filteredB = new ArrayList<>();
             for (JsonNode node : allDataA) {
-                Instant t = Instant.parse(node.path("date").asText());
-                if (!t.isBefore(lapStartA) && t.isBefore(lapEndA)) {
-                    filteredA.add(node);
-                }
+                filteredA.add(node);
             }
             for (JsonNode node : allDataB) {
-                Instant t = Instant.parse(node.path("date").asText());
-                if (!t.isBefore(lapStartB) && t.isBefore(lapEndB)) {
-                    filteredB.add(node);
-                }
+                filteredB.add(node);
             }
 
             if (filteredA.isEmpty() || filteredB.isEmpty()) {
@@ -212,20 +208,22 @@ public class TelemetryService {
                 brakeB.add(filteredB.get(i).path("brake").asInt(0));
             }
 
-            // Calculate sector deltas from date timestamps
+            // Calculate sector deltas relative to each lap's start time
             List<Double> sectors = new ArrayList<>();
             double totalDelta = 0;
             try {
+                long epochA = lapStartA.toEpochMilli();
+                long epochB = lapStartB.toEpochMilli();
                 int sectorPoints = len / 3;
                 for (int s = 0; s < 3; s++) {
                     int idx = Math.min((s + 1) * sectorPoints - 1, len - 1);
-                    double timeA = Instant.parse(filteredA.get(idx).path("date").asText()).toEpochMilli();
-                    double timeB = Instant.parse(filteredB.get(idx).path("date").asText()).toEpochMilli();
-                    sectors.add(Math.round((timeA - timeB) / 10.0) / 100.0);
+                    double elapsedA = Instant.parse(filteredA.get(idx).path("date").asText()).toEpochMilli() - epochA;
+                    double elapsedB = Instant.parse(filteredB.get(idx).path("date").asText()).toEpochMilli() - epochB;
+                    sectors.add(Math.round((elapsedA - elapsedB) / 10.0) / 100.0);
                 }
-                double lastTimeA = Instant.parse(filteredA.get(len - 1).path("date").asText()).toEpochMilli();
-                double lastTimeB = Instant.parse(filteredB.get(len - 1).path("date").asText()).toEpochMilli();
-                totalDelta = Math.round((lastTimeA - lastTimeB) / 10.0) / 100.0;
+                double lastElapsedA = Instant.parse(filteredA.get(len - 1).path("date").asText()).toEpochMilli() - epochA;
+                double lastElapsedB = Instant.parse(filteredB.get(len - 1).path("date").asText()).toEpochMilli() - epochB;
+                totalDelta = Math.round((lastElapsedA - lastElapsedB) / 10.0) / 100.0;
             } catch (Exception e) {
                 log.warn("Delta calculation failed: {}", e.getMessage());
                 sectors = List.of(0.0, 0.0, 0.0);
