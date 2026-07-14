@@ -26,7 +26,7 @@ public class TelemetryServiceTest {
 
     @Test
     void testGetSessions() {
-        var sessions = telemetryService.getSessions(2026);
+        var sessions = telemetryService.getSessions();
         assertFalse(sessions.isEmpty());
         assertTrue(sessions.stream().anyMatch(s -> "Race".equals(s.get("sessionType"))));
     }

@@ -32,13 +32,17 @@ public class TelemetryService {
         this.objectMapper = new ObjectMapper();
     }
 
-    public List<Map<String, Object>> getSessions(int year) {
+    public List<Map<String, Object>> getSessions() {
+        return getSessions(List.of(2024, 2025));
+    }
+
+    public List<Map<String, Object>> getSessions(List<Integer> years) {
         if (cachedSessions != null && Instant.now().minusMillis(SESSIONS_CACHE_TTL_MS).isBefore(sessionsCacheTime)) {
             return cachedSessions;
         }
         try {
             List<Map<String, Object>> sessions = new ArrayList<>();
-            for (int y : List.of(2024, 2025)) {
+            for (int y : years) {
                 for (String sessionType : List.of("Race", "Qualifying")) {
                     String url = OPENF1_BASE + "/sessions?year=" + y + "&session_name=" + sessionType;
                     log.info("Fetching sessions: {}", url);

@@ -23,8 +23,8 @@ public class TelemetryController {
     }
 
     @GetMapping("/sessions")
-    public ResponseEntity<List<Map<String, Object>>> getSessions(@RequestParam(defaultValue = "2024") int year) {
-        List<Map<String, Object>> sessions = telemetryService.getSessions(year);
+    public ResponseEntity<List<Map<String, Object>>> getSessions() {
+        List<Map<String, Object>> sessions = telemetryService.getSessions();
         return ResponseEntity.ok(sessions);
     }
 
