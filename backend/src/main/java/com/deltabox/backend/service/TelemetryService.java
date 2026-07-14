@@ -37,32 +37,30 @@ public class TelemetryService {
             return cachedSessions;
         }
         try {
-            String url = OPENF1_BASE + "/sessions?year=" + year;
-            String response = restTemplate.getForObject(url, String.class);
-            JsonNode root = objectMapper.readTree(response);
-            Map<String, Map<String, Object>> unique = new LinkedHashMap<>();
-            if (root != null && root.isArray()) {
-                for (JsonNode node : root) {
-                    String sessionType = node.path("session_type").asText("");
-                    if (!"Qualifying".equals(sessionType) && !"Race".equals(sessionType)) {
-                        continue;
-                    }
-                    String circuitName = node.path("circuit_short_name").asText();
-                    String key = circuitName + "|" + sessionType;
-                    String dateStart = node.path("date_start").asText();
-                    if (!unique.containsKey(key) || dateStart.compareTo((String) unique.get(key).get("dateStart")) > 0) {
+            List<Map<String, Object>> sessions = new ArrayList<>();
+            for (String sessionType : List.of("Race", "Qualifying")) {
+                String url = OPENF1_BASE + "/sessions?year=" + year + "&session_type=" + sessionType;
+                log.info("Fetching sessions: {}", url);
+                String response = restTemplate.getForObject(url, String.class);
+                JsonNode root = objectMapper.readTree(response);
+                if (root != null && root.isArray()) {
+                    for (JsonNode node : root) {
+                        if (node.path("is_cancelled").asBoolean(false)) {
+                            continue;
+                        }
+                        String circuitName = node.path("circuit_short_name").asText();
+                        String dateStart = node.path("date_start").asText();
                         Map<String, Object> session = new LinkedHashMap<>();
                         session.put("sessionKey", node.path("session_key").asLong());
-                        session.put("meetingName", node.path("session_name").asText());
+                        session.put("meetingName", circuitName + " — " + node.path("session_name").asText() + " " + year);
                         session.put("sessionType", sessionType);
                         session.put("dateStart", dateStart);
                         session.put("circuitName", circuitName);
                         session.put("year", node.path("year").asInt());
-                        unique.put(key, session);
+                        sessions.add(session);
                     }
                 }
             }
-            List<Map<String, Object>> sessions = new ArrayList<>(unique.values());
             sessions.sort((a, b) -> ((String) b.get("dateStart")).compareTo((String) a.get("dateStart")));
             cachedSessions = sessions;
             sessionsCacheTime = Instant.now();
