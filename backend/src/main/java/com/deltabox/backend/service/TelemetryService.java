@@ -26,8 +26,8 @@ public class TelemetryService {
 
     public TelemetryService() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setReadTimeout(30_000);
-        factory.setConnectTimeout(30_000);
+        factory.setReadTimeout(60_000);
+        factory.setConnectTimeout(15_000);
         this.restTemplate = new RestTemplate(factory);
         this.objectMapper = new ObjectMapper();
     }
@@ -140,9 +140,9 @@ public class TelemetryService {
             Instant lapStartB = Instant.parse(startB);
             Instant lapEndB = lapStartB.plusMillis((long) (durationB * 1000));
 
-            // Fetch all car data for both drivers
-            JsonNode allDataA = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA);
-            JsonNode allDataB = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB);
+            // Fetch all car data for both drivers (limit to 500 points for speed)
+            JsonNode allDataA = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA + "&limit=500");
+            JsonNode allDataB = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB + "&limit=500");
 
             if (allDataA == null || !allDataA.isArray() || allDataA.isEmpty() ||
                 allDataB == null || !allDataB.isArray() || allDataB.isEmpty()) {

@@ -12,6 +12,7 @@ import { ErrorState } from "../components/common/StateViews";
 import { useFetch } from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
 import api from "../utils/axios";
+import axios from "axios";
 
 const DRIVER_A_COLOR = "var(--color-data-primary)";
 const DRIVER_B_COLOR = "var(--color-data-secondary)";
@@ -83,14 +84,16 @@ const DeltaAnalyst = () => {
     setAnalysisResult(null);
     setAnalysisError(null);
     try {
-      const res = await api.get("/telemetry/compare", {
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+      const res = await axios.get(`${baseUrl}/telemetry/compare`, {
         params: {
           sessionKey,
           driverNumberA: driverA,
           driverNumberB: driverB,
           lapA,
           lapB
-        }
+        },
+        timeout: 60000
       });
       setCompareResult(res.data);
     } catch (err) {
