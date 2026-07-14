@@ -48,17 +48,17 @@ const DeltaAnalyst = () => {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [analysisError, setAnalysisError] = useState(null);
 
-  const { data: sessions, loading: sessionsLoading, error: sessionsError } = useFetch("/api/telemetry/sessions?year=2026", []);
+  const { data: sessions, loading: sessionsLoading, error: sessionsError } = useFetch("/telemetry/sessions?year=2026", []);
   const { data: drivers, loading: driversLoading } = useFetch(
-    sessionKey ? `/api/telemetry/drivers?sessionKey=${sessionKey}` : null,
+    sessionKey ? `/telemetry/drivers?sessionKey=${sessionKey}` : null,
     [sessionKey]
   );
   const { data: lapsA, loading: lapsALoading } = useFetch(
-    driverA ? `/api/telemetry/laps?sessionKey=${sessionKey}&driverNumber=${driverA}` : null,
+    driverA ? `/telemetry/laps?sessionKey=${sessionKey}&driverNumber=${driverA}` : null,
     [sessionKey, driverA]
   );
   const { data: lapsB, loading: lapsBLoading } = useFetch(
-    driverB ? `/api/telemetry/laps?sessionKey=${sessionKey}&driverNumber=${driverB}` : null,
+    driverB ? `/telemetry/laps?sessionKey=${sessionKey}&driverNumber=${driverB}` : null,
     [sessionKey, driverB]
   );
 
@@ -81,7 +81,7 @@ const DeltaAnalyst = () => {
     setAnalysisResult(null);
     setAnalysisError(null);
     try {
-      const res = await api.get("/api/telemetry/compare", {
+      const res = await api.get("/telemetry/compare", {
         params: {
           sessionKey,
           driverNumberA: driverA,
@@ -103,7 +103,7 @@ const DeltaAnalyst = () => {
     setAnalysisError(null);
     setAnalysisResult(null);
     try {
-      const res = await api.post("/api/telemetry/analyze", {
+      const res = await api.post("/telemetry/analyze", {
         sessionKey: Number(sessionKey),
         driverNumberA: Number(driverA),
         driverNumberB: Number(driverB),
