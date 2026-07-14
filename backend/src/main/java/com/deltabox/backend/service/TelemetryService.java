@@ -122,8 +122,12 @@ public class TelemetryService {
     public Map<String, Object> compareLaps(long sessionKey, int driverNumberA, int driverNumberB, int lapA, int lapB) {
         try {
             // Fetch lap timing to get date_start for each driver's lap
-            JsonNode lapsA = fetchAsJson(OPENF1_BASE + "/laps?session_key=" + sessionKey + "&driver_number=" + driverNumberA + "&lap_number=" + lapA);
-            JsonNode lapsB = fetchAsJson(OPENF1_BASE + "/laps?session_key=" + sessionKey + "&driver_number=" + driverNumberB + "&lap_number=" + lapB);
+            String lapsUrlA = OPENF1_BASE + "/laps?session_key=" + sessionKey + "&driver_number=" + driverNumberA + "&lap_number=" + lapA;
+            String lapsUrlB = OPENF1_BASE + "/laps?session_key=" + sessionKey + "&driver_number=" + driverNumberB + "&lap_number=" + lapB;
+            log.info("Fetching laps A: {}", lapsUrlA);
+            log.info("Fetching laps B: {}", lapsUrlB);
+            JsonNode lapsA = fetchAsJson(lapsUrlA);
+            JsonNode lapsB = fetchAsJson(lapsUrlB);
 
             if (lapsA == null || !lapsA.isArray() || lapsA.isEmpty() ||
                 lapsB == null || !lapsB.isArray() || lapsB.isEmpty()) {
@@ -141,7 +145,9 @@ public class TelemetryService {
             Instant lapEndB = lapStartB.plusMillis((long) (durationB * 1000));
 
             // Fetch car data for driver A
-            JsonNode allDataA = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA + "&lap_number=" + lapA + "&limit=500");
+            String urlA = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA + "&lap_number=" + lapA + "&limit=500";
+            log.info("Fetching car_data A: {}", urlA);
+            JsonNode allDataA = fetchAsJson(urlA);
 
             // Respect OpenF1 rate limit (max 3 req/s)
             try {
@@ -151,7 +157,9 @@ public class TelemetryService {
             }
 
             // Fetch car data for driver B
-            JsonNode allDataB = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB + "&lap_number=" + lapB + "&limit=500");
+            String urlB = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB + "&lap_number=" + lapB + "&limit=500";
+            log.info("Fetching car_data B: {}", urlB);
+            JsonNode allDataB = fetchAsJson(urlB);
 
             if (allDataA == null || !allDataA.isArray() || allDataA.isEmpty() ||
                 allDataB == null || !allDataB.isArray() || allDataB.isEmpty()) {
