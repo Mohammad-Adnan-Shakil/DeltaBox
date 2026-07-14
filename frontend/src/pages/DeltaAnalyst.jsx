@@ -48,7 +48,7 @@ const DeltaAnalyst = () => {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [analysisError, setAnalysisError] = useState(null);
 
-  const { data: sessions, loading: sessionsLoading, error: sessionsError } = useFetch("/telemetry/sessions?year=2026", []);
+  const { data: sessions, loading: sessionsLoading, error: sessionsError } = useFetch("/telemetry/sessions", []);
   const { data: drivers, loading: driversLoading } = useFetch(
     sessionKey ? `/telemetry/drivers?sessionKey=${sessionKey}` : null,
     [sessionKey]

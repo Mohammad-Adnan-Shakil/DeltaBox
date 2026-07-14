@@ -38,26 +38,28 @@ public class TelemetryService {
         }
         try {
             List<Map<String, Object>> sessions = new ArrayList<>();
-            for (String sessionType : List.of("Race", "Qualifying")) {
-                String url = OPENF1_BASE + "/sessions?year=" + year + "&session_type=" + sessionType;
-                log.info("Fetching sessions: {}", url);
-                String response = restTemplate.getForObject(url, String.class);
-                JsonNode root = objectMapper.readTree(response);
-                if (root != null && root.isArray()) {
-                    for (JsonNode node : root) {
-                        if (node.path("is_cancelled").asBoolean(false)) {
-                            continue;
+            for (int y : List.of(2024, 2025)) {
+                for (String sessionType : List.of("Race", "Qualifying")) {
+                    String url = OPENF1_BASE + "/sessions?year=" + y + "&session_name=" + sessionType;
+                    log.info("Fetching sessions: {}", url);
+                    String response = restTemplate.getForObject(url, String.class);
+                    JsonNode root = objectMapper.readTree(response);
+                    if (root != null && root.isArray()) {
+                        for (JsonNode node : root) {
+                            if (node.path("is_cancelled").asBoolean(false)) {
+                                continue;
+                            }
+                            String circuitName = node.path("circuit_short_name").asText();
+                            String dateStart = node.path("date_start").asText();
+                            Map<String, Object> session = new LinkedHashMap<>();
+                            session.put("sessionKey", node.path("session_key").asLong());
+                            session.put("meetingName", circuitName + " — " + node.path("session_name").asText());
+                            session.put("sessionType", sessionType);
+                            session.put("dateStart", dateStart);
+                            session.put("circuitName", circuitName);
+                            session.put("year", node.path("year").asInt());
+                            sessions.add(session);
                         }
-                        String circuitName = node.path("circuit_short_name").asText();
-                        String dateStart = node.path("date_start").asText();
-                        Map<String, Object> session = new LinkedHashMap<>();
-                        session.put("sessionKey", node.path("session_key").asLong());
-                        session.put("meetingName", circuitName + " — " + node.path("session_name").asText());
-                        session.put("sessionType", sessionType);
-                        session.put("dateStart", dateStart);
-                        session.put("circuitName", circuitName);
-                        session.put("year", node.path("year").asInt());
-                        sessions.add(session);
                     }
                 }
             }
