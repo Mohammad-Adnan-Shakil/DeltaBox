@@ -149,7 +149,7 @@ public class TelemetryService {
             Instant lapEndB = lapStartB.plusMillis((long) (durationB * 1000));
 
             // Fetch car data for driver A
-            String urlA = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA + "&lap_number=" + lapA + "&limit=500";
+            String urlA = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA;
             log.info("Fetching car_data A: {}", urlA);
             JsonNode allDataA = fetchAsJson(urlA);
 
@@ -161,7 +161,7 @@ public class TelemetryService {
             }
 
             // Fetch car data for driver B
-            String urlB = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB + "&lap_number=" + lapB + "&limit=500";
+            String urlB = OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB;
             log.info("Fetching car_data B: {}", urlB);
             JsonNode allDataB = fetchAsJson(urlB);
 
