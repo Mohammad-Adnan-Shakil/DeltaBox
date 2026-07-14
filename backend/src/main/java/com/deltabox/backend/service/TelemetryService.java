@@ -52,7 +52,7 @@ public class TelemetryService {
                         String dateStart = node.path("date_start").asText();
                         Map<String, Object> session = new LinkedHashMap<>();
                         session.put("sessionKey", node.path("session_key").asLong());
-                        session.put("meetingName", circuitName + " — " + node.path("session_name").asText() + " " + year);
+                        session.put("meetingName", circuitName + " — " + node.path("session_name").asText());
                         session.put("sessionType", sessionType);
                         session.put("dateStart", dateStart);
                         session.put("circuitName", circuitName);
