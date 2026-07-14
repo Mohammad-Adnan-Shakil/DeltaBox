@@ -62,8 +62,6 @@ const DeltaAnalyst = () => {
     [sessionKey, driverB]
   );
 
-  console.log("🔍 DeltaAnalyst laps debug:", { sessionKey, driverA, lapsA, lapsAError, driverB, lapsB, lapsBError });
-
   const sessionList = sessions || [];
   const driverList = drivers || [];
   const lapListA = lapsA || [];
