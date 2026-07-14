@@ -141,7 +141,7 @@ public class TelemetryService {
             Instant lapEndB = lapStartB.plusMillis((long) (durationB * 1000));
 
             // Fetch car data for driver A
-            JsonNode allDataA = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA + "&limit=500");
+            JsonNode allDataA = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberA + "&lap_number=" + lapA + "&limit=500");
 
             // Respect OpenF1 rate limit (max 3 req/s)
             try {
@@ -151,7 +151,7 @@ public class TelemetryService {
             }
 
             // Fetch car data for driver B
-            JsonNode allDataB = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB + "&limit=500");
+            JsonNode allDataB = fetchAsJson(OPENF1_BASE + "/car_data?session_key=" + sessionKey + "&driver_number=" + driverNumberB + "&lap_number=" + lapB + "&limit=500");
 
             if (allDataA == null || !allDataA.isArray() || allDataA.isEmpty() ||
                 allDataB == null || !allDataB.isArray() || allDataB.isEmpty()) {
