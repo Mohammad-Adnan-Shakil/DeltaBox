@@ -53,14 +53,16 @@ const DeltaAnalyst = () => {
     sessionKey ? `/telemetry/drivers?sessionKey=${sessionKey}` : null,
     [sessionKey]
   );
-  const { data: lapsA, loading: lapsALoading } = useFetch(
+  const { data: lapsA, loading: lapsALoading, error: lapsAError } = useFetch(
     driverA ? `/telemetry/laps?sessionKey=${sessionKey}&driverNumber=${driverA}` : null,
     [sessionKey, driverA]
   );
-  const { data: lapsB, loading: lapsBLoading } = useFetch(
+  const { data: lapsB, loading: lapsBLoading, error: lapsBError } = useFetch(
     driverB ? `/telemetry/laps?sessionKey=${sessionKey}&driverNumber=${driverB}` : null,
     [sessionKey, driverB]
   );
+
+  console.log("🔍 DeltaAnalyst laps debug:", { sessionKey, driverA, lapsA, lapsAError, driverB, lapsB, lapsBError });
 
   const sessionList = sessions || [];
   const driverList = drivers || [];
@@ -178,7 +180,7 @@ const DeltaAnalyst = () => {
                   }}
                   options={sessionList.map((s) => ({
                     value: String(s.sessionKey),
-                    label: `${s.circuitName} — ${s.sessionType}`,
+                    label: `${s.circuitName} — ${s.sessionType} ${s.year}`,
                   }))}
                   placeholder={sessionsLoading ? "Loading sessions..." : "Select session"}
                   disabled={sessionsLoading}
@@ -240,6 +242,9 @@ const DeltaAnalyst = () => {
                   placeholder={!driverA ? "Select driver A" : lapsALoading ? "Loading..." : "Select lap"}
                   disabled={!driverA || lapsALoading}
                 />
+                {lapsAError && (
+                  <p className="mt-1 text-xs text-[var(--color-data-danger)]">Failed to load laps: {lapsAError}</p>
+                )}
               </div>
 
               {/* Lap B */}
@@ -255,6 +260,9 @@ const DeltaAnalyst = () => {
                   placeholder={!driverB ? "Select driver B" : lapsBLoading ? "Loading..." : "Select lap"}
                   disabled={!driverB || lapsBLoading}
                 />
+                {lapsBError && (
+                  <p className="mt-1 text-xs text-[var(--color-data-danger)]">Failed to load laps: {lapsBError}</p>
+                )}
               </div>
             </div>
 
