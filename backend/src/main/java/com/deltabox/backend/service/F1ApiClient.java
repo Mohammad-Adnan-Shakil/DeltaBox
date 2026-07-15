@@ -119,54 +119,63 @@ public class F1ApiClient {
 
     public List<RaceResultDTO> fetchRaceResults() {
         try {
-            String url = BASE_URL + "/current/results.json?limit=2000";
-            log.info("[F1API] Fetching race results from: {}", url);
-            
-            String response = restTemplate.getForObject(url, String.class);
-            log.info("[F1API] Received response of {} bytes", response.length());
-            
-            JsonNode root = objectMapper.readTree(response);
-            JsonNode races = root.path("MRData")
-                    .path("RaceTable")
-                    .path("Races");
+            List<RaceResultDTO> allResults = new ArrayList<>();
+            int offset = 0;
+            int limit = 100;
 
-            log.info("[F1API] Found {} races with result data", races.size());
-            
-            List<RaceResultDTO> results = new ArrayList<>();
+            while (true) {
+                String url = BASE_URL + "/current/results.json?limit=" + limit + "&offset=" + offset;
+                log.info("[F1API] Fetching race results from: {}", url);
 
-            for (JsonNode race : races) {
-                Integer round = race.path("round").asInt();
-                String raceName = race.path("raceName").asText();
-                String date = race.path("date").asText();
-                JsonNode circuit = race.path("Circuit");
-                String circuitName = circuit.path("circuitName").asText();
-                JsonNode locationNode = circuit.path("Location");
-                String location = locationNode.path("locality").asText();
-                String country = locationNode.path("country").asText();
+                String response = restTemplate.getForObject(url, String.class);
+                log.info("[F1API] Received response of {} bytes", response.length());
 
-                JsonNode raceResults = race.path("Results");
-                log.debug("[F1API] Round {}: {} - {} results", round, raceName, raceResults.size());
-                
-                for (JsonNode row : raceResults) {
-                    JsonNode driver = row.path("Driver");
-                    String driverCode = driver.path("code").asText(driver.path("driverId").asText("")).toUpperCase();
-                    Integer position = row.path("position").asInt();
+                JsonNode root = objectMapper.readTree(response);
+                int total = root.path("MRData").path("total").asInt(0);
 
-                    results.add(new RaceResultDTO(
-                            round,
-                            raceName,
-                            circuitName,
-                            location,
-                            country,
-                            date,
-                            driverCode,
-                            position
-                    ));
+                JsonNode races = root.path("MRData")
+                        .path("RaceTable")
+                        .path("Races");
+
+                log.info("[F1API] Page {}: {} races with result data (total={})", (offset / limit) + 1, races.size(), total);
+
+                for (JsonNode race : races) {
+                    Integer round = race.path("round").asInt();
+                    String raceName = race.path("raceName").asText();
+                    String date = race.path("date").asText();
+                    JsonNode circuit = race.path("Circuit");
+                    String circuitName = circuit.path("circuitName").asText();
+                    JsonNode locationNode = circuit.path("Location");
+                    String location = locationNode.path("locality").asText();
+                    String country = locationNode.path("country").asText();
+
+                    JsonNode raceResults = race.path("Results");
+                    log.debug("[F1API] Round {}: {} - {} results", round, raceName, raceResults.size());
+
+                    for (JsonNode row : raceResults) {
+                        JsonNode driver = row.path("Driver");
+                        String driverCode = driver.path("code").asText(driver.path("driverId").asText("")).toUpperCase();
+                        Integer position = row.path("position").asInt();
+
+                        allResults.add(new RaceResultDTO(
+                                round,
+                                raceName,
+                                circuitName,
+                                location,
+                                country,
+                                date,
+                                driverCode,
+                                position
+                        ));
+                    }
                 }
+
+                offset += limit;
+                if (offset >= total) break;
             }
 
-            log.info("[F1API] Total race result entries parsed: {}", results.size());
-            return results;
+            log.info("[F1API] Total race result entries parsed across all pages: {}", allResults.size());
+            return allResults;
         } catch (Exception e) {
             log.error("[F1API] Error fetching race results", e);
             throw new RuntimeException("Error fetching race results: " + e.getMessage(), e);

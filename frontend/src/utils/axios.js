@@ -31,19 +31,70 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// ✅ RESPONSE INTERCEPTOR: Handle 401 errors and redirect to login
-// This is set up dynamically in AuthProvider to have access to logout & navigate
+// ✅ RESPONSE INTERCEPTOR: Silent token refresh on 401
 export const setupResponseInterceptor = () => {
-  // Return the interceptor ID so it can be removed/re-added if needed
+  let isRefreshing = false;
+  let failedQueue = [];
+
+  const processQueue = (error, token = null) => {
+    failedQueue.forEach((prom) => {
+      if (error) {
+        prom.reject(error);
+      } else {
+        prom.resolve(token);
+      }
+    });
+    failedQueue = [];
+  };
+
   return api.interceptors.response.use(
     (response) => response,
-    (error) => {
-      if (error.response?.status === 401) {
-        // Token expired or invalid - clear auth state and redirect
-        localStorage.removeItem("token");
-        window.location.href = "/login";
+    async (error) => {
+      const originalRequest = error.config;
+
+      if (error.response?.status !== 401 || originalRequest._retry) {
+        return Promise.reject(error);
       }
-      return Promise.reject(error);
+
+      const refreshToken = localStorage.getItem("refreshToken");
+      if (!refreshToken) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/login";
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then((token) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return api(originalRequest);
+        });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        const { data } = await axios.post(
+          `${normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL)}/api/auth/refresh`,
+          { refreshToken }
+        );
+
+        localStorage.setItem("token", data.token);
+        processQueue(null, data.token);
+        originalRequest.headers.Authorization = `Bearer ${data.token}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
+        window.location.href = "/login";
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
+      }
     }
   );
 };

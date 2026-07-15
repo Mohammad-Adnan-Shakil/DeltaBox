@@ -78,24 +78,31 @@ const ChartsSection = ({ drivers, races, loading }) => {
               const gap = index === 0 ? null : maxPoints - points;
 
               return (
-                <div key={driver.driverId || driver.code} className="grid grid-cols-[50px_20px_1fr_50px_auto] items-center gap-2">
-                  <span className={`font-display font-bold text-sm uppercase tracking-wide ${isTop ? 'text-[var(--color-accent-gold)]' : 'text-text-secondary'}`}>
-                    {isTop ? 'P1' : `P${index + 1}`}
-                  </span>
-                  <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: driver.teamColor || 'var(--color-data-neutral)' }} />
-                  <div className="h-10 overflow-hidden rounded-lg bg-white/5">
-                    <div
-                      className="h-full rounded-lg transition-all duration-700 relative overflow-hidden"
-                      style={{
-                        width: `${widthPct}%`,
-                        background: isTop
-                        ? "linear-gradient(90deg,var(--color-accent-gold),#ffeb85)"
-                            : "linear-gradient(90deg,var(--color-accent-500),#ff4d6d)",
-                      }}
-                    >
-                      {isTop && (
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
-                      )}
+                <div key={driver.driverId || driver.code} className="grid grid-cols-[50px_1fr_50px_auto] items-center gap-2">
+                  <div className="flex flex-col items-start">
+                    <span className={`font-display font-bold text-sm uppercase tracking-wide leading-tight ${isTop ? 'text-[var(--color-accent-gold)]' : 'text-whitePrimary'}`}>
+                      {driver.code || "—"}
+                    </span>
+                    <span className={`text-[10px] leading-tight ${isTop ? 'text-[var(--color-accent-gold)]/70' : 'text-text-muted'}`}>
+                      {driver.name || ""}
+                    </span>
+                  </div>
+                  <div className="h-10 overflow-hidden rounded-lg bg-white/5 flex items-center gap-2">
+                    <span className={`shrink-0 h-2 w-2 rounded-full ml-2`} style={{ backgroundColor: driver.teamColor || 'var(--color-data-neutral)' }} />
+                    <div className="flex-1 h-full relative">
+                      <div
+                        className="h-full rounded-lg transition-all duration-700 relative overflow-hidden"
+                        style={{
+                          width: `${widthPct}%`,
+                          background: isTop
+                          ? "linear-gradient(90deg,var(--color-accent-gold),#ffeb85)"
+                              : "linear-gradient(90deg,var(--color-accent-500),#ff4d6d)",
+                        }}
+                      >
+                        {isTop && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+                        )}
+                      </div>
                     </div>
                   </div>
                   <span className="font-mono text-right text-sm font-semibold text-whitePrimary">{Math.round(points)}</span>
