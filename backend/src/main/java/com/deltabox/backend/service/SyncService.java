@@ -160,6 +160,9 @@ public class SyncService {
 
     public List<Race> syncRaces() {
         try {
+            // Always sync drivers first so race results can reference current points
+            syncDrivers();
+
             String key = "races";
             if (!shouldSync(key)) {
                 log.info("Using cached races data");
