@@ -5,13 +5,10 @@ services:
   # 🚀 Spring Boot Backend Service
   - type: web
     name: deltabox-backend
-    runtime: java
+    runtime: docker
     plan: standard
-    buildCommand: |
-      cd backend
-      chmod +x ./mvnw
-      ./mvnw clean package -DskipTests -Dspring.profiles.active=production
-    startCommand: java -jar backend/target/backend-0.0.2-SNAPSHOT.jar
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     envVars:
       - key: SPRING_DATASOURCE_URL
         sync: false  # Set manually in Render dashboard to the Neon Postgres connection string
