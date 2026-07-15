@@ -1,7 +1,7 @@
 package com.deltabox.backend.config;
 
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.core.annotation.Order;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import com.deltabox.backend.model.Race;
@@ -10,8 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@Order(2)
-public class DatabaseInitializer implements CommandLineRunner {
+public class DatabaseInitializer {
 
     private final RaceRepository raceRepository;
 
@@ -19,9 +18,9 @@ public class DatabaseInitializer implements CommandLineRunner {
         this.raceRepository = raceRepository;
     }
 
-    @Override
+    @EventListener(ApplicationReadyEvent.class)
     @Transactional
-    public void run(String... args) throws Exception {
+    public void onApplicationReady() {
         // Only seed if database is empty
         if (raceRepository.count() > 0) {
             System.out.println("✓ Database already initialized");
