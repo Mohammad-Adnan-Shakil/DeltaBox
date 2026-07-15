@@ -56,18 +56,6 @@ services:
     healthCheckPath: /health
     autoDeploy: true
 
-  # 🎨 React Frontend (Static Site)
-  - type: static
-    name: deltabox-frontend
-    buildCommand: |
-      cd frontend
-      npm install
-      npm run build
-    publishPath: frontend/dist
-    envVars:
-      - key: VITE_API_BASE_URL
-        value: https://deltabox-2.onrender.com
-
 # 🗄️ PostgreSQL Database
 # Environment variables for local development:
 # - ML_SERVICE_URL=http://localhost:5000 (for local development)
