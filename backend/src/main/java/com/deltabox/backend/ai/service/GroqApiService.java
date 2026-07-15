@@ -41,8 +41,9 @@ public class GroqApiService {
 
     @PostConstruct
     public void init() {
-        if (apiKey == null || apiKey.isEmpty()) {
-            log.warn("GROQ_API_KEY not set - Groq API service will use fallback mode");
+        if (apiKey == null || apiKey.isEmpty() || apiKey.equals("mock")) {
+            log.warn("GROQ_API_KEY not set or set to 'mock' - Groq AI commentary unavailable");
+            this.apiKey = null;
         } else {
             // Log masked API key for security (show first 5 chars)
             String maskedKey = apiKey.length() > 5 ? apiKey.substring(0, 5) + "..." : apiKey;

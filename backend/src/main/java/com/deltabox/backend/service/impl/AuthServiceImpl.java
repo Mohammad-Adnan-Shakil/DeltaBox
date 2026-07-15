@@ -14,6 +14,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -86,7 +87,7 @@ public class AuthServiceImpl implements AuthService {
                 user = userRepository.findByEmail(identifier)
                         .orElseThrow(() -> {
                             logger.error("User not found with email: {}", identifier);
-                            return new RuntimeException("Invalid credentials");
+                            return new UsernameNotFoundException("Invalid credentials");
                         });
             } else {
                 // Treat as username
@@ -94,7 +95,7 @@ public class AuthServiceImpl implements AuthService {
                 user = userRepository.findByUsername(identifier)
                         .orElseThrow(() -> {
                             logger.error("User not found with username: {}", identifier);
-                            return new RuntimeException("Invalid credentials");
+                            return new UsernameNotFoundException("Invalid credentials");
                         });
             }
 

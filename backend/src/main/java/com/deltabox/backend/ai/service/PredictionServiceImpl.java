@@ -3,6 +3,7 @@ package com.deltabox.backend.ai.service;
 import com.deltabox.backend.ai.dto.PredictionRequestDTO;
 import com.deltabox.backend.ai.dto.PredictionResponseDTO;
 import com.deltabox.backend.dto.DriverIntelligenceResponse;
+import com.deltabox.backend.exception.ResourceNotFoundException;
 import com.deltabox.backend.model.Driver;
 import com.deltabox.backend.model.Race;
 import com.deltabox.backend.repository.DriverRepository;
@@ -43,11 +44,11 @@ public class PredictionServiceImpl implements PredictionService {
 
         // Fetch driver from DB
         Driver driver = driverRepository.findById(driverId)
-                .orElseThrow(() -> new RuntimeException("Driver not found: " + driverId));
+                .orElseThrow(() -> new ResourceNotFoundException("Driver not found: " + driverId));
 
         // Fetch the target race (for circuit & season info)
         Race race = raceRepository.findById(request.getRaceId())
-                .orElseThrow(() -> new RuntimeException("Race not found: " + request.getRaceId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Race not found: " + request.getRaceId()));
 
         // Fetch all race results for this driver (career context)
         List<Race> allDriverRaces = raceRepository.findByDriverIdAndPositionIsNotNullOrderByDateAsc(driverId);

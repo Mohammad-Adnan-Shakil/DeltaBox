@@ -14,7 +14,7 @@ public class HistoricalSeason implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(name = "\"year\"", unique = true, nullable = false)
     private Integer year;
 
     private Integer totalRounds;
