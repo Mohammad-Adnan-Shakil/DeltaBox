@@ -46,16 +46,13 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 // ✅ CORS configuration
-                .cors()
-                .and()
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 
                 // ✅ CSRF disabled (stateless API doesn't need CSRF protection)
-                .csrf().disable()
+                .csrf(csrf -> csrf.disable())
                 
                 // ✅ Stateless session (important for JWT)
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 
                 // ✅ Authorization rules
                 .authorizeHttpRequests(auth -> auth
@@ -96,11 +93,9 @@ public class SecurityConfig {
                 )
                 
                 // ✅ Exception handling (optional but recommended)
-                .exceptionHandling()
-                .authenticationEntryPoint((request, response, authException) -> {
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
                     response.sendError(401, "Unauthorized");
-                })
-                .and()
+                }))
                 
                 // ✅ JWT filter MUST be added before UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

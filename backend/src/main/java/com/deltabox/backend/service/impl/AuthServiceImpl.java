@@ -66,9 +66,10 @@ public class AuthServiceImpl implements AuthService {
                 .build();
 
         String token = jwtService.generateToken(userDetails);
+        String refreshToken = jwtService.generateRefreshToken(userDetails);
         logger.info("JWT token generated for new user: {}", user.getEmail());
 
-        return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getRole());
+        return new AuthResponse(token, refreshToken, user.getUsername(), user.getEmail(), user.getRole());
     }
 
     // ✅ LOGIN
@@ -119,12 +120,42 @@ public class AuthServiceImpl implements AuthService {
                     .build();
 
             String token = jwtService.generateToken(userDetails);
+            String refreshToken = jwtService.generateRefreshToken(userDetails);
             logger.info("JWT token generated successfully for user: {}", user.getEmail());
 
-            return new AuthResponse(token, user.getUsername(), user.getEmail(), user.getRole());
+            return new AuthResponse(token, refreshToken, user.getUsername(), user.getEmail(), user.getRole());
         } catch (Exception e) {
             logger.error("Login failed for identifier: {}", request.getIdentifier(), e);
             throw e;
         }
+    }
+
+    // ✅ REFRESH TOKEN
+    @Override
+    public AuthResponse refresh(String refreshToken) {
+        logger.info("Refresh token request received");
+
+        if (!jwtService.validateRefreshToken(refreshToken)) {
+            logger.error("Invalid or expired refresh token");
+            throw new RuntimeException("Invalid refresh token");
+        }
+
+        String email = jwtService.extractUsername(refreshToken);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> {
+                    logger.error("User not found for refresh token: {}", email);
+                    return new UsernameNotFoundException("User not found");
+                });
+
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(user.getEmail())
+                .password(user.getPassword())
+                .roles(user.getRole())
+                .build();
+
+        String newAccessToken = jwtService.generateToken(userDetails);
+        logger.info("Access token refreshed for user: {}", user.getEmail());
+
+        return new AuthResponse(newAccessToken, refreshToken, user.getUsername(), user.getEmail(), user.getRole());
     }
 }
