@@ -45,8 +45,7 @@ services:
         value: 3.11.0
       - key: PORT
         value: 5000
-      - key: MODEL_DOWNLOAD_URL
-        sync: false  # Optional: URL to download model files if not in repo
+      # Models are committed in ml-service/models/ — no download needed
     healthCheckPath: /health
     autoDeploy: true
 
