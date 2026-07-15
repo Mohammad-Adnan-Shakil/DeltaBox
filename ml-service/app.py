@@ -93,13 +93,10 @@ os.makedirs(MODELS_DIR, exist_ok=True)
 logger.info(f"Models directory: {MODELS_DIR}")
 
 if not check_models_exist():
-    raise RuntimeError(
-        "V2 model files missing in ml-service/models/. "
-        "Synthetic training fallback is disabled in production. "
-        "Run `cp backend/ml/models/*_v2.pkl ml-service/models/` to deploy trained models."
-    )
-
-models_loaded = load_models()
+    logger.warning("V2 model files missing in ml-service/models/. Service will start but predictions will fail.")
+    models_loaded = False
+else:
+    models_loaded = load_models()
 
 
 def simulate_impact(predicted: float, avg_last5: float) -> str:
