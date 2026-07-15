@@ -43,7 +43,7 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- � H2 Database (for local development) -->
+        <!-- H2 Database (local development only — excluded from production Docker image) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -121,6 +121,14 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>com.h2database</groupId>
+                            <artifactId>h2</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
             </plugin>
 
             <!-- ⚙️ Compiler -->
