@@ -24,7 +24,9 @@ services:
         sync: false  # Set manually in Render dashboard
       - key: SPRING_PROFILES_ACTIVE
         value: production
-      - key: SERVER_PORT
+      # Explicit PORT matches Render's expectation so it doesn't detect
+      # a "new primary port" and restart the deploy mid-boot
+      - key: PORT
         value: 8080
     healthCheckPath: /actuator/health
     autoDeploy: true
