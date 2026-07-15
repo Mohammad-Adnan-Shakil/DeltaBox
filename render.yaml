@@ -13,10 +13,7 @@ services:
       - key: SPRING_DATASOURCE_URL
         sync: false  # Set manually in Render dashboard to the Neon Postgres connection string
       - key: ML_SERVICE_URL
-        fromService:
-          type: web
-          name: deltabox-ml-service
-          property: hostport
+        value: https://deltabox-ml-service.onrender.com
       - key: JWT_SECRET_KEY
         generateValue: true
       - key: GROQ_API_KEY
@@ -36,7 +33,7 @@ services:
   - type: web
     name: deltabox-ml-service
     runtime: python
-    plan: standard
+    plan: free
     buildCommand: |
       cd ml-service
       pip install -r requirements.txt
