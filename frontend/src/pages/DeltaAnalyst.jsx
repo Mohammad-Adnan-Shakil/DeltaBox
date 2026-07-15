@@ -71,7 +71,8 @@ const DeltaAnalyst = () => {
   const selectedDriverA = driverList.find(d => String(d.driverNumber) === driverA);
   const selectedDriverB = driverList.find(d => String(d.driverNumber) === driverB);
 
-  const canCompare = sessionKey && driverA && driverB && lapA && lapB;
+  const sameDriver = driverA && driverB && driverA === driverB;
+  const canCompare = sessionKey && driverA && driverB && lapA && lapB && !sameDriver;
 
   const handleCompare = async () => {
     if (!canCompare) return;
@@ -265,6 +266,10 @@ const DeltaAnalyst = () => {
               </div>
             </div>
 
+            {sameDriver && (
+              <p className="text-sm text-[var(--color-data-danger)] text-center">Select two different drivers to compare</p>
+            )}
+
             <Button
               onClick={handleCompare}
               disabled={!canCompare || comparing}
@@ -375,8 +380,8 @@ const DeltaAnalyst = () => {
                   />
                   <Line type="monotone" dataKey={`${codeA} Throttle`} stroke={DRIVER_A_COLOR} strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
                   <Line type="monotone" dataKey={`${codeB} Throttle`} stroke={DRIVER_B_COLOR} strokeWidth={1.5} dot={false} strokeDasharray="4 2" />
-                  <Line type="monotone" dataKey={`${codeA} Brake`} stroke={BRAKE_COLOR} strokeWidth={1.5} dot={false} />
-                  <Line type="monotone" dataKey={`${codeB} Brake`} stroke={THROTTLE_COLOR} strokeWidth={1.5} dot={false} />
+                  <Line type="monotone" dataKey={`${codeA} Brake`} stroke={DRIVER_A_COLOR} strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey={`${codeB} Brake`} stroke={DRIVER_B_COLOR} strokeWidth={2} dot={false} />
                 </LineChart>
               </ResponsiveContainer>
             </Card>

@@ -30,3 +30,4 @@ backend/GROQ_API_KEY*
 *.njsproj
 *.sln
 *.sw?
+.vercel

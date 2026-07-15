@@ -36,7 +36,7 @@ const MainLayout = ({ children }) => {
         </div>
       </div>
 
-      <div className="flex">
+      <div className="flex lg:h-screen lg:overflow-hidden">
         <Sidebar
           mobileOpen={mobileNavOpen}
           onNavigate={() => setMobileNavOpen(false)}
@@ -44,7 +44,7 @@ const MainLayout = ({ children }) => {
           onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
         />
 
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0 flex-1 lg:overflow-y-auto">
           <div className="mx-auto w-full max-w-[1400px]">
             <div className="px-6 py-6 md:px-8 lg:px-12">
               <AnimatePresence mode="wait">

@@ -30,10 +30,10 @@ export const ResultsTable = ({ results = [] }) => {
                 {r.position || i + 1}
               </td>
               <td className="px-4 py-3 text-[var(--color-text-primary)]">
-                {r.driverName || r.driver?.name}
+                {r.name}
               </td>
               <td className="px-4 py-3 text-[var(--color-text-secondary)]">
-                {r.teamName || r.team}
+                {r.team}
               </td>
               <td className="px-4 py-3 text-right font-mono text-sm font-bold text-[var(--color-data-warning)]">
                 {r.points}

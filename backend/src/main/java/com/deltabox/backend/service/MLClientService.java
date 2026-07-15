@@ -13,9 +13,11 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.Duration;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * ML Service client for communicating with the Python Flask ML microservice.
@@ -26,6 +28,9 @@ import java.util.Map;
 public class MLClientService {
 
     private static final Logger log = LoggerFactory.getLogger(MLClientService.class);
+    private static final int MAX_RETRIES = 3;
+    private static final Duration BASE_DELAY = Duration.ofSeconds(1);
+    private static final Random RETRY_JITTER = new Random();
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -56,6 +61,34 @@ public class MLClientService {
      * Run ML prediction for a driver's race outcome.
      * Calls POST /predict on the ML service.
      */
+    private <T> T executeWithRetry(String url, HttpEntity<?> request, Class<T> responseType, HttpMethod method) {
+        int attempt = 0;
+        while (true) {
+            try {
+                attempt++;
+                ResponseEntity<T> response = restTemplate.exchange(url, method, request, responseType);
+                if (!response.getStatusCode().is2xxSuccessful()) {
+                    throw new RuntimeException("ML service returned error: " + response.getStatusCode());
+                }
+                return response.getBody();
+            } catch (HttpClientErrorException.TooManyRequests e) {
+                if (attempt >= MAX_RETRIES) {
+                    log.error("ML service rate limited after {} retries", MAX_RETRIES);
+                    throw new RuntimeException("ML service is temporarily unavailable due to rate limiting. Please wait a moment and try again.", e);
+                }
+                long delay = BASE_DELAY.multipliedBy(1L << (attempt - 1)).toMillis()
+                    + RETRY_JITTER.nextInt(500);
+                log.warn("ML service rate limited (attempt {}/{}), retrying in {}ms", attempt, MAX_RETRIES, delay);
+                try {
+                    Thread.sleep(delay);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new RuntimeException("Retry interrupted", ie);
+                }
+            }
+        }
+    }
+
     public DriverIntelligenceResponse predict(Map<String, Object> payload) {
         try {
             String url = mlServiceUrl + "/predict";
@@ -66,26 +99,14 @@ public class MLClientService {
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(payload, headers);
             
             log.info("Calling ML service at: {}", url);
-            ResponseEntity<JsonNode> response = restTemplate.exchange(
-                url,
-                HttpMethod.POST,
-                request,
-                JsonNode.class
-            );
+            JsonNode body = executeWithRetry(url, request, JsonNode.class, HttpMethod.POST);
             
-            if (!response.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("ML service returned error: " + response.getStatusCode());
-            }
-            
-            JsonNode body = response.getBody();
             if (body == null) {
                 throw new RuntimeException("ML service returned empty response");
             }
             
             return mapToIntelligenceResponse(body);
             
-        } catch (HttpClientErrorException.TooManyRequests e) {
-            throw new RuntimeException("ML service is temporarily unavailable due to rate limiting. Please wait a moment and try again.", e);
         } catch (HttpClientErrorException e) {
             throw new RuntimeException("ML service returned error: " + e.getStatusCode(), e);
         } catch (Exception e) {
