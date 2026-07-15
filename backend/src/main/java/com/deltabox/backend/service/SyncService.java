@@ -65,6 +65,10 @@ public class SyncService {
         syncMetaRepository.save(new SyncMeta(key, System.currentTimeMillis()));
     }
 
+    private void clearSyncTime(String key) {
+        syncMetaRepository.deleteById(key);
+    }
+
     public List<Driver> syncDrivers() {
         try {
             String key = "drivers";
@@ -160,7 +164,8 @@ public class SyncService {
 
     public List<Race> syncRaces() {
         try {
-            // Always sync drivers first so race results can reference current points
+            // Force sync drivers to get current championship points
+            clearSyncTime("drivers");
             syncDrivers();
 
             String key = "races";
