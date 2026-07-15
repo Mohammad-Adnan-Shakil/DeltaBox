@@ -93,6 +93,7 @@ public class SyncService {
                     // Create new driver only if doesn't exist
                     Driver driver = new Driver(dto.getCode(), dto.getName(), dto.getNationality());
                     driver.setSeason(CURRENT_SEASON);
+                    driver.setPoints(dto.getPoints());
 
                     Team mappedTeam = teamsByName.get(dto.getTeam());
                     if (mappedTeam != null) {
@@ -105,6 +106,7 @@ public class SyncService {
                     // Update existing driver if needed
                     existingDriver.setName(dto.getName());
                     existingDriver.setNationality(dto.getNationality());
+                    existingDriver.setPoints(dto.getPoints());
 
                     Team mappedTeam = teamsByName.get(dto.getTeam());
                     if (mappedTeam != null) {
