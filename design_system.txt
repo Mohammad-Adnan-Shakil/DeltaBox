@@ -74,6 +74,10 @@ Font Family
             (use for: lap times, position numbers, 
              model outputs, confidence scores, 
              any numerical data)
+  Display:  'Space Grotesk', 'Inter', system-ui, sans-serif
+            (use for: hero headlines, H1-level section headers,
+             large display text only — do NOT replace Inter or
+             JetBrains Mono in body, UI, or numeric content)
 
 Font Scale
   --text-xs:   0.75rem  / 12px   line-height: 1rem
@@ -107,6 +111,8 @@ Rules
   Section labels use wide tracking + uppercase
   Body text uses normal tracking
   Never use font-black below text-3xl
+  Space Grotesk is for display-scale headlines only (hero, H1)
+    — never for body, buttons, labels, stats, or numeric data
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 SPACING SYSTEM
@@ -320,6 +326,21 @@ Aurora accent (hero/dashboard only, not every page):
 Noise texture (optional):
   Very subtle noise overlay at 2-3% opacity
   Adds depth without visual noise
+
+Grid overlay (consistent across landing + all app pages):
+  SVG-style repeating grid at 2.5% opacity
+  Color: white
+  Cell size: 64px
+  1px lines
+  Applied as fixed overlay on page containers
+  pointer-events: none
+
+Glow vignette (consistent across landing + all app pages):
+  Two radial gradients, very subtle, applied as fixed overlay
+  --color-accent-glow (red) at 6% opacity, positioned 20% left / 50% top
+  --color-data-primary (blue) at 3% opacity, positioned 80% right / 20% top
+  Never center the glow — keep it peripheral
+  pointer-events: none
 
 Rule: Backgrounds should recede, not compete with content.
 If the background is distracting, reduce opacity by 50%.

@@ -6,6 +6,7 @@ import MainLayout from "./layout/MainLayout";
 import Logo from "./components/Logo";
 
 // Lazy load pages for code splitting
+const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -136,8 +137,8 @@ function App() {
         }
       />
 
-      {/* Default */}
-      <Route path="/" element={<Navigate to="/dashboard" />} />
+      {/* Landing / Marketing */}
+      <Route path="/" element={<Landing />} />
 
       {/* Fallback */}
       <Route path="*" element={<Navigate to="/dashboard" />} />

@@ -18,7 +18,14 @@ const MainLayout = ({ children }) => {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-[var(--color-base-950)] text-[var(--color-text-primary)]">
+    <div className="min-h-screen bg-[var(--color-base-950)] text-[var(--color-text-primary)] relative">
+      <div className="pointer-events-none fixed inset-0 bg-grid-white/[0.025]" style={{
+        backgroundImage: `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`,
+        backgroundSize: "64px 64px",
+      }} />
+      <div className="pointer-events-none fixed inset-0" style={{
+        background: "radial-gradient(ellipse at 20% 50%, rgba(227,30,30,0.06) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(59,130,246,0.03) 0%, transparent 50%)",
+      }} />
       {/* Mobile top bar */}
       <div className="lg:hidden flex h-14 items-center justify-between border-b border-[var(--color-base-600)] px-4 sticky top-0 bg-[var(--color-base-900)] z-50">
         <button

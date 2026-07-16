@@ -32,7 +32,7 @@ const HeroSection = () => (
   </section>
 );
 
-const ChartsSection = ({ drivers, races, loading }) => {
+export const ChartsSection = ({ drivers, races, loading }) => {
   const [chartsVisible, setChartsVisible] = useState(false);
 
   useEffect(() => {
