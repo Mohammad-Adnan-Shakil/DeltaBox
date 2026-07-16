@@ -57,7 +57,7 @@ PYTHON_VERSION=3.11.0
 - **Runtime:** Java
 - **Build Command:** `cd backend && ./mvnw clean package -DskipTests`
 - **Start Command:** `java -jar backend/target/backend-0.0.1-SNAPSHOT.jar`
-- **Health Check Path:** `/actuator/health`
+- **Health Check Path:** `/api/health`
 
 **Environment Variables:**
 ```

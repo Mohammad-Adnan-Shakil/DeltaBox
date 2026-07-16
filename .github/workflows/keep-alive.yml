@@ -8,4 +8,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping backend health endpoint
-        run: curl -sf https://deltabox-2.onrender.com/actuator/health || echo "Ping failed, non-fatal"
+        run: curl -sf https://deltabox-2.onrender.com/api/health || echo "Ping failed, non-fatal"
