@@ -1,30 +1,32 @@
-# Multi-stage build for DeltaBox Spring Boot backend
-# Stage 1: Build with Maven
-FROM maven:3.9.6-eclipse-temurin-21 AS builder
+# Multi-stage build for DeltaBox Spring Boot backend (GraalVM Native Image)
+# Stage 1: Native compilation with GraalVM
+FROM ghcr.io/graalvm/graalvm-community:21 AS builder
 
 WORKDIR /build
 
-# Copy pom.xml first (for layer caching)
-COPY pom.xml .
+# Copy Maven wrapper and build config first (for layer caching)
+COPY mvnw .mvn pom.xml ./
+RUN chmod +x mvnw && ./mvnw -N dependency:go-offline 2>&1 || true
 
-# Copy source code
+# Copy source
 COPY src ./src
 
-# Build the application (skip tests for faster build)
-RUN mvn clean package -DskipTests
+# Build native image (AOT compilation — slow but runs during Render's BUILD phase)
+RUN ./mvnw -Pnative native:compile -DskipTests
 
-# Stage 2: Runtime with JRE
-FROM eclipse-temurin:21-jre-jammy
+# Stage 2: Minimal runtime — no JVM needed
+FROM debian:12-slim
 
 WORKDIR /app
 
-# Copy the built JAR from builder stage and rename to app.jar
-COPY --from=builder /build/target/*.jar app.jar
+# ca-certificates for HTTPS calls (Groq API, ML service)
+RUN apt-get update && apt-get install -y ca-certificates tzdata && rm -rf /var/lib/apt/lists/*
+
+# Copy the native binary from builder
+COPY --from=builder /build/target/backend .
 
 # Expose the application port
 EXPOSE 8080
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
-
-# Build bust: 2026-05-02-09-44
+# Run the native binary directly (no JVM, no java command)
+ENTRYPOINT ["./backend"]
