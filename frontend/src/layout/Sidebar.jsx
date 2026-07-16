@@ -90,12 +90,12 @@ const Sidebar = ({ mobileOpen = false, onNavigate = () => {}, collapsed = false,
                 </NavLink>
               ))}
 
-              {/* AI Prediction */}
+              {/* Apex Intelligence */}
               <NavLink to="/ai" onClick={onNavigate} className="group relative block">
                 {({ isActive }) => (
                   <div className={`${navLinkClass({ isActive })} ${collapsed ? "xl:justify-center" : ""}`}>
                     <Brain className={iconClass} />
-                    <span className={`${labelClass} ${hiddenLabel}`}>AI Prediction</span>
+                    <span className={`${labelClass} ${hiddenLabel}`}>Apex Intelligence</span>
                     {!isAuthenticated && <Lock className={`h-3 w-3 text-[var(--color-text-tertiary)] ${collapsed ? "xl:hidden" : ""}`} />}
                   </div>
                 )}

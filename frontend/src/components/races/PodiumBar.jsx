@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Trophy } from "lucide-react";
-import { nationalityFlag } from "../../utils/formatters";
+import { nationalityFlag, teamColor } from "../../utils/formatters";
 
 const PodiumBar = ({ position, driver, delay = 0 }) => {
   // Position color mapping
@@ -80,7 +80,7 @@ const PodiumBar = ({ position, driver, delay = 0 }) => {
         className={`${height} ${colors.barBg} rounded-t-2xl border border-gray-600/30 backdrop-blur-sm shadow-lg relative overflow-hidden group hover:shadow-xl transition-shadow`}
         style={{
           minWidth: "96px",
-          background: `linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0.1) 100%), linear-gradient(to bottom, ${position === 1 ? "rgb(234,179,8)" : position === 2 ? "rgb(209,213,219)" : "rgb(251,146,60)"}, transparent)`,
+          background: `linear-gradient(180deg, rgba(255,255,255,0.15) 0%, rgba(0,0,0,0.1) 100%), ${teamColor(driver?.team)}`,
         }}
       >
         {/* Reflective overlay */}

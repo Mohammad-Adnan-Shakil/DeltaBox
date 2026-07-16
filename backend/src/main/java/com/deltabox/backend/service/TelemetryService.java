@@ -42,8 +42,16 @@ public class TelemetryService {
         }
         try {
             List<Map<String, Object>> sessions = new ArrayList<>();
+            int callIndex = 0;
             for (int y : years) {
                 for (String sessionType : List.of("Race", "Qualifying")) {
+                    if (callIndex > 0) {
+                        try {
+                            Thread.sleep(400);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        }
+                    }
                     String url = OPENF1_BASE + "/sessions?year=" + y + "&session_name=" + sessionType;
                     log.info("Fetching sessions: {}", url);
                     String response = restTemplate.getForObject(url, String.class);
@@ -65,6 +73,7 @@ public class TelemetryService {
                             sessions.add(session);
                         }
                     }
+                    callIndex++;
                 }
             }
             sessions.sort((a, b) -> ((String) b.get("dateStart")).compareTo((String) a.get("dateStart")));

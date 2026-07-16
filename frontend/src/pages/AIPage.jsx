@@ -57,7 +57,7 @@ const EmptyPredictionState = () => (
 );
 
 const AIPage = () => {
-  usePageTitle("AI Prediction");
+  usePageTitle("Apex Intelligence");
 
   const { data: drivers, loading: driversLoading, error: driversError, refetch: refetchDrivers } = useFetch("/drivers");
   const { data: races, loading: racesLoading, error: racesError, refetch: refetchRaces } = useFetch("/races");
@@ -175,7 +175,7 @@ const AIPage = () => {
               <Brain className="h-5 w-5" />
             </div>
             <div>
-              <p className="section-label">AI Intelligence</p>
+              <p className="section-label">Apex Intelligence</p>
               <p className="font-display font-semibold text-xl uppercase tracking-wider">Prediction Setup</p>
             </div>
           </div>

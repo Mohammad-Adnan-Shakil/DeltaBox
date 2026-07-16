@@ -21,7 +21,7 @@ public class MLServiceKeepAlive {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Scheduled(fixedDelay = 600000) // every 10 minutes
+    @Scheduled(fixedDelay = 1_800_000) // every 30 minutes
     public void pingMLService() {
         try {
             restTemplate.getForObject(mlServiceUrl + "/health", String.class);
@@ -31,7 +31,7 @@ public class MLServiceKeepAlive {
         }
     }
 
-    @Scheduled(fixedDelay = 600000) // every 10 minutes
+    @Scheduled(fixedDelay = 1_800_000) // every 30 minutes
     public void pingSelf() {
         try {
             restTemplate.getForObject(

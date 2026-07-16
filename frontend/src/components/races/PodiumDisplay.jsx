@@ -1,4 +1,5 @@
 import { Badge } from "../common";
+import { teamColor } from "../../utils/formatters";
 
 export const PodiumDisplay = ({ results = [] }) => {
   if (!results || results.length === 0) return null;
@@ -16,7 +17,7 @@ export const PodiumDisplay = ({ results = [] }) => {
             <p className="text-xs text-[var(--color-text-secondary)]">{p2.team}</p>
             <p className="mt-1 font-mono text-sm font-bold text-[var(--color-text-secondary)]">{p2.points} pts</p>
           </div>
-          <div className="h-28 w-20 rounded-t-xl bg-[var(--color-base-700)] border border-[var(--color-glass-border)]" />
+          <div className="h-28 w-20 rounded-t-xl border border-[var(--color-glass-border)]" style={{ backgroundColor: teamColor(p2.team) }} />
         </div>
       )}
 
@@ -28,7 +29,7 @@ export const PodiumDisplay = ({ results = [] }) => {
             <p className="text-xs text-[var(--color-text-secondary)]">{p1.team}</p>
             <p className="mt-1 font-mono text-sm font-bold text-[var(--color-data-warning)]">{p1.points} pts</p>
           </div>
-          <div className="h-40 w-20 rounded-t-xl bg-[var(--color-accent-500)]/10 border border-[var(--color-accent-500)]/30" />
+          <div className="h-40 w-20 rounded-t-xl border" style={{ backgroundColor: teamColor(p1.team), borderColor: teamColor(p1.team) }} />
         </div>
       )}
 
@@ -40,7 +41,7 @@ export const PodiumDisplay = ({ results = [] }) => {
             <p className="text-xs text-[var(--color-text-secondary)]">{p3.team}</p>
             <p className="mt-1 font-mono text-sm font-bold text-[var(--color-text-secondary)]">{p3.points} pts</p>
           </div>
-          <div className="h-20 w-20 rounded-t-xl bg-[var(--color-base-700)] border border-[var(--color-glass-border)]" />
+          <div className="h-20 w-20 rounded-t-xl border border-[var(--color-glass-border)]" style={{ backgroundColor: teamColor(p3.team) }} />
         </div>
       )}
     </div>
