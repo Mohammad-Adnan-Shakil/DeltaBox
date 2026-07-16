@@ -1,0 +1,11 @@
+name: Keep Render Alive
+on:
+  schedule:
+    - cron: '*/14 * * * *'
+  workflow_dispatch: {}
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping backend health endpoint
+        run: curl -sf https://deltabox-2.onrender.com/actuator/health || echo "Ping failed, non-fatal"
