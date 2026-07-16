@@ -15,7 +15,7 @@ class DatabaseUrlEnvironmentPostProcessorTest {
 
         assertThat(normalized.jdbcUrl())
                 .isEqualTo("jdbc:postgresql://ep-cool-darkness.us-east-2.aws.neon.tech/neondb"
-                        + "?sslmode=require&channelBinding=require");
+                        + "?sslmode=require");
         assertThat(normalized.username()).isEqualTo("neondb_owner");
         assertThat(normalized.password()).isEqualTo("p@ssw0rd");
     }
@@ -29,7 +29,7 @@ class DatabaseUrlEnvironmentPostProcessorTest {
 
         assertThat(normalized.jdbcUrl())
                 .isEqualTo("jdbc:postgresql://ep-cool-darkness.us-east-2.aws.neon.tech/neondb"
-                        + "?user=neondb_owner&password=p%40ssw0rd&sslmode=require&channelBinding=require");
+                        + "?user=neondb_owner&password=p%40ssw0rd&sslmode=require");
         assertThat(normalized.username()).isNull();
         assertThat(normalized.password()).isNull();
     }
