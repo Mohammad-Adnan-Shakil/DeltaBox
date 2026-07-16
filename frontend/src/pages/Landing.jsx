@@ -38,7 +38,6 @@ const Landing = () => {
             driversCount={drivers?.length || 22}
             totalRaces={raceList.length}
             completedRaces={completedRaces.length || 0}
-            modelAccuracy={85}
           />
           <ChartsSection drivers={drivers} races={racesRaw} loading={loading} />
           <NextRaceWidget races={racesRaw || []} />

@@ -18,12 +18,14 @@ export const StatCardsRow = ({
         color="green"
         trend={totalRaces > 0 ? Math.round((completedRaces / totalRaces) * 100) : 0}
       />
-      <StatCard
-        label="Model Accuracy"
-        value={modelAccuracy}
-        icon={Brain}
-        color="yellow"
-      />
+      {modelAccuracy > 0 && (
+        <StatCard
+          label="Model Accuracy"
+          value={modelAccuracy}
+          icon={Brain}
+          color="yellow"
+        />
+      )}
     </div>
   );
 };
