@@ -42,7 +42,7 @@ export const useFetch = (endpoint, dependencies = []) => {
   return { data, loading, error, refetch: fetchData };
 };
 
-export const usePost = (endpoint) => {
+export const usePost = (endpoint, options = {}) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [data, setData] = useState(null);
@@ -51,7 +51,8 @@ export const usePost = (endpoint) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await api.post(endpoint, payload);
+      const config = options.timeout ? { timeout: options.timeout } : {};
+      const response = await api.post(endpoint, payload, config);
       const normalized = unwrapApiData(response.data);
       setData(normalized);
       return normalized;

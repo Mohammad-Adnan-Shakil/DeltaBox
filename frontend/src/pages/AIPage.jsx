@@ -61,7 +61,7 @@ const AIPage = () => {
 
   const { data: drivers, loading: driversLoading, error: driversError, refetch: refetchDrivers } = useFetch("/drivers");
   const { data: races, loading: racesLoading, error: racesError, refetch: refetchRaces } = useFetch("/races");
-  const { execute: runPrediction, loading: predictionLoading } = usePost("/ai/predict");
+  const { execute: runPrediction, loading: predictionLoading } = usePost("/ai/predict", { timeout: 45000 });
 
   const [selectedDriver, setSelectedDriver] = useState("");
   const [selectedRace, setSelectedRace] = useState("");

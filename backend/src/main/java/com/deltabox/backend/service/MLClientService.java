@@ -28,7 +28,7 @@ import java.util.Random;
 public class MLClientService {
 
     private static final Logger log = LoggerFactory.getLogger(MLClientService.class);
-    private static final int MAX_RETRIES = 5;
+    private static final int MAX_RETRIES = 4;
     private static final Duration BASE_DELAY = Duration.ofSeconds(2);
     private static final Random RETRY_JITTER = new Random();
 
