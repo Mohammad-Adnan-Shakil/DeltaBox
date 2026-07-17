@@ -1,6 +1,8 @@
 package com.deltabox.backend.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,6 +22,7 @@ public class UserActivityHistory {
     @Column(nullable = false, length = 255)
     private String summary;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
     private String payload;
 
