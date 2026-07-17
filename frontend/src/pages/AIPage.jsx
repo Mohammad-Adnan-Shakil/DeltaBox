@@ -6,6 +6,7 @@ import {
 import { Card, Button, LoadingState, ErrorState, EmptyState } from "../components/common";
 import { useFetch, usePost } from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
+import api from "../utils/axios";
 import { confidenceToPercent, formatImpact, impactIcon, roundPosition, teamColor } from "../utils/formatters";
 import { ConfidenceRing } from "../components/ai";
 import PredictionDistributionChart from "../components/PredictionDistributionChart";
@@ -105,6 +106,14 @@ const AIPage = () => {
       });
       setResult(response);
       setActionError("");
+      const driverName = selectedDriverData?.name || selectedDriver;
+      const raceName = selectedRaceData?.raceName || selectedRace;
+      const predictedRange = response?.predictedRange || "";
+      api.post("/api/history", {
+        toolType: "APEX_INTELLIGENCE",
+        summary: `${driverName} — ${raceName} prediction: ${predictedRange}`,
+        payload: JSON.stringify(response),
+      }).catch(() => {});
     } catch (err) {
       setActionError(err.message || "Prediction failed");
     }

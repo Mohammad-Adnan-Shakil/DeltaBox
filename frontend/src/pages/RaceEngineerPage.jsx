@@ -80,6 +80,11 @@ const RaceEngineerPage = () => {
           ...prev,
           { role: "engineer", message: response.data.response, timestamp: getTimestamp() }
         ]);
+        api.post("/api/history", {
+          toolType: "RACE_ENGINEER",
+          summary: driverMessage.length > 60 ? driverMessage.substring(0, 60) + "..." : driverMessage,
+          payload: JSON.stringify({ question: driverMessage, answer: response.data.response }),
+        }).catch(() => {});
       }
     } catch (err) {
       const errorMsg = err.response?.data?.error || err.message || "Failed to get engineer advice";

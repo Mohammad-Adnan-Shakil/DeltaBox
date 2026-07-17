@@ -1,9 +1,10 @@
 ﻿import { useEffect, useMemo, useState } from "react";
-import { Calendar, Flag, Trophy, Users, Star, Clock } from "lucide-react";
+import { Calendar, Flag, Trophy, Users, Star, Clock, Brain, Radio, GitCompare } from "lucide-react";
 import { Card, EmptyState, ErrorState, LoadingState } from "../components/common";
 import { useAuth } from "../context/AuthContext";
 import useFetch from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
+import SkeletonLoader from "../components/SkeletonLoader";
 import { nationalityFlag, teamColor } from "../utils/formatters";
 import api from "../services/api";
 
@@ -162,19 +163,123 @@ const Profile = () => {
         ) : null}
       </Card>
 
-      {/* Prediction History Placeholder */}
-      <Card delay={0.3}>
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="h-4 w-4 text-text-muted" />
-          <p className="section-label">Prediction History</p>
-        </div>
-        <div className="flex flex-col items-center justify-center py-8 text-center">
-          <Trophy className="h-8 w-8 text-text-muted mb-2" />
-          <p className="text-sm text-text-secondary">No predictions yet</p>
-          <p className="text-xs text-text-muted mt-1">Your AI race predictions will appear here once you use the prediction tool.</p>
-        </div>
-      </Card>
+      {/* Activity History */}
+      <HistorySection />
     </div>
+  );
+};
+
+const TOOLS = [
+  { key: "APEX_INTELLIGENCE", label: "Apex Intelligence", icon: Brain },
+  { key: "RACE_ENGINEER", label: "Race Engineer", icon: Radio },
+  { key: "DELTA_ANALYST", label: "Delta Analyst", icon: GitCompare },
+];
+
+const HistorySection = () => {
+  const [activeTab, setActiveTab] = useState("APEX_INTELLIGENCE");
+  const [historyData, setHistoryData] = useState({});
+  const [loading, setLoading] = useState({});
+  const [error, setError] = useState({});
+
+  const fetchHistory = async (toolType) => {
+    if (historyData[toolType] !== undefined) return;
+    setLoading(prev => ({ ...prev, [toolType]: true }));
+    setError(prev => ({ ...prev, [toolType]: null }));
+    try {
+      const res = await api.get("/api/history", { params: { type: toolType } });
+      const data = res.data?.data || res.data || [];
+      setHistoryData(prev => ({ ...prev, [toolType]: data }));
+    } catch (err) {
+      setError(prev => ({ ...prev, [toolType]: "Failed to load history" }));
+    } finally {
+      setLoading(prev => ({ ...prev, [toolType]: false }));
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory(activeTab);
+  }, [activeTab]);
+
+  const activeTool = TOOLS.find(t => t.key === activeTab);
+  const ToolIcon = activeTool?.icon || Clock;
+  const entries = historyData[activeTab];
+  const isLoading = loading[activeTab];
+  const hasError = error[activeTab];
+
+  return (
+    <Card delay={0.3}>
+      <div className="flex items-center gap-2 mb-4">
+        <Clock className="h-4 w-4 text-text-muted" />
+        <p className="section-label">Activity History</p>
+      </div>
+
+      <div className="flex mb-5 bg-[var(--color-bg-elevated)] rounded-[var(--radius-md)] p-1 border border-[var(--color-border-default)]">
+        {TOOLS.map((tool) => {
+          const Icon = tool.icon;
+          return (
+            <button
+              key={tool.key}
+              onClick={() => setActiveTab(tool.key)}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-[var(--radius-sm)] transition-all duration-200 ${
+                activeTab === tool.key
+                  ? "bg-accentRed text-white shadow-md"
+                  : "text-text-secondary hover:text-[var(--color-text-primary)]"
+              }`}
+            >
+              <Icon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">{tool.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {isLoading && (
+        <div className="space-y-3">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-3 p-3 rounded-[var(--radius-md)] border border-[var(--color-glass-border)] bg-[var(--color-bg-elevated)]">
+              <SkeletonLoader width="32px" height="32px" borderRadius="8px" />
+              <div className="flex-1">
+                <SkeletonLoader height="14px" width="70%" />
+                <SkeletonLoader height="10px" width="30%" className="mt-1.5" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {hasError && !isLoading && (
+        <p className="text-sm text-accentRed/80 text-center py-4">{hasError}</p>
+      )}
+
+      {!isLoading && !hasError && entries && entries.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <ToolIcon className="h-8 w-8 text-text-muted mb-2" />
+          <p className="text-sm text-text-secondary">No history yet</p>
+          <p className="text-xs text-text-muted mt-1">Activity from this tool will appear here once you use it.</p>
+        </div>
+      )}
+
+      {!isLoading && entries && entries.length > 0 && (
+        <div className="space-y-2">
+          {entries.map((entry) => (
+            <div
+              key={entry.id}
+              className="flex items-start gap-3 p-3 rounded-[var(--radius-md)] border border-[var(--color-glass-border)] bg-[var(--color-bg-elevated)] hover:bg-white/5 transition-colors"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[var(--radius-sm)] bg-accentRed/10">
+                <ToolIcon className="h-4 w-4 text-accentRed" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-whitePrimary truncate">{entry.summary}</p>
+                <p className="text-[11px] text-text-muted mt-0.5">
+                  {entry.createdAt ? new Date(entry.createdAt).toLocaleString() : ""}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
   );
 };
 

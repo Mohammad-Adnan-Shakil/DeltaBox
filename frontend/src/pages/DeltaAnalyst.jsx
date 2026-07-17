@@ -94,6 +94,14 @@ const DeltaAnalyst = () => {
         timeout: 60000
       });
       setCompareResult(res.data);
+      const codeA = selectedDriverA?.code || driverA;
+      const codeB = selectedDriverB?.code || driverB;
+      const circuit = selectedSession?.circuitName || "";
+      api.post("/api/history", {
+        toolType: "DELTA_ANALYST",
+        summary: `${codeA} vs ${codeB} — ${circuit}, Lap ${lapA} vs Lap ${lapB}`,
+        payload: JSON.stringify(res.data),
+      }).catch(() => {});
     } catch (err) {
       setCompareError(err.response?.data?.error || err.message || "Compare failed");
     } finally {
