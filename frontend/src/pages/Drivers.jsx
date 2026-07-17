@@ -1,4 +1,5 @@
 ﻿import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { Card, LoadingState, ErrorState, EmptyState } from "../components/common";
@@ -15,6 +16,7 @@ const positionBadgeClass = (position) => {
 
 const Drivers = () => {
   usePageTitle("Drivers");
+  const navigate = useNavigate();
 
   const { data, loading, error, refetch } = useFetch("/drivers");
   const [search, setSearch] = useState("");
@@ -109,7 +111,7 @@ const Drivers = () => {
                 transition={{ delay: index * 0.05 }}
                 whileHover={{ y: -2, transition: { duration: 0.2 } }}
               >
-                <Card className="group relative overflow-hidden cursor-pointer">
+                <Card className="group relative overflow-hidden cursor-pointer" onClick={() => navigate(`/drivers/${driver.driverId || driver.code}`)}>
                   {/* Top gradient bar in team color */}
                   <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: `linear-gradient(90deg, ${teamCol}, transparent)` }} />
 

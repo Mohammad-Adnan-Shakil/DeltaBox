@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ArrowLeft, Trophy, Flag, Gauge, Star, MapPin, Loader } from "lucide-react";
 import { Card, ErrorState } from "../components/common";
@@ -170,7 +170,9 @@ const DriverDetail = () => {
                   {results.map((r, i) => (
                     <tr key={r.raceId || i} className="border-b border-[var(--color-glass-border)] transition-colors hover:bg-white/5">
                       <td className="px-4 py-3 font-mono text-sm text-whitePrimary">{r.round || "—"}</td>
-                      <td className="px-4 py-3 font-medium text-whitePrimary">{r.raceName || "—"}</td>
+                      <td className="px-4 py-3 font-medium">
+                        <Link to={`/races/${r.raceId}`} className="text-whitePrimary hover:text-[var(--color-accent-500)] transition-colors">{r.raceName || "—"}</Link>
+                      </td>
                       <td className="px-4 py-3 font-mono text-sm text-text-secondary">{r.gridPosition != null ? `P${r.gridPosition}` : "—"}</td>
                       <td className="px-4 py-3 font-mono text-sm">
                         <span className={`${r.finishPosition === 1 ? "text-[var(--color-accent-gold)] font-bold" : r.finishPosition <= 3 ? "text-[var(--color-accent-500)] font-semibold" : "text-text-secondary"}`}>

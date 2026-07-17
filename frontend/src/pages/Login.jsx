@@ -271,15 +271,6 @@ const Login = () => {
                   {loading ? "PROCESSING..." : isLogin ? "Access Dashboard" : "Create Account"}
                 </Button>
               </form>
-
-              <div className="relative mt-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-[var(--color-border-default)]"></div>
-                </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="px-3 bg-[var(--color-bg-card)] text-text-muted">or continue with</span>
-                </div>
-              </div>
             </div>
 
             <p className="mt-6 text-center text-xs text-text-muted">
