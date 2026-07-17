@@ -1,10 +1,5 @@
 package com.deltabox.backend.controller;
 
-import com.deltabox.backend.ai.dto.SimulationRequestDTO;
-import com.deltabox.backend.ai.dto.SimulationResponseDTO;
-import com.deltabox.backend.ai.service.SimulationService;
-import com.deltabox.backend.dto.DriverIntelligenceResponse;
-import com.deltabox.backend.service.AIService;
 import com.deltabox.backend.dto.DriverComparisonRequest;
 import com.deltabox.backend.dto.DriverComparisonResponse;
 import com.deltabox.backend.service.MLService;
@@ -24,25 +19,10 @@ import java.util.Map;
 @Tag(name = "DeltaBox Predictions", description = "AI-powered race predictions and driver intelligence")
 public class AIController {
 
-    private final AIService aiService;
-    private final SimulationService simulationService;
     private final MLService mlService;
 
-    public AIController(AIService aiService,
-                        SimulationService simulationService,
-                        MLService mlService) {
-        this.aiService = aiService;
-        this.simulationService = simulationService;
+    public AIController(MLService mlService) {
         this.mlService = mlService;
-    }
-
-    @GetMapping("/driver-intelligence/{driverId}")
-    public ResponseEntity<DriverIntelligenceResponse> getDriverIntelligence(@PathVariable Long driverId) {
-        return ResponseEntity.ok(aiService.getDriverIntelligence(driverId));
-    }
-
-    private static double round2(double value) {
-        return Math.round(value * 100.0) / 100.0;
     }
 
     /**
@@ -52,10 +32,9 @@ public class AIController {
     @GetMapping("/model-metrics")
     public ResponseEntity<?> getModelMetrics() {
         try {
-            // Path to model metrics file
             String metricsPath = System.getProperty("user.dir") + "/ml/models/model_metrics.json";
             File metricsFile = new File(metricsPath);
-            
+
             if (!metricsFile.exists()) {
                 Map<String, Object> error = new LinkedHashMap<>();
                 error.put("error", "Model metrics file not found");
@@ -63,14 +42,13 @@ public class AIController {
                 error.put("expectedPath", metricsPath);
                 return ResponseEntity.status(404).body(error);
             }
-            
-            // Read and parse JSON
+
             String jsonContent = new String(Files.readAllBytes(Paths.get(metricsPath)));
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> metrics = mapper.readValue(jsonContent, Map.class);
-            
+
             return ResponseEntity.ok(metrics);
-            
+
         } catch (Exception e) {
             Map<String, String> error = new LinkedHashMap<>();
             error.put("error", "Failed to load model metrics");
