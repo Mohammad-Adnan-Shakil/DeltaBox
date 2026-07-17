@@ -14,7 +14,7 @@ export const PodiumDisplay = ({ results = [] }) => {
         <div className="flex flex-col items-center gap-2 order-1">
           <div className="flex flex-col items-center">
             <Badge variant="p2" size="md">P2</Badge>
-            <Link to="/drivers" className="mt-1 text-sm font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-accent-500)] transition-colors">{p2.name}</Link>
+            <Link to={`/drivers/${p2.code || ""}`} className="mt-1 text-sm font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-accent-500)] transition-colors">{p2.name}</Link>
             <p className="text-xs text-[var(--color-text-secondary)]">{p2.team}</p>
             <p className="mt-1 font-mono text-sm font-bold text-[var(--color-text-secondary)]">{p2.points} pts</p>
           </div>
@@ -26,7 +26,7 @@ export const PodiumDisplay = ({ results = [] }) => {
         <div className="flex flex-col items-center gap-2 order-2">
           <div className="flex flex-col items-center">
             <Badge variant="p1" size="md">P1</Badge>
-            <Link to="/drivers" className="mt-1 text-sm font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-accent-500)] transition-colors">{p1.name}</Link>
+            <Link to={`/drivers/${p1.code || ""}`} className="mt-1 text-sm font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-accent-500)] transition-colors">{p1.name}</Link>
             <p className="text-xs text-[var(--color-text-secondary)]">{p1.team}</p>
             <p className="mt-1 font-mono text-sm font-bold text-[var(--color-data-warning)]">{p1.points} pts</p>
           </div>
@@ -38,7 +38,7 @@ export const PodiumDisplay = ({ results = [] }) => {
         <div className="flex flex-col items-center gap-2 order-3">
           <div className="flex flex-col items-center">
             <Badge variant="p3" size="md">P3</Badge>
-            <Link to="/drivers" className="mt-1 text-sm font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-accent-500)] transition-colors">{p3.name}</Link>
+            <Link to={`/drivers/${p3.code || ""}`} className="mt-1 text-sm font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-accent-500)] transition-colors">{p3.name}</Link>
             <p className="text-xs text-[var(--color-text-secondary)]">{p3.team}</p>
             <p className="mt-1 font-mono text-sm font-bold text-[var(--color-text-secondary)]">{p3.points} pts</p>
           </div>

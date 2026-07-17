@@ -12,6 +12,7 @@ const Register = lazy(() => import("./pages/Register"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const AIPage = lazy(() => import("./pages/AIPage"));
 const Drivers = lazy(() => import("./pages/Drivers"));
+const DriverDetail = lazy(() => import("./pages/DriverDetail"));
 const Races = lazy(() => import("./pages/Races"));
 const RaceDetails = lazy(() => import("./pages/RaceDetails"));
 const Constructors = lazy(() => import("./pages/Teams"));
@@ -61,6 +62,15 @@ function App() {
         element={
           <MainLayout>
             <Drivers />
+          </MainLayout>
+        }
+      />
+
+      <Route
+        path="/drivers/:driverId"
+        element={
+          <MainLayout>
+            <DriverDetail />
           </MainLayout>
         }
       />

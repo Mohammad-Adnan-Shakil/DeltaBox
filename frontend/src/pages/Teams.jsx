@@ -118,7 +118,7 @@ const Teams = () => {
                           <div key={driver.driverId} className="flex items-center justify-between gap-3">
                             <div className="flex-1">
                               <div className="flex justify-between items-center mb-1">
-                                <Link to="/drivers" className="text-sm text-whitePrimary hover:text-[var(--color-accent-500)] transition-colors">{driver.name}</Link>
+                                <Link to={`/drivers/${driver.driverId || ""}`} className="text-sm text-whitePrimary hover:text-[var(--color-accent-500)] transition-colors">{driver.name}</Link>
                                 <span className="font-mono text-sm font-bold" style={{ color: accent }}>{Math.round(driver.points || 0)}</span>
                               </div>
                               <div className="h-2 rounded-full bg-white/5 overflow-hidden">

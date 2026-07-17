@@ -64,7 +64,7 @@ export const ChartsSection = ({ drivers, races, loading }) => {
 
               return (
                 <div key={driver.driverId || driver.code} className="grid grid-cols-[50px_1fr_50px_auto] items-center gap-2">
-                  <Link to="/drivers" className="flex flex-col items-start hover:opacity-80 transition-opacity">
+                  <Link to={`/drivers/${driver.driverId}`} className="flex flex-col items-start hover:opacity-80 transition-opacity">
                     <span className={`font-display font-bold text-sm uppercase tracking-wide leading-tight ${isTop ? 'text-[var(--color-accent-gold)]' : 'text-whitePrimary'}`}>
                       {driver.code || "—"}
                     </span>

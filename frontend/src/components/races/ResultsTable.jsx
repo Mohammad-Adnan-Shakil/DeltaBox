@@ -32,7 +32,7 @@ export const ResultsTable = ({ results = [] }) => {
                 {r.position || i + 1}
               </td>
               <td className="px-4 py-3">
-                <Link to="/drivers" className="text-[var(--color-text-primary)] hover:text-[var(--color-accent-500)] transition-colors">{r.name}</Link>
+                <Link to={`/drivers/${r.code || ""}`} className="text-[var(--color-text-primary)] hover:text-[var(--color-accent-500)] transition-colors">{r.name}</Link>
               </td>
               <td className="px-4 py-3 text-[var(--color-text-secondary)]">
                 {r.team}

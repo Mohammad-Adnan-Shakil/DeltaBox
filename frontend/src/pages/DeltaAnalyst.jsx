@@ -204,7 +204,7 @@ const DeltaAnalyst = () => {
                 {selectedDriverA && (
                   <div className="mt-2 flex items-center gap-2 px-1">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: `#${selectedDriverA.teamColor}` || DRIVER_A_COLOR }} />
-                    <Link to="/drivers" className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-accent-500)] transition-colors">{selectedDriverA.teamName}</Link>
+                    <Link to={`/drivers/${selectedDriverA.code || ""}`} className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-accent-500)] transition-colors">{selectedDriverA.teamName}</Link>
                   </div>
                 )}
               </div>
@@ -225,7 +225,7 @@ const DeltaAnalyst = () => {
                 {selectedDriverB && (
                   <div className="mt-2 flex items-center gap-2 px-1">
                     <span className="h-2 w-2 rounded-full" style={{ backgroundColor: `#${selectedDriverB.teamColor}` || DRIVER_B_COLOR }} />
-                    <Link to="/drivers" className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-accent-500)] transition-colors">{selectedDriverB.teamName}</Link>
+                    <Link to={`/drivers/${selectedDriverB.code || ""}`} className="text-xs text-[var(--color-text-tertiary)] hover:text-[var(--color-accent-500)] transition-colors">{selectedDriverB.teamName}</Link>
                   </div>
                 )}
               </div>
@@ -316,7 +316,7 @@ const DeltaAnalyst = () => {
                     {driver?.code || side}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <Link to="/drivers" className="font-semibold text-[var(--color-text-primary)] truncate hover:text-[var(--color-accent-500)] transition-colors block">{driver?.fullName || `Driver ${side}`}</Link>
+                    <Link to={`/drivers/${driver?.code || ""}`} className="font-semibold text-[var(--color-text-primary)] truncate hover:text-[var(--color-accent-500)] transition-colors block">{driver?.fullName || `Driver ${side}`}</Link>
                     <p className="text-xs text-[var(--color-text-tertiary)]">{driver?.teamName || "—"}</p>
                   </div>
                 </Card>
