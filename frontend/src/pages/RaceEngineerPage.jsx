@@ -1,9 +1,25 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import api from "../services/api";
-import { Radio, Send, Mic } from "lucide-react";
+import { Radio, Send, Mic, Activity } from "lucide-react";
+
+const LIVE_POLL_INTERVAL = 20000;
 
 const RaceEngineerPage = () => {
+  const [mode, setMode] = useState("MANUAL");
+  const [liveSession, setLiveSession] = useState(null);
+  const [replaySessions, setReplaySessions] = useState([]);
+  const [selectedSessionKey, setSelectedSessionKey] = useState("");
+  const [sessionDrivers, setSessionDrivers] = useState([]);
+  const [selectedDriverNum, setSelectedDriverNum] = useState("");
+  const [lapScrubber, setLapScrubber] = useState(1);
+  const [maxLap, setMaxLap] = useState(57);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [liveLoading, setLiveLoading] = useState(false);
+  const [replayLoading, setReplayLoading] = useState(false);
+  const pollTimerRef = useRef(null);
+  const scrubDebounceRef = useRef(null);
+
   const [raceContext, setRaceContext] = useState({
     lap: 37,
     totalLaps: 57,
@@ -21,7 +37,6 @@ const RaceEngineerPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const conversationEndRef = useRef(null);
-  const audioContextRef = useRef(null);
 
   useEffect(() => {
     document.title = "Race Engineer | DeltaBox";
@@ -30,6 +45,133 @@ const RaceEngineerPage = () => {
   useEffect(() => {
     conversationEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversation]);
+
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+    };
+  }, []);
+
+  const applyRaceState = useCallback((state) => {
+    setRaceContext(prev => ({
+      ...prev,
+      lap: state.lap || prev.lap,
+      totalLaps: state.totalLaps || prev.totalLaps,
+      position: state.position || prev.position,
+      gapToLeader: state.gapToLeader || prev.gapToLeader,
+      tyreCompound: state.tyreCompound || prev.tyreCompound,
+      tyreAge: state.tyreAge ?? prev.tyreAge,
+      lastLapTime: state.lastLapTime || prev.lastLapTime,
+    }));
+    if (state.totalLaps) setMaxLap(state.totalLaps);
+    if (state.lap) setLapScrubber(state.lap);
+    setLastUpdated(new Date());
+  }, []);
+
+  const startLiveSession = useCallback(async () => {
+    setLiveLoading(true);
+    try {
+      const res = await api.get("/race-engineer/live-session");
+      const data = res.data;
+      if (data.live) {
+        setLiveSession(data);
+        setSelectedSessionKey(String(data.sessionKey));
+        setSessionDrivers(data.drivers || []);
+      } else {
+        setLiveSession({ live: false, message: data.message });
+      }
+    } catch (err) {
+      setLiveSession({ live: false, message: "Failed to check live session" });
+    } finally {
+      setLiveLoading(false);
+    }
+  }, []);
+
+  const fetchRaceState = useCallback(async (sessionKey, driverNumber, asOfLap) => {
+    try {
+      const params = { sessionKey: Number(sessionKey), driverNumber: Number(driverNumber) };
+      if (asOfLap) params.asOfLap = asOfLap;
+      const res = await api.get("/race-engineer/state", { params });
+      return res.data;
+    } catch (err) {
+      return null;
+    }
+  }, []);
+
+  const pollLiveState = useCallback(async () => {
+    if (!selectedSessionKey || !selectedDriverNum) return;
+    const state = await fetchRaceState(selectedSessionKey, selectedDriverNum, null);
+    if (state && !state.error) applyRaceState(state);
+  }, [selectedSessionKey, selectedDriverNum, fetchRaceState, applyRaceState]);
+
+  useEffect(() => {
+    if (mode === "LIVE") {
+      startLiveSession();
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
+    } else {
+      if (pollTimerRef.current) {
+        clearInterval(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
+    }
+  }, [mode, startLiveSession]);
+
+  useEffect(() => {
+    if (mode === "LIVE" && selectedSessionKey && selectedDriverNum) {
+      pollLiveState();
+      pollTimerRef.current = setInterval(pollLiveState, LIVE_POLL_INTERVAL);
+    }
+    return () => {
+      if (pollTimerRef.current) {
+        clearInterval(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
+    };
+  }, [mode, selectedSessionKey, selectedDriverNum, pollLiveState]);
+
+  useEffect(() => {
+    if (mode === "REPLAY") {
+      setReplayLoading(true);
+      api.get("/race-engineer/replay/sessions").then(res => {
+        setReplaySessions(res.data || []);
+      }).catch(() => {}).finally(() => setReplayLoading(false));
+    }
+  }, [mode]);
+
+  useEffect(() => {
+    if ((mode === "LIVE" || mode === "REPLAY") && selectedSessionKey) {
+      api.get("/race-engineer/replay/drivers", { params: { sessionKey: Number(selectedSessionKey) } })
+        .then(res => setSessionDrivers(res.data || []))
+        .catch(() => {});
+    }
+  }, [mode, selectedSessionKey]);
+
+  const handleScrubChange = (e) => {
+    const lap = Number(e.target.value);
+    setLapScrubber(lap);
+    if (scrubDebounceRef.current) clearTimeout(scrubDebounceRef.current);
+    scrubDebounceRef.current = setTimeout(async () => {
+      if (selectedSessionKey && selectedDriverNum) {
+        const state = await fetchRaceState(selectedSessionKey, selectedDriverNum, lap);
+        if (state && !state.error) applyRaceState(state);
+      }
+    }, 600);
+  };
+
+  const handleModeSwitch = (newMode) => {
+    setMode(newMode);
+    setLiveSession(null);
+    setSelectedSessionKey("");
+    setSessionDrivers([]);
+    setSelectedDriverNum("");
+    setLastUpdated(null);
+  };
+
+  const handleDriverSelect = (driverNum) => {
+    setSelectedDriverNum(driverNum);
+    setLapScrubber(1);
+    setLastUpdated(null);
+  };
 
   const getTimestamp = () => {
     const now = new Date();
@@ -40,17 +182,17 @@ const RaceEngineerPage = () => {
     const { name, value } = e.target;
     setRaceContext(prev => ({
       ...prev,
-      [name]: name === "lap" || name === "totalLaps" || name === "position" || name === "tyreAge" 
-        ? parseInt(value) 
-        : name === "fuelLoad" 
-          ? parseFloat(value) 
+      [name]: name === "lap" || name === "totalLaps" || name === "position" || name === "tyreAge"
+        ? parseInt(value)
+        : name === "fuelLoad"
+          ? parseFloat(value)
           : value
     }));
   };
 
   const handleTransmit = async (e) => {
     e.preventDefault();
-    
+
     if (!driverMessage.trim()) return;
 
     setError(null);
@@ -105,6 +247,8 @@ const RaceEngineerPage = () => {
     "Gap to car ahead?"
   ];
 
+  const isAutoMode = mode === "LIVE" || mode === "REPLAY";
+
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)] text-whitePrimary p-6">
       <div className="max-w-7xl mx-auto">
@@ -120,6 +264,29 @@ const RaceEngineerPage = () => {
             <h1 className="font-display font-bold text-2xl uppercase tracking-widest text-whitePrimary sm:text-3xl md:text-4xl">Race Engineer</h1>
           </div>
           <p className="text-xs text-text-secondary sm:text-sm">AI-powered pit wall strategy — powered by DeepSeek R1</p>
+
+          {/* Mode Toggle */}
+          <div className="flex items-center gap-2 mt-4">
+            {["MANUAL", "LIVE", "REPLAY"].map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => handleModeSwitch(m)}
+                className={`px-4 py-1.5 text-xs font-bold rounded-[var(--radius-md)] uppercase tracking-wider transition-all ${
+                  mode === m
+                    ? m === "LIVE"
+                      ? "bg-[var(--color-data-success)]/20 text-[var(--color-data-success)] border border-[var(--color-data-success)]/40"
+                      : m === "REPLAY"
+                        ? "bg-[var(--color-accent-gold)]/20 text-[var(--color-accent-gold)] border border-[var(--color-accent-gold)]/40"
+                        : "bg-accentRed/20 text-accentRed border border-accentRed/40"
+                    : "bg-[var(--color-bg-hover)] text-text-secondary border border-[var(--color-border-default)] hover:bg-white/10"
+                }`}
+              >
+                {m === "LIVE" && <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-[var(--color-data-success)] animate-pulse" />}
+                {m}
+              </button>
+            ))}
+          </div>
 
           {/* Steering wheel display */}
           <div className="flex items-center gap-4 mt-4 p-3 rounded-[var(--radius-md)] bg-[var(--color-bg-card)] border border-[var(--color-border-default)] max-w-xs">
@@ -149,16 +316,122 @@ const RaceEngineerPage = () => {
             <div className="bg-[var(--color-bg-card)] border border-[var(--color-border-default)] border-t-2 border-t-accentRed rounded-[var(--radius-lg)] p-6 sticky top-6 shadow-[var(--shadow-md)]">
               <h2 className="font-display font-semibold text-xl uppercase tracking-wider mb-4 text-whitePrimary">Race Status</h2>
 
+              {/* Live indicator */}
+              {mode === "LIVE" && (
+                <div className="mb-4 p-2 rounded-[var(--radius-sm)] bg-[var(--color-data-success)]/10 border border-[var(--color-data-success)]/30 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Activity className="h-3 w-3 text-[var(--color-data-success)]" />
+                    <span className="text-[10px] font-bold text-[var(--color-data-success)] uppercase tracking-wider">LIVE</span>
+                  </div>
+                  {lastUpdated && (
+                    <span className="text-[10px] text-text-muted">{lastUpdated.toLocaleTimeString()}</span>
+                  )}
+                </div>
+              )}
+
+              {/* Replay indicator */}
+              {mode === "REPLAY" && (
+                <div className="mb-4 p-2 rounded-[var(--radius-sm)] bg-[var(--color-accent-gold)]/10 border border-[var(--color-accent-gold)]/30 flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-[var(--color-accent-gold)] uppercase tracking-wider">REPLAY · Lap {lapScrubber}/{maxLap}</span>
+                  {lastUpdated && (
+                    <span className="text-[10px] text-text-muted">{lastUpdated.toLocaleTimeString()}</span>
+                  )}
+                </div>
+              )}
+
+              {/* Live/Replay session & driver selectors */}
+              {isAutoMode && (
+                <div className="space-y-3 mb-4 pb-4 border-b border-[var(--color-border-default)]">
+                  {/* Session selector (replay) or live session info */}
+                  {mode === "LIVE" && (
+                    <div>
+                      <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1 block">Session</label>
+                      {liveLoading ? (
+                        <p className="text-xs text-text-muted">Checking for live session...</p>
+                      ) : liveSession?.live ? (
+                        <p className="text-xs font-mono text-[var(--color-data-success)]">{liveSession.circuitName} — {liveSession.countryName}</p>
+                      ) : (
+                        <p className="text-xs text-text-muted">No live session</p>
+                      )}
+                    </div>
+                  )}
+                  {mode === "REPLAY" && (
+                    <div>
+                      <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1 block">Session</label>
+                      {replayLoading ? (
+                        <p className="text-xs text-text-muted">Loading sessions...</p>
+                      ) : (
+                        <select
+                          value={selectedSessionKey}
+                          onChange={(e) => { setSelectedSessionKey(e.target.value); setSelectedDriverNum(""); }}
+                          className="surface-input text-xs appearance-none cursor-pointer"
+                        >
+                          <option value="">Select session</option>
+                          {replaySessions.map((s) => (
+                            <option key={s.sessionKey} value={s.sessionKey}>
+                              {s.circuitName} — {s.countryName} ({(s.dateStart || "").substring(0, 10)})
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Driver selector */}
+                  <div>
+                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1 block">Driver</label>
+                    <select
+                      value={selectedDriverNum}
+                      onChange={(e) => handleDriverSelect(e.target.value)}
+                      disabled={!selectedSessionKey}
+                      className="surface-input text-xs appearance-none cursor-pointer disabled:opacity-40"
+                    >
+                      <option value="">Select driver</option>
+                      {sessionDrivers.map((d) => (
+                        <option key={d.driverNumber} value={d.driverNumber}>
+                          {d.code} — {d.fullName} ({d.teamName})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Lap scrubber (replay only) */}
+                  {mode === "REPLAY" && selectedDriverNum && (
+                    <div>
+                      <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1 block">
+                        Lap {lapScrubber} / {maxLap}
+                      </label>
+                      <input
+                        type="range"
+                        min={1}
+                        max={maxLap}
+                        value={lapScrubber}
+                        onChange={handleScrubChange}
+                        className="w-full accent-[var(--color-accent-gold)]"
+                      />
+                      <div className="flex justify-between text-[9px] text-text-muted mt-0.5">
+                        <span>Lap 1</span>
+                        <span>Lap {maxLap}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-4">
                 {/* Lap */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col">
                     <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Lap</label>
-                    <input type="number" name="lap" value={raceContext.lap} onChange={handleContextChange} className="surface-input font-mono" />
+                    <input type="number" name="lap" value={raceContext.lap} onChange={handleContextChange}
+                      readOnly={isAutoMode}
+                      className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
                   </div>
                   <div className="flex flex-col">
                     <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Total</label>
-                    <input type="number" name="totalLaps" value={raceContext.totalLaps} onChange={handleContextChange} className="surface-input font-mono" />
+                    <input type="number" name="totalLaps" value={raceContext.totalLaps} onChange={handleContextChange}
+                      readOnly={isAutoMode}
+                      className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
                   </div>
                 </div>
 
@@ -166,11 +439,15 @@ const RaceEngineerPage = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col">
                     <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Position</label>
-                    <input type="number" name="position" value={raceContext.position} onChange={handleContextChange} className="surface-input font-mono" />
+                    <input type="number" name="position" value={raceContext.position} onChange={handleContextChange}
+                      readOnly={isAutoMode}
+                      className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
                   </div>
                   <div className="flex flex-col">
                     <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Gap to Leader</label>
-                    <input type="text" name="gapToLeader" value={raceContext.gapToLeader} onChange={handleContextChange} className="surface-input font-mono" />
+                    <input type="text" name="gapToLeader" value={raceContext.gapToLeader} onChange={handleContextChange}
+                      readOnly={isAutoMode}
+                      className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
                   </div>
                 </div>
 
@@ -178,7 +455,9 @@ const RaceEngineerPage = () => {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col">
                     <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Compound</label>
-                    <select name="tyreCompound" value={raceContext.tyreCompound} onChange={handleContextChange} className="surface-input font-medium">
+                    <select name="tyreCompound" value={raceContext.tyreCompound} onChange={handleContextChange}
+                      disabled={isAutoMode}
+                      className={`surface-input font-medium ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`}>
                       <option>SOFT</option>
                       <option>MEDIUM</option>
                       <option>HARD</option>
@@ -188,18 +467,26 @@ const RaceEngineerPage = () => {
                   </div>
                   <div className="flex flex-col">
                     <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Age (laps)</label>
-                    <input type="number" name="tyreAge" value={raceContext.tyreAge} onChange={handleContextChange} className="surface-input font-mono" />
+                    <input type="number" name="tyreAge" value={raceContext.tyreAge} onChange={handleContextChange}
+                      readOnly={isAutoMode}
+                      className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
                   </div>
                 </div>
 
-                {/* Fuel & Weather */}
+                {/* Fuel & Weather — editable in all modes */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col">
-                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Fuel (kg)</label>
+                    <label className="flex items-center gap-1 text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">
+                      Fuel (kg)
+                      {isAutoMode && <span className="text-[8px] text-[var(--color-accent-gold)] font-normal normal-case tracking-normal">(est.)</span>}
+                    </label>
                     <input type="number" name="fuelLoad" value={raceContext.fuelLoad} onChange={handleContextChange} step="0.1" className="surface-input font-mono" />
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Weather</label>
+                    <label className="flex items-center gap-1 text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">
+                      Weather
+                      {isAutoMode && <span className="text-[8px] text-[var(--color-accent-gold)] font-normal normal-case tracking-normal">(est.)</span>}
+                    </label>
                     <select name="weather" value={raceContext.weather} onChange={handleContextChange} className="surface-input font-medium">
                       <option>Dry</option>
                       <option>Damp</option>
@@ -211,7 +498,9 @@ const RaceEngineerPage = () => {
                 {/* Last Lap Time */}
                 <div className="flex flex-col">
                   <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Last Lap Time</label>
-                  <input type="text" name="lastLapTime" value={raceContext.lastLapTime} onChange={handleContextChange} className="surface-input font-mono text-lg text-[var(--color-accent-green)]" />
+                  <input type="text" name="lastLapTime" value={raceContext.lastLapTime} onChange={handleContextChange}
+                    readOnly={isAutoMode}
+                    className={`surface-input font-mono text-lg text-[var(--color-accent-green)] ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
                 </div>
 
                 {/* VU Meter visualization */}
@@ -247,12 +536,10 @@ const RaceEngineerPage = () => {
                 </div>
               </div>
 
-              {/* Transmission History label */}
               <p className="text-[10px] uppercase tracking-[0.3em] text-text-muted font-semibold mb-3">
                 {conversation.length > 0 ? `TRANSMISSION HISTORY · ${conversation.length} messages` : 'NO TRANSMISSIONS YET'}
               </p>
 
-              {/* Conversation Area */}
               <div className="flex-1 overflow-y-auto mb-4 space-y-3 pr-2 pb-2">
                 {conversation.length === 0 ? (
                   <div className="text-center text-text-muted py-12">
@@ -310,7 +597,6 @@ const RaceEngineerPage = () => {
                 <div ref={conversationEndRef} />
               </div>
 
-              {/* Suggested Questions */}
               {conversation.length === 0 && !loading && (
                 <div className="mb-3 flex flex-wrap gap-2">
                   {suggestedQuestions.map((q) => (
@@ -326,7 +612,6 @@ const RaceEngineerPage = () => {
                 </div>
               )}
 
-              {/* Error */}
               {error && !loading && (
                 <motion.div
                   initial={{ opacity: 0, y: -10 }}
@@ -337,7 +622,6 @@ const RaceEngineerPage = () => {
                 </motion.div>
               )}
 
-              {/* Input */}
               <form onSubmit={handleTransmit} className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"

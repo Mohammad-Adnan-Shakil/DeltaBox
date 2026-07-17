@@ -7,7 +7,17 @@ import java.util.Objects;
  * Contains real-time race context and driver telemetry.
  */
 public class RaceContextRequest {
-    
+
+    /**
+     * OpenF1 driver number (used in live/replay mode)
+     */
+    private int driverNumber;
+
+    /**
+     * Data source mode: MANUAL, LIVE, REPLAY
+     */
+    private String dataMode = "MANUAL";
+
     /**
      * Current lap number (1-indexed)
      */
@@ -72,6 +82,22 @@ public class RaceContextRequest {
         this.weather = weather;
         this.lastLapTime = lastLapTime;
         this.driverMessage = driverMessage;
+    }
+
+    public int getDriverNumber() {
+        return driverNumber;
+    }
+
+    public void setDriverNumber(int driverNumber) {
+        this.driverNumber = driverNumber;
+    }
+
+    public String getDataMode() {
+        return dataMode;
+    }
+
+    public void setDataMode(String dataMode) {
+        this.dataMode = dataMode;
     }
 
     public int getLap() {

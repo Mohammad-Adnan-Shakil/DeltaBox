@@ -1,6 +1,7 @@
 package com.deltabox.backend.ai.controller;
 
 import com.deltabox.backend.ai.dto.RaceContextRequest;
+import com.deltabox.backend.ai.service.RaceEngineerDataService;
 import com.deltabox.backend.ai.service.RaceEngineerService;
 import com.deltabox.backend.exception.PythonExecutionException;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,12 +11,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,9 +29,47 @@ public class RaceEngineerController {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(RaceEngineerController.class);
 
     private final RaceEngineerService raceEngineerService;
+    private final RaceEngineerDataService raceEngineerDataService;
 
-    public RaceEngineerController(RaceEngineerService raceEngineerService) {
+    public RaceEngineerController(RaceEngineerService raceEngineerService,
+                                  RaceEngineerDataService raceEngineerDataService) {
         this.raceEngineerService = raceEngineerService;
+        this.raceEngineerDataService = raceEngineerDataService;
+    }
+
+    @GetMapping("/live-session")
+    public ResponseEntity<?> getLiveSession() {
+        Map<String, Object> session = raceEngineerDataService.getLiveSession();
+        if (session == null) {
+            return ResponseEntity.ok(Map.of("live", false, "message", "No live session currently active"));
+        }
+        session.put("live", true);
+        List<Map<String, Object>> drivers = raceEngineerDataService.getSessionDrivers(
+                ((Number) session.get("sessionKey")).longValue());
+        session.put("drivers", drivers);
+        return ResponseEntity.ok(session);
+    }
+
+    @GetMapping("/replay/sessions")
+    public ResponseEntity<List<Map<String, Object>>> getReplaySessions() {
+        return ResponseEntity.ok(raceEngineerDataService.getReplaySessions());
+    }
+
+    @GetMapping("/replay/drivers")
+    public ResponseEntity<List<Map<String, Object>>> getReplayDrivers(@RequestParam long sessionKey) {
+        return ResponseEntity.ok(raceEngineerDataService.getSessionDrivers(sessionKey));
+    }
+
+    @GetMapping("/state")
+    public ResponseEntity<?> getRaceState(
+            @RequestParam long sessionKey,
+            @RequestParam int driverNumber,
+            @RequestParam(required = false) Integer asOfLap) {
+        Map<String, Object> state = raceEngineerDataService.getRaceState(sessionKey, driverNumber, asOfLap);
+        if (state.containsKey("error")) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(state);
+        }
+        return ResponseEntity.ok(state);
     }
 
     @PostMapping("/ask")
