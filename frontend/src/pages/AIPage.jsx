@@ -109,7 +109,7 @@ const AIPage = () => {
       const driverName = selectedDriverData?.name || selectedDriver;
       const raceName = selectedRaceData?.raceName || selectedRace;
       const predictedRange = response?.predictedRange || "";
-      api.post("/api/history", {
+      api.post("/history", {
         toolType: "APEX_INTELLIGENCE",
         summary: `${driverName} — ${raceName} prediction: ${predictedRange}`,
         payload: JSON.stringify(response),

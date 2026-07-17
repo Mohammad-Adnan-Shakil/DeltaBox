@@ -97,7 +97,7 @@ const DeltaAnalyst = () => {
       const codeA = selectedDriverA?.code || driverA;
       const codeB = selectedDriverB?.code || driverB;
       const circuit = selectedSession?.circuitName || "";
-      api.post("/api/history", {
+      api.post("/history", {
         toolType: "DELTA_ANALYST",
         summary: `${codeA} vs ${codeB} — ${circuit}, Lap ${lapA} vs Lap ${lapB}`,
         payload: JSON.stringify(res.data),

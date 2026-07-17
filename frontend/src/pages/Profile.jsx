@@ -186,7 +186,7 @@ const HistorySection = () => {
     setLoading(prev => ({ ...prev, [toolType]: true }));
     setError(prev => ({ ...prev, [toolType]: null }));
     try {
-      const res = await api.get("/api/history", { params: { type: toolType } });
+      const res = await api.get("/history", { params: { type: toolType } });
       const data = res.data?.data || res.data || [];
       setHistoryData(prev => ({ ...prev, [toolType]: data }));
     } catch (err) {
