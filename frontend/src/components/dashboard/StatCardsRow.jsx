@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import { Users, Flag, Calendar, Brain } from "lucide-react";
 import StatCard from "../common/StatCard";
 
@@ -7,10 +8,12 @@ export const StatCardsRow = ({
   completedRaces = 0,
   modelAccuracy = 0,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatCard label="Drivers" value={driversCount} icon={Users} color="red" />
-      <StatCard label="Races" value={totalRaces} icon={Calendar} color="blue" />
+      <StatCard label="Drivers" value={driversCount} icon={Users} color="red" onClick={() => navigate("/drivers")} />
+      <StatCard label="Races" value={totalRaces} icon={Calendar} color="blue" onClick={() => navigate("/races")} />
       <StatCard
         label="Completed"
         value={completedRaces}

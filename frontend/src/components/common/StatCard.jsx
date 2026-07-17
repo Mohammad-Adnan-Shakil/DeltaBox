@@ -7,11 +7,11 @@ const colorMap = {
   yellow: "text-[var(--color-data-warning)]",
 };
 
-export const StatCard = ({ label, value, icon: Icon, trend = null, color = "red" }) => {
+export const StatCard = ({ label, value, icon: Icon, trend = null, color = "red", onClick }) => {
   const colorClass = colorMap[color] || colorMap.red;
 
   return (
-    <div className="rounded-[var(--radius-lg)] p-[var(--space-6)] bg-[var(--color-glass-bg)] border border-[var(--color-accent-500)]/20 shadow-[var(--shadow-glow-sm)] transition-shadow duration-150 ease-out hover:shadow-lg">
+    <div className={`rounded-[var(--radius-lg)] p-[var(--space-6)] bg-[var(--color-glass-bg)] border border-[var(--color-accent-500)]/20 shadow-[var(--shadow-glow-sm)] transition-shadow duration-150 ease-out hover:shadow-lg${onClick ? " cursor-pointer" : ""}`} onClick={onClick}>
       <div className="flex items-start justify-between">
         <div className="flex-1 min-w-0">
           <p className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-secondary)]">
