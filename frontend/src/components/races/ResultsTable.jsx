@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export const ResultsTable = ({ results = [] }) => {
   if (!results || results.length === 0) return null;
 
@@ -29,8 +31,8 @@ export const ResultsTable = ({ results = [] }) => {
               <td className="px-4 py-3 font-mono text-sm font-medium text-[var(--color-text-primary)]">
                 {r.position || i + 1}
               </td>
-              <td className="px-4 py-3 text-[var(--color-text-primary)]">
-                {r.name}
+              <td className="px-4 py-3">
+                <Link to="/drivers" className="text-[var(--color-text-primary)] hover:text-[var(--color-accent-500)] transition-colors">{r.name}</Link>
               </td>
               <td className="px-4 py-3 text-[var(--color-text-secondary)]">
                 {r.team}

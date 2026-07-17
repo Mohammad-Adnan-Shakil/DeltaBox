@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { Calendar, MapPin, Timer } from "lucide-react";
 import CountdownTimer from "../races/CountdownTimer";
 
@@ -34,9 +35,9 @@ export const NextRaceWidget = ({ races = [] }) => {
           Next Race
         </span>
       </div>
-      <h3 className="text-lg font-bold text-[var(--color-text-primary)] uppercase tracking-wide">
+      <Link to={`/races/${nextRace.raceId}`} className="text-lg font-bold text-[var(--color-text-primary)] uppercase tracking-wide hover:text-[var(--color-accent-500)] transition-colors">
         {nextRace.raceName}
-      </h3>
+      </Link>
       <p className="mt-1 text-sm text-[var(--color-text-secondary)]">{nextRace.circuitName}</p>
       <p className="mt-1 flex items-center gap-1 text-xs text-[var(--color-text-tertiary)]">
         <MapPin className="h-3 w-3" /> {nextRace.location}, {nextRace.country}

@@ -1,10 +1,11 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { Card, ErrorState } from "../components/common";
 import SkeletonLoader from "../components/SkeletonLoader";
 import LiveClock from "../components/LiveClock";
 import usePageTitle from "../hooks/usePageTitle";
 import useFetch from "../hooks/useFetch";
-import { StatCardsRow, NextRaceWidget, StandingsChart } from "../components/dashboard";
+import { StatCardsRow, NextRaceWidget } from "../components/dashboard";
 
 const HeroSection = () => (
   <section className="flex flex-col justify-between gap-4 rounded-[var(--radius-lg)] border border-[var(--color-border-default)] bg-gradient-to-br from-[var(--color-bg-card)] to-[var(--color-bg-elevated)] p-4 md:flex-row md:items-center md:p-6 relative overflow-hidden">
@@ -41,28 +42,12 @@ export const ChartsSection = ({ drivers, races, loading }) => {
   }, []);
 
   const driverList = drivers || [];
-  const raceList = (races || []).slice().sort((a, b) => (a.round ?? 999) - (b.round ?? 999));
-  const completedRaces = raceList.filter((race) => race.status === "COMPLETED");
 
   const standingsData = useMemo(() => driverList.slice(0, 8), [driverList]);
   const maxPoints = useMemo(() => Math.max(...standingsData.map((d) => Number(d.points || 0)), 1), [standingsData]);
 
-  const progressData = useMemo(() => raceList.map((race, idx) => {
-    const completedCountAtPoint = raceList
-      .slice(0, idx + 1)
-      .filter((entry) => entry.status === "COMPLETED").length;
-
-    const progressValue = race.status === "COMPLETED" ? completedCountAtPoint : completedRaces.length;
-
-    return {
-      round: `R${race.round}`,
-      progress: progressValue,
-      status: race.status,
-    };
-  }), [raceList, completedRaces]);
-
   return (
-    <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+    <section className="grid grid-cols-1 gap-4">
       <Card delay={0.25}>
         <div className="mb-5 flex items-center justify-between">
           <h2 className="font-display font-semibold text-xl uppercase tracking-wider text-whitePrimary">Driver Standings</h2>
@@ -79,14 +64,14 @@ export const ChartsSection = ({ drivers, races, loading }) => {
 
               return (
                 <div key={driver.driverId || driver.code} className="grid grid-cols-[50px_1fr_50px_auto] items-center gap-2">
-                  <div className="flex flex-col items-start">
+                  <Link to="/drivers" className="flex flex-col items-start hover:opacity-80 transition-opacity">
                     <span className={`font-display font-bold text-sm uppercase tracking-wide leading-tight ${isTop ? 'text-[var(--color-accent-gold)]' : 'text-whitePrimary'}`}>
                       {driver.code || "—"}
                     </span>
                     <span className={`text-[10px] leading-tight ${isTop ? 'text-[var(--color-accent-gold)]/70' : 'text-text-muted'}`}>
                       {driver.name || ""}
                     </span>
-                  </div>
+                  </Link>
                   <div className="h-10 overflow-hidden rounded-lg bg-white/5 flex items-center gap-2">
                     <span className={`shrink-0 h-2 w-2 rounded-full ml-2`} style={{ backgroundColor: driver.teamColor || 'var(--color-data-neutral)' }} />
                     <div className="flex-1 h-full relative">
@@ -123,25 +108,6 @@ export const ChartsSection = ({ drivers, races, loading }) => {
               </div>
             ))}
           </div>
-        )}
-      </Card>
-
-      <Card delay={0.3}>
-        <div className="mb-5 flex items-center justify-between">
-          <h2 className="font-display font-semibold text-xl uppercase tracking-wider text-whitePrimary">Race Progress</h2>
-          <p className="section-label">Completion Curve</p>
-        </div>
-
-        {chartsVisible && !loading ? (
-          <StandingsChart
-            data={progressData}
-            dataKey="progress"
-            xKey="round"
-            color="var(--color-accent-500)"
-            gradientId="raceProgressGradient"
-          />
-        ) : (
-          <SkeletonLoader height="300px" />
         )}
       </Card>
     </section>
