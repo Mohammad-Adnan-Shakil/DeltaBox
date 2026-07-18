@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import api from "../services/api";
-import { Radio, Send, Mic, Activity } from "lucide-react";
+import { BarChart3, Radio, Send, Mic, Activity } from "lucide-react";
 
 const LIVE_POLL_INTERVAL = 20000;
 
@@ -32,11 +32,14 @@ const RaceEngineerPage = () => {
     lastLapTime: "1:22.847"
   });
 
+  const [scenarios, setScenarios] = useState(null);
+  const [scenariosLoading, setScenariosLoading] = useState(false);
   const [driverMessage, setDriverMessage] = useState("");
   const [conversation, setConversation] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const conversationEndRef = useRef(null);
+  const manualScenarioDebounceRef = useRef(null);
 
   useEffect(() => {
     document.title = "Race Engineer | DeltaBox";
@@ -65,6 +68,7 @@ const RaceEngineerPage = () => {
     }));
     if (state.totalLaps) setMaxLap(state.totalLaps);
     if (state.lap) setLapScrubber(state.lap);
+    if (state.scenarios) setScenarios(state.scenarios);
     setLastUpdated(new Date());
   }, []);
 
@@ -165,12 +169,14 @@ const RaceEngineerPage = () => {
     setSessionDrivers([]);
     setSelectedDriverNum("");
     setLastUpdated(null);
+    setScenarios(null);
   };
 
   const handleDriverSelect = (driverNum) => {
     setSelectedDriverNum(driverNum);
     setLapScrubber(1);
     setLastUpdated(null);
+    setScenarios(null);
   };
 
   const getTimestamp = () => {
@@ -189,6 +195,29 @@ const RaceEngineerPage = () => {
           : value
     }));
   };
+
+  const fetchManualScenarios = useCallback(async (context) => {
+    setScenariosLoading(true);
+    try {
+      const res = await api.post("/race-engineer/scenarios", context);
+      setScenarios(res.data);
+    } catch {
+      setScenarios(null);
+    } finally {
+      setScenariosLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (mode !== "MANUAL") return;
+    if (manualScenarioDebounceRef.current) clearTimeout(manualScenarioDebounceRef.current);
+    manualScenarioDebounceRef.current = setTimeout(() => {
+      fetchManualScenarios(raceContext);
+    }, 500);
+    return () => {
+      if (manualScenarioDebounceRef.current) clearTimeout(manualScenarioDebounceRef.current);
+    };
+  }, [mode, raceContext, fetchManualScenarios]);
 
   const handleTransmit = async (e) => {
     e.preventDefault();
@@ -643,9 +672,147 @@ const RaceEngineerPage = () => {
             </div>
           </motion.div>
         </div>
+
+        {/* Scenario Cards */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-8"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <BarChart3 className="w-5 h-5 text-accentRed" />
+            <h2 className="font-display font-semibold text-xl uppercase tracking-wider text-whitePrimary">
+              Scenario Analysis
+            </h2>
+            {scenariosLoading && (
+              <span className="flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-accentRed opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-accentRed" />
+              </span>
+            )}
+            {mode === "MANUAL" && (
+              <span className="text-[9px] text-text-muted font-normal normal-case tracking-normal">(est.)</span>
+            )}
+          </div>
+
+          {!scenarios ? (
+            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border-default)] rounded-[var(--radius-lg)] p-8 text-center">
+              <p className="text-sm text-text-muted">
+                {mode === "MANUAL"
+                  ? "Adjust race context fields to see scenario analysis"
+                  : "Select a session and driver to load scenario analysis"}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(scenarios).map(([key, sc]) => {
+                if (!sc || !sc.available) return null;
+                const statusColors = {
+                  positive: "border-l-[var(--color-data-success)] bg-[var(--color-data-success)]/5",
+                  negative: "border-l-accentRed bg-accentRed/5",
+                  neutral: "border-l-[var(--color-accent-gold)] bg-[var(--color-accent-gold)]/5",
+                };
+                const badgeColors = {
+                  positive: "bg-[var(--color-data-success)]/15 text-[var(--color-data-success)]",
+                  negative: "bg-accentRed/15 text-red-300",
+                  neutral: "bg-[var(--color-accent-gold)]/15 text-[var(--color-accent-gold)]",
+                  insufficient_data: "bg-white/5 text-text-muted",
+                };
+                const borderColor = statusColors[sc.status] || "border-l-[var(--color-border-default)]";
+                const badgeColor = badgeColors[sc.status] || badgeColors.neutral;
+
+                return (
+                  <div
+                    key={key}
+                    className={`bg-[var(--color-bg-card)] border border-[var(--color-border-default)] border-l-4 ${borderColor} rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-sm)]`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-whitePrimary">
+                        {sc.label || key}
+                      </h3>
+                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${badgeColor}`}>
+                        {sc.status === "insufficient_data" ? "N/A" : sc.status === "positive" ? "Favorable" : sc.status === "negative" ? "Risky" : "Marginal"}
+                      </span>
+                    </div>
+
+                    {/* Key metrics */}
+                    <div className="space-y-0.5 mb-2 text-[11px] font-mono">
+                      {key === "undercut" && (
+                        <>
+                          <MetricRow label="Current pace" value={`${sc.currentPace ?? "—"}s`} />
+                          <MetricRow label="Fresh pace est." value={`${sc.freshPaceEstimate ?? "—"}s`} />
+                          <MetricRow label="Pit loss" value={`${sc.pitLossTime ?? "—"}s`} />
+                          <MetricRow label="Gain (3 laps)" value={sc.gainOverWindow != null ? `+${sc.gainOverWindow}s` : "—"} />
+                          <MetricRow label="Net" value={sc.netGain != null ? `${sc.netGain > 0 ? "+" : ""}${sc.netGain}s` : "—"} />
+                          {sc.gapToCarAhead != null && <MetricRow label="Gap to car ahead" value={`${sc.gapToCarAhead}s`} />}
+                        </>
+                      )}
+                      {key === "overcut" && (
+                        <>
+                          <MetricRow label="Degradation" value={sc.degradationOver ? `${sc.degradationOver}s` : "—"} />
+                          <MetricRow label="Std Dev" value={sc.stdDev ? `${sc.stdDev}s` : "—"} />
+                          <MetricRow label="Samples" value={`${sc.lapCount ?? "—"} laps`} />
+                        </>
+                      )}
+                      {key === "pitWindow" && (
+                        <>
+                          <MetricRow label="Compound" value={sc.compound || "—"} />
+                          <MetricRow label="Tyre age" value={`${sc.tyreAge ?? "—"} laps`} />
+                          <MetricRow label="Optimal window" value={sc.optimalWindow || "—"} />
+                          <MetricRow label="Laps remaining" value={`${sc.lapsRemainingOnCurrentSet ?? "—"}`} />
+                          <MetricRow label="Recommend pit" value={`Lap ${sc.recommendedPitLap ?? "—"}`} />
+                        </>
+                      )}
+                      {key === "threatAssessment" && (
+                        <>
+                          <MetricRow label="Gap trend" value={sc.gapTrend != null ? `${sc.gapTrend > 0 ? "+" : ""}${sc.gapTrend}s` : "—"} />
+                          <MetricRow label="Per lap" value={sc.changePerLap != null ? `${sc.changePerLap > 0 ? "+" : ""}${sc.changePerLap}s` : "—"} />
+                          <MetricRow label="History" value={sc.historySize ? `${sc.historySize} laps` : "—"} />
+                        </>
+                      )}
+                      {key === "safetyCarContingency" && (
+                        <>
+                          <MetricRow label="SC pit loss" value={`${sc.scPitLossTime ?? "—"}s`} />
+                          <MetricRow label="Green pit loss" value={`${sc.greenPitLossTime ?? "—"}s`} />
+                          <MetricRow label="Gain over window" value={sc.gainOverWindow != null ? `+${sc.gainOverWindow}s` : "—"} />
+                          <MetricRow label="SC net" value={sc.scNetGain != null ? `${sc.scNetGain > 0 ? "+" : ""}${sc.scNetGain}s` : "—"} />
+                        </>
+                      )}
+                      {key === "championshipImpact" && (
+                        <>
+                          <MetricRow label="Position" value={`P${sc.position ?? "—"}`} />
+                          <MetricRow label="Points this race" value={`${sc.pointsThisRace ?? 0} pts`} />
+                          {sc.driverPoints != null && <MetricRow label="Season before" value={`${sc.driverPoints} pts`} />}
+                          {sc.estimatedTotal != null && <MetricRow label="Estimated total" value={`${sc.estimatedTotal} pts`} />}
+                        </>
+                      )}
+                    </div>
+
+                    <p className="text-[11px] text-text-secondary leading-relaxed">
+                      {sc.verdict || "No verdict available."}
+                    </p>
+                    {sc.estimated && (
+                      <p className="text-[9px] text-[var(--color-accent-gold)]/50 mt-1 italic">Estimate</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </motion.div>
       </div>
     </div>
   );
 };
+
+function MetricRow({ label, value }) {
+  return (
+    <div className="flex justify-between items-center">
+      <span className="text-text-muted">{label}</span>
+      <span className="text-whitePrimary font-medium">{value}</span>
+    </div>
+  );
+}
 
 export default RaceEngineerPage;

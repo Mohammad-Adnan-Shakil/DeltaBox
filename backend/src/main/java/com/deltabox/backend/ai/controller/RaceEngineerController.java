@@ -3,6 +3,7 @@ package com.deltabox.backend.ai.controller;
 import com.deltabox.backend.ai.dto.RaceContextRequest;
 import com.deltabox.backend.ai.service.RaceEngineerDataService;
 import com.deltabox.backend.ai.service.RaceEngineerService;
+import com.deltabox.backend.ai.service.ScenarioEngineService;
 import com.deltabox.backend.exception.PythonExecutionException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,11 +31,14 @@ public class RaceEngineerController {
 
     private final RaceEngineerService raceEngineerService;
     private final RaceEngineerDataService raceEngineerDataService;
+    private final ScenarioEngineService scenarioEngineService;
 
     public RaceEngineerController(RaceEngineerService raceEngineerService,
-                                  RaceEngineerDataService raceEngineerDataService) {
+                                  RaceEngineerDataService raceEngineerDataService,
+                                  ScenarioEngineService scenarioEngineService) {
         this.raceEngineerService = raceEngineerService;
         this.raceEngineerDataService = raceEngineerDataService;
+        this.scenarioEngineService = scenarioEngineService;
     }
 
     @GetMapping("/live-session")
@@ -64,12 +68,31 @@ public class RaceEngineerController {
     public ResponseEntity<?> getRaceState(
             @RequestParam long sessionKey,
             @RequestParam int driverNumber,
-            @RequestParam(required = false) Integer asOfLap) {
+            @RequestParam(required = false) Integer asOfLap,
+            @RequestParam(required = false) Integer driverPoints) {
         Map<String, Object> state = raceEngineerDataService.getRaceState(sessionKey, driverNumber, asOfLap);
         if (state.containsKey("error")) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(state);
         }
+        if (driverPoints != null) {
+            state.put("driverPoints", driverPoints);
+        }
+        Map<String, Object> scenarios = scenarioEngineService.calculate(state);
+        state.put("scenarios", scenarios);
         return ResponseEntity.ok(state);
+    }
+
+    @PostMapping("/scenarios")
+    public ResponseEntity<?> getManualScenarios(@RequestBody Map<String, Object> manualContext) {
+        try {
+            Map<String, Object> scenarios = scenarioEngineService.calculate(manualContext);
+            return ResponseEntity.ok(scenarios);
+        } catch (Exception e) {
+            log.warn("Failed to compute manual scenarios: {}", e.getMessage());
+            Map<String, Object> err = new HashMap<>();
+            err.put("error", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(err);
+        }
     }
 
     @PostMapping("/ask")

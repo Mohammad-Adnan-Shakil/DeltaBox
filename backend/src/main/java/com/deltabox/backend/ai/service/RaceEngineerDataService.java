@@ -167,11 +167,11 @@ public class RaceEngineerDataService {
             state.put("position", 0);
         }
 
+        double currentGapToLeader = 0;
+        double currentGapToNext = 0;
+        boolean intervalsFound = false;
         if (intervalsData != null && intervalsData.isArray()) {
-            double gapToLeader = 0;
-            double gapToNext = 0;
             Instant latestIntervalTime = null;
-            boolean found = false;
             for (JsonNode iv : intervalsData) {
                 if (iv.path("driver_number").asInt() != driverNumber) continue;
                 String dateStr = iv.path("date").asText();
@@ -180,17 +180,21 @@ public class RaceEngineerDataService {
                 if (lapEndInstant != null && ivTime.isAfter(lapEndInstant)) continue;
                 if (latestIntervalTime == null || ivTime.isAfter(latestIntervalTime)) {
                     latestIntervalTime = ivTime;
-                    gapToLeader = iv.path("gap_to_leader").asDouble(0);
+                    currentGapToLeader = iv.path("gap_to_leader").asDouble(0);
                     JsonNode intervalNode = iv.path("interval");
-                    gapToNext = intervalNode.isNull() ? 0 : intervalNode.asDouble(0);
-                    found = true;
+                    currentGapToNext = intervalNode.isNull() ? 0 : intervalNode.asDouble(0);
+                    intervalsFound = true;
                 }
             }
-            state.put("gapToLeader", found ? formatGap(gapToLeader) : "");
-            state.put("gapToNext", found ? formatGap(gapToNext) : "");
+            state.put("gapToLeader", intervalsFound ? formatGap(currentGapToLeader) : "");
+            state.put("gapToNext", intervalsFound ? formatGap(currentGapToNext) : "");
+            state.put("gapToLeaderRaw", intervalsFound ? currentGapToLeader : null);
+            state.put("gapToNextRaw", intervalsFound ? currentGapToNext : null);
         } else {
             state.put("gapToLeader", "");
             state.put("gapToNext", "");
+            state.put("gapToLeaderRaw", null);
+            state.put("gapToNextRaw", null);
         }
 
         if (stintsData != null && stintsData.isArray()) {
@@ -222,6 +226,70 @@ public class RaceEngineerDataService {
             state.put("dateEnd", sess.path("date_end").asText());
             state.put("sessionKey", sess.path("session_key").asLong());
         }
+
+        // --- Scenario engine enrichment ---
+
+        // Last 3 completed laps
+        List<Map<String, Object>> lastThreeLaps = new ArrayList<>();
+        if (lapsData != null && lapsData.isArray()) {
+            List<Integer> sortedLaps = new ArrayList<>(lapMap.keySet());
+            Collections.sort(sortedLaps);
+            for (int i = sortedLaps.size() - 1; i >= 0 && lastThreeLaps.size() < 3; i--) {
+                int ln = sortedLaps.get(i);
+                LapInfo li = lapMap.get(ln);
+                Map<String, Object> entry = new LinkedHashMap<>();
+                entry.put("lapNumber", li.lapNumber);
+                entry.put("duration", round3(li.duration));
+                lastThreeLaps.add(0, entry);
+            }
+        }
+        state.put("lastThreeLaps", lastThreeLaps);
+
+        // Fastest lap time
+        double fastestLap = Double.MAX_VALUE;
+        for (LapInfo li : lapMap.values()) {
+            if (li.duration > 0 && li.duration < fastestLap) fastestLap = li.duration;
+        }
+        state.put("fastestLapTime", fastestLap < Double.MAX_VALUE ? round3(fastestLap) : null);
+
+        // Interval history for threat assessment
+        List<Map<String, Object>> intervalHistory = new ArrayList<>();
+        if (intervalsData != null && intervalsData.isArray() && !lapMap.isEmpty()) {
+            List<Integer> sortedLaps = new ArrayList<>(lapMap.keySet());
+            Collections.sort(sortedLaps);
+            int startIdx = Math.max(0, sortedLaps.size() - 5);
+            for (int i = startIdx; i < sortedLaps.size(); i++) {
+                int ln = sortedLaps.get(i);
+                LapInfo li = lapMap.get(ln);
+                if (li.duration <= 0) continue;
+                Instant lapStart = Instant.parse(li.dateStart);
+                Instant lapEnd = lapStart.plusMillis((long) (li.duration * 1000));
+
+                double histGapToLeader = 0;
+                double histGapToNext = 0;
+                boolean histFound = false;
+                for (JsonNode iv : intervalsData) {
+                    if (iv.path("driver_number").asInt() != driverNumber) continue;
+                    String ds = iv.path("date").asText();
+                    if (ds.isEmpty()) continue;
+                    Instant ivTime = Instant.parse(ds);
+                    if (!ivTime.isBefore(lapStart) && ivTime.isBefore(lapEnd)) {
+                        histGapToLeader = iv.path("gap_to_leader").asDouble(0);
+                        JsonNode intervalNode = iv.path("interval");
+                        histGapToNext = intervalNode.isNull() ? 0 : intervalNode.asDouble(0);
+                        histFound = true;
+                    }
+                }
+                if (histFound) {
+                    Map<String, Object> hist = new LinkedHashMap<>();
+                    hist.put("lapNumber", ln);
+                    hist.put("gapToLeader", round3(histGapToLeader));
+                    hist.put("gapToNext", round3(histGapToNext));
+                    intervalHistory.add(hist);
+                }
+            }
+        }
+        state.put("intervalHistory", intervalHistory);
 
         return state;
     }
@@ -282,6 +350,10 @@ public class RaceEngineerDataService {
             return String.format("%.0fL", seconds / 90);
         }
         return String.format("+%.1fs", seconds);
+    }
+
+    private static double round3(double v) {
+        return Math.round(v * 1000.0) / 1000.0;
     }
 
     private static class LapInfo {

@@ -74,6 +74,9 @@ public class SecurityConfig {
                         
                         // Public endpoints - Telemetry (no login required)
                         .requestMatchers("/api/telemetry/**").permitAll()
+
+                        // Public endpoints - Race Engineer
+                        .requestMatchers("/api/race-engineer/**").permitAll()
                         
                         // Debug endpoints (no login required)
                         .requestMatchers("/api/debug/**").permitAll()
