@@ -23,6 +23,7 @@ public class PredictionResponseDTO {
     private Map<String, Object> divergence;
     private String confidenceReason;
     private String simulationImpact;
+    private boolean insufficientData;
 
     public PredictionResponseDTO() {}
 
@@ -84,4 +85,7 @@ public class PredictionResponseDTO {
 
     public String getSimulationImpact() { return simulationImpact; }
     public void setSimulationImpact(String simulationImpact) { this.simulationImpact = simulationImpact; }
+
+    public boolean isInsufficientData() { return insufficientData; }
+    public void setInsufficientData(boolean insufficientData) { this.insufficientData = insufficientData; }
 }

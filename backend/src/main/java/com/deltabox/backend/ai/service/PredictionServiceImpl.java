@@ -124,6 +124,9 @@ public class PredictionServiceImpl implements PredictionService {
             }
         }
 
+        // Check if we have sufficient historical data
+        boolean insufficientData = allDriverRaces.isEmpty();
+
         // Build ML service payload — exactly the 12 features in order
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("career_avg_finish", round2(careerAvgFinish));
@@ -142,14 +145,16 @@ public class PredictionServiceImpl implements PredictionService {
         // Call ML service
         DriverIntelligenceResponse mlResponse = mlClientService.predict(payload);
 
-        // Map to PredictionResponseDTO
+        // Map to PredictionResponseDTO with clamping to valid F1 position range
         PredictionResponseDTO response = new PredictionResponseDTO();
-        double blended = (mlResponse.getRfPrediction() + mlResponse.getXgbPrediction()) / 2.0;
-        response.setPredictedPosition(Math.round(blended));
+        double rfClamped = Math.max(1.0, Math.min(20.0, mlResponse.getRfPrediction()));
+        double xgbClamped = Math.max(1.0, Math.min(20.0, mlResponse.getXgbPrediction()));
+        double blended = (rfClamped + xgbClamped) / 2.0;
+        response.setPredictedPosition(Math.round(Math.max(1.0, Math.min(20.0, blended))));
         response.setConfidence(mlResponse.getConfidence());
         response.setConfidenceLabel(mlResponse.getConfidenceLabel());
-        response.setRfPrediction(mlResponse.getRfPrediction());
-        response.setXgbPrediction(mlResponse.getXgbPrediction());
+        response.setRfPrediction(rfClamped);
+        response.setXgbPrediction(xgbClamped);
         response.setModelAgreement(Math.abs(mlResponse.getRfPrediction() - mlResponse.getXgbPrediction()) <= 2.0);
         response.setPredictedRange(mlResponse.getPredictedRange());
         response.setTrend(mlResponse.getTrend());
@@ -163,10 +168,12 @@ public class PredictionServiceImpl implements PredictionService {
         response.setDivergence(mlResponse.getDivergence());
         response.setConfidenceReason(mlResponse.getConfidenceReason());
         response.setSimulationImpact(mlResponse.getSimulationImpact());
+        response.setInsufficientData(insufficientData);
 
-        log.info("Prediction complete: position={}, confidence={}, rf={}, xgb={}",
+        log.info("Prediction complete: position={}, confidence={}, rf={}, xgb={}, insufficientData={}",
                  response.getPredictedPosition(), response.getConfidence(),
-                 response.getRfPrediction(), response.getXgbPrediction());
+                 response.getRfPrediction(), response.getXgbPrediction(),
+                 response.isInsufficientData());
 
         return response;
     }

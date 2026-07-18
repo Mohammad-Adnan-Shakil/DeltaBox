@@ -357,6 +357,10 @@ def run_prediction(input_data: Dict[str, Any]) -> Dict[str, Any]:
         rf_pred = float(models["rf"].predict(feature_values)[0])
         xgb_pred = float(models["xgb"].predict(feature_values)[0])
 
+        # Clamp predictions to valid F1 position range
+        rf_pred = max(1.0, min(20.0, rf_pred))
+        xgb_pred = max(1.0, min(20.0, xgb_pred))
+
         # Extract feature importances from XGBoost model
         feature_names = [
             "career_avg_finish", "career_wins", "career_poles",
@@ -474,6 +478,18 @@ def run_prediction(input_data: Dict[str, Any]) -> Dict[str, Any]:
         # Calculate divergence
         divergence = get_divergence(career_avg, recent_avg)
         
+        # Detect insufficient historical data (all driver-performance features at defaults)
+        perf_defaults = {
+            "career_avg_finish": 10.0, "career_wins": 0, "career_poles": 0,
+            "recent_5_avg": 10.0, "recent_10_avg": 10.0,
+            "circuit_avg_finish": 10.0, "circuit_appearances": 0,
+            "season_avg_finish": 10.0, "team_avg_finish": 10.0,
+            "championship_position": 10
+        }
+        insufficient_data = all(
+            float(input_data.get(k, v)) == v for k, v in perf_defaults.items()
+        )
+
         # Build performance breakdown
         performance_breakdown = {
             "career": career_avg,
@@ -489,6 +505,7 @@ def run_prediction(input_data: Dict[str, Any]) -> Dict[str, Any]:
             "driver_id": str(input_data.get("driver_id", "0")),
             "rf_prediction": rf_pred,
             "xgb_prediction": xgb_pred,
+            "insufficient_data": insufficient_data,
             "confidence": confidence,
             "confidence_label": confidence_label,
             "simulation_impact": impact,
