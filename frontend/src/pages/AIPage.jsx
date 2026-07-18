@@ -34,7 +34,7 @@ const verdictForPosition = (position) => {
 const PRESET_SCENARIOS = [
   {
     id: "verstappen-miami",
-    label: "Champion at Miami",
+    label: "Pole Position Bet",
     driverId: 1,
     driverCode: "VER",
     raceId: 4,
@@ -43,7 +43,7 @@ const PRESET_SCENARIOS = [
   },
   {
     id: "leclerc-monaco",
-    label: "Ferrari at Monaco",
+    label: "Monaco Specialist",
     driverId: 3,
     driverCode: "LEC",
     raceId: 6,
@@ -52,7 +52,7 @@ const PRESET_SCENARIOS = [
   },
   {
     id: "norris-silverstone",
-    label: "McLaren Home Race",
+    label: "Midfield Battle",
     driverId: 5,
     driverCode: "NOR",
     raceId: 10,
@@ -61,7 +61,7 @@ const PRESET_SCENARIOS = [
   },
   {
     id: "hamilton-monza",
-    label: "Ferrari at Monza",
+    label: "Points Lock",
     driverId: 4,
     driverCode: "HAM",
     raceId: 14,

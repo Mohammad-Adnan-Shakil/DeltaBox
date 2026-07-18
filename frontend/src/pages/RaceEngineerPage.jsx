@@ -329,14 +329,14 @@ const RaceEngineerPage = () => {
                 key={m}
                 type="button"
                 onClick={() => handleModeSwitch(m)}
-                className={`px-4 py-1.5 text-xs font-bold rounded-[var(--radius-md)] uppercase tracking-wider transition-all ${
+                className={`px-4 py-1.5 min-h-[40px] text-xs font-bold rounded-[var(--radius-md)] uppercase tracking-wider transition-all ${
                   mode === m
                     ? m === "LIVE"
                       ? "bg-[var(--color-data-success)]/20 text-[var(--color-data-success)] border border-[var(--color-data-success)]/40"
                       : m === "REPLAY"
                         ? "bg-[var(--color-accent-gold)]/20 text-[var(--color-accent-gold)] border border-[var(--color-accent-gold)]/40"
                         : "bg-accentRed/20 text-accentRed border border-accentRed/40"
-                    : "bg-[var(--color-bg-hover)] text-text-secondary border border-[var(--color-border-default)] hover:bg-white/10"
+                    : "bg-[var(--color-bg-hover)] text-text-secondary border border-[var(--color-border-default)] hover:bg-[var(--color-glass-hover)]"
                 }`}
               >
                 {m === "LIVE" && <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-[var(--color-data-success)] animate-pulse" />}
@@ -370,7 +370,7 @@ const RaceEngineerPage = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-1"
           >
-            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border-default)] border-t-2 border-t-accentRed rounded-[var(--radius-lg)] p-6 sticky top-6 shadow-[var(--shadow-md)]">
+            <div className="bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] border-t border-t-accentRed rounded-[var(--radius-lg)] p-6 sticky top-6 shadow-[var(--shadow-md)]">
               <h2 className="font-display font-semibold text-xl uppercase tracking-wider mb-4 text-whitePrimary">Race Status</h2>
 
               {/* Live indicator */}
@@ -402,7 +402,7 @@ const RaceEngineerPage = () => {
                   {/* Session selector (replay) or live session info */}
                   {mode === "LIVE" && (
                     <div>
-                      <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1 block">Session</label>
+                      <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1 block">Session</label>
                       {liveLoading ? (
                         <p className="text-xs text-text-muted">Checking for live session...</p>
                       ) : liveSession?.live ? (
@@ -414,7 +414,7 @@ const RaceEngineerPage = () => {
                   )}
                   {mode === "REPLAY" && (
                     <div>
-                      <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1 block">Session</label>
+                      <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1 block">Session</label>
                       {replayLoading ? (
                         <p className="text-xs text-text-muted">Loading sessions...</p>
                       ) : (
@@ -436,7 +436,7 @@ const RaceEngineerPage = () => {
 
                   {/* Driver selector */}
                   <div>
-                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1 block">Driver</label>
+                    <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1 block">Driver</label>
                     <select
                       value={selectedDriverNum}
                       onChange={(e) => handleDriverSelect(e.target.value)}
@@ -455,7 +455,7 @@ const RaceEngineerPage = () => {
                   {/* Lap scrubber (replay only) */}
                   {mode === "REPLAY" && selectedDriverNum && (
                     <div>
-                      <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1 block">
+                      <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1 block">
                         Lap {lapScrubber} / {maxLap}
                       </label>
                       <input
@@ -479,13 +479,13 @@ const RaceEngineerPage = () => {
                 {/* Lap */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col">
-                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Lap</label>
+                    <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1">Lap</label>
                     <input type="number" name="lap" value={raceContext.lap} onChange={handleContextChange}
                       readOnly={isAutoMode}
                       className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Total</label>
+                    <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1">Total</label>
                     <input type="number" name="totalLaps" value={raceContext.totalLaps} onChange={handleContextChange}
                       readOnly={isAutoMode}
                       className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
@@ -495,13 +495,13 @@ const RaceEngineerPage = () => {
                 {/* Position & Gap */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col">
-                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Position</label>
+                    <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1">Position</label>
                     <input type="number" name="position" value={raceContext.position} onChange={handleContextChange}
                       readOnly={isAutoMode}
                       className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Gap to Leader</label>
+                    <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1">Gap to Leader</label>
                     <input type="text" name="gapToLeader" value={raceContext.gapToLeader} onChange={handleContextChange}
                       readOnly={isAutoMode}
                       className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
@@ -511,7 +511,7 @@ const RaceEngineerPage = () => {
                 {/* Tyre */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col">
-                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Compound</label>
+                    <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1">Compound</label>
                     <select name="tyreCompound" value={raceContext.tyreCompound} onChange={handleContextChange}
                       disabled={isAutoMode}
                       className={`surface-input font-medium ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`}>
@@ -523,7 +523,7 @@ const RaceEngineerPage = () => {
                     </select>
                   </div>
                   <div className="flex flex-col">
-                    <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Age (laps)</label>
+                    <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1">Age (laps)</label>
                     <input type="number" name="tyreAge" value={raceContext.tyreAge} onChange={handleContextChange}
                       readOnly={isAutoMode}
                       className={`surface-input font-mono ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
@@ -533,14 +533,14 @@ const RaceEngineerPage = () => {
                 {/* Fuel & Weather — editable in all modes */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col">
-                    <label className="flex items-center gap-1 text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">
+                    <label className="flex items-center gap-1 text-text-muted text-[11px] uppercase tracking-widest mb-1">
                       Fuel (kg)
                       {isAutoMode && <span className="text-[9px] text-[var(--color-accent-gold)] font-normal normal-case tracking-normal">(est.)</span>}
                     </label>
                     <input type="number" name="fuelLoad" value={raceContext.fuelLoad} onChange={handleContextChange} step="0.1" className="surface-input font-mono" />
                   </div>
                   <div className="flex flex-col">
-                    <label className="flex items-center gap-1 text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">
+                    <label className="flex items-center gap-1 text-text-muted text-[11px] uppercase tracking-widest mb-1">
                       Weather
                       {isAutoMode && <span className="text-[9px] text-[var(--color-accent-gold)] font-normal normal-case tracking-normal">(est.)</span>}
                     </label>
@@ -554,7 +554,7 @@ const RaceEngineerPage = () => {
 
                 {/* Last Lap Time */}
                 <div className="flex flex-col">
-                  <label className="text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">Last Lap Time</label>
+                  <label className="text-text-muted text-[11px] uppercase tracking-widest mb-1">Last Lap Time</label>
                   <input type="text" name="lastLapTime" value={raceContext.lastLapTime} onChange={handleContextChange}
                     readOnly={isAutoMode}
                     className={`surface-input font-mono text-lg text-[var(--color-accent-green)] ${isAutoMode ? "opacity-70 cursor-not-allowed" : ""}`} />
@@ -581,7 +581,7 @@ const RaceEngineerPage = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="lg:col-span-2"
           >
-            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border-default)] rounded-[var(--radius-lg)] p-6 flex flex-col h-[600px] lg:h-auto lg:min-h-[600px] shadow-[var(--shadow-md)]">
+            <div className="bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] rounded-[var(--radius-lg)] p-6 flex flex-col h-[600px] lg:h-auto lg:min-h-[600px] shadow-[var(--shadow-md)]">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <h2 className="font-display font-semibold text-xl uppercase tracking-wider text-whitePrimary">Engineer Radio</h2>
@@ -691,7 +691,7 @@ const RaceEngineerPage = () => {
                 <button
                   type="submit"
                   disabled={loading || !driverMessage.trim()}
-                  className="bg-accentRed hover:bg-accentRed/90 disabled:bg-accentRed/50 text-white px-6 py-3 rounded-[var(--radius-md)] font-semibold flex items-center justify-center gap-2 transition-all w-full sm:w-auto hover:shadow-[0_0_20px_rgba(232,0,45,0.3)] disabled:shadow-none"
+                  className="bg-accentRed hover:bg-accentRed/90 disabled:bg-accentRed/50 text-white px-6 py-3 rounded-[var(--radius-md)] font-semibold flex items-center justify-center gap-2 transition-all w-full sm:w-auto hover:shadow-[var(--shadow-glow)] disabled:shadow-none"
                 >
                   <Send className="w-4 h-4" />
                   Transmit
@@ -725,7 +725,7 @@ const RaceEngineerPage = () => {
           </div>
 
           {!scenarios ? (
-            <div className="bg-[var(--color-bg-card)] border border-[var(--color-border-default)] rounded-[var(--radius-lg)] p-8 text-center">
+            <div className="bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] rounded-[var(--radius-lg)] p-8 text-center">
               <p className="text-sm text-text-muted">
                 {mode === "MANUAL"
                   ? "Adjust race context fields to see scenario analysis"
@@ -753,13 +753,13 @@ const RaceEngineerPage = () => {
                 return (
                   <div
                     key={key}
-                    className={`bg-[var(--color-bg-card)] border border-[var(--color-border-default)] border-l-4 ${borderColor} rounded-[var(--radius-lg)] p-4 shadow-[var(--shadow-sm)]`}
+                    className={`bg-[var(--color-glass-bg)] border border-[var(--color-glass-border)] border-l-4 ${borderColor} rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-md)]`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="text-[11px] uppercase tracking-[0.2em] font-bold text-whitePrimary">
+                      <h3 className="text-[11px] uppercase tracking-widest font-bold text-whitePrimary">
                         {sc.label || key}
                       </h3>
-                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${badgeColor}`}>
+                      <span className={`px-2 py-1 rounded-[var(--radius-sm)] text-[10px] font-medium uppercase tracking-wide ${badgeColor}`}>
                         {sc.status === "insufficient_data" ? "N/A" : sc.status === "positive" ? "Favorable" : sc.status === "negative" ? "Risky" : "Marginal"}
                       </span>
                     </div>
