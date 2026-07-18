@@ -81,13 +81,14 @@ public class DatabaseSeeder implements CommandLineRunner {
                 log.info("Drivers already exist, skipping driver seeding");
             }
 
-            // Seed races
-            if (raceRepository.count() == 0) {
+            // Seed races — check for result rows specifically
+            // (V10 schedule rows make count() > 0, so we must filter to result rows)
+            if (raceRepository.countByDriverIdIsNotNull() == 0) {
                 log.info("Seeding races...");
                 syncService.syncRaces();
                 log.info("✅ Races seeded successfully");
             } else {
-                log.info("Races already exist, skipping race seeding");
+                log.info("Race results already exist, skipping race seeding");
             }
 
             log.info("🎉 Initial database seeding completed successfully!");

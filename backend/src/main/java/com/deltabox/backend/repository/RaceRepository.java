@@ -23,4 +23,6 @@ public interface RaceRepository extends JpaRepository<Race, Long> {
     
     List<Race> findByDriverIdInAndPositionIsNotNull(List<Long> driverIds);
     
+    long countByDriverIdIsNotNull();
+    
     }
