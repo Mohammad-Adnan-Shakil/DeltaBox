@@ -1,9 +1,9 @@
 ﻿import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Brain, Cpu, Lightbulb, LoaderCircle, TrendingDown, TrendingUp, ChevronDown, ChevronUp
+  Brain, Cpu, Lightbulb, LoaderCircle, TrendingDown, TrendingUp, ChevronDown, ChevronUp, BookOpen, Star, Swords, Zap, Trophy
 } from "lucide-react";
-import { Card, Button, LoadingState, ErrorState, EmptyState } from "../components/common";
+import { Card, Button, LoadingState, ErrorState, EmptyState, GuideCard } from "../components/common";
 import { useFetch, usePost } from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
 import api from "../utils/axios";
@@ -30,6 +30,64 @@ const verdictForPosition = (position) => {
   if (position <= 15) return { icon: "⚠️", label: "Midfield Battle", className: "bg-white/15 text-text-secondary" };
   return { icon: "❌", label: "Tough Race", className: "bg-accentRed/20 text-accentRed" };
 };
+
+const PRESET_SCENARIOS = [
+  {
+    id: "verstappen-miami",
+    label: "Champion at Miami",
+    driverId: 1,
+    driverCode: "VER",
+    raceId: 4,
+    raceName: "Miami GP",
+    gridPosition: 1,
+  },
+  {
+    id: "leclerc-monaco",
+    label: "Ferrari at Monaco",
+    driverId: 3,
+    driverCode: "LEC",
+    raceId: 6,
+    raceName: "Monaco GP",
+    gridPosition: 3,
+  },
+  {
+    id: "norris-silverstone",
+    label: "McLaren Home Race",
+    driverId: 5,
+    driverCode: "NOR",
+    raceId: 10,
+    raceName: "British GP",
+    gridPosition: 5,
+  },
+  {
+    id: "hamilton-monza",
+    label: "Ferrari at Monza",
+    driverId: 4,
+    driverCode: "HAM",
+    raceId: 14,
+    raceName: "Italian GP",
+    gridPosition: 8,
+  },
+];
+
+const guideSteps = [
+  {
+    title: "Select a driver and an upcoming race",
+    description: "Choose from the dropdowns or click a Quick Scenario card below to auto-fill the form.",
+  },
+  {
+    title: "Set the grid position",
+    description: "Use the grid selector to choose the starting position (P1–P20).",
+  },
+  {
+    title: "Run the prediction",
+    description: "Click RUN PREDICTION to generate a finish range, confidence score, model breakdown, and what-if simulation.",
+  },
+  {
+    title: "Use Quick Compare after your first result",
+    description: "Compare how different grid positions affect the predicted outcome.",
+  },
+];
 
 const EmptyPredictionState = () => (
   <Card delay={0.1} className="flex min-h-[460px] flex-col items-center justify-center text-center relative overflow-hidden">
@@ -175,22 +233,55 @@ const AIPage = () => {
   const mostLikely = getSafeMostLikely();
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6">
-      {/* LEFT PANEL - FORM */}
-      <div className="w-full lg:w-1/3 lg:sticky lg:top-4 lg:self-start">
-        <Card className="h-fit" delay={0.05}>
-          <div className="mb-6 flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accentRed/20 text-accentRed">
-              <Brain className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="section-label">Apex Intelligence</p>
-              <p className="font-display font-semibold text-xl uppercase tracking-wider">Prediction Setup</p>
-            </div>
-          </div>
+    <div className="space-y-6">
+      <GuideCard
+        pageKey="apex_intelligence"
+        title="How to use Apex Intelligence"
+        steps={guideSteps}
+      />
 
-          <div className="space-y-4">
-            {/* Driver Selector */}
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* LEFT PANEL - FORM */}
+        <div className="w-full lg:w-1/3 lg:sticky lg:top-4 lg:self-start">
+          <Card className="h-fit" delay={0.05}>
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-accentRed/20 text-accentRed">
+                <Brain className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="section-label">Apex Intelligence</p>
+                <p className="font-display font-semibold text-xl uppercase tracking-wider">Prediction Setup</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Quick Scenarios */}
+              <div>
+                <p className="section-label mb-3">Quick Scenarios</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {PRESET_SCENARIOS.map((scenario) => (
+                    <button
+                      key={scenario.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDriver(String(scenario.driverId));
+                        setSelectedRace(String(scenario.raceId));
+                        setGridPosition(scenario.gridPosition);
+                        setResult(null);
+                        setActionError("");
+                        setInsightsOpen(false);
+                      }}
+                      className="text-left p-3 rounded-[var(--radius-md)] border border-[var(--color-glass-border)] bg-[var(--color-glass-bg)] hover:bg-[var(--color-glass-hover)] transition-all"
+                    >
+                      <p className="font-mono text-xs font-bold text-[var(--color-accent-500)]">{scenario.driverCode}</p>
+                      <p className="text-xs font-semibold text-[var(--color-text-primary)] mt-0.5">{scenario.label}</p>
+                      <p className="text-[10px] text-[var(--color-text-tertiary)] mt-0.5">{scenario.raceName} · P{scenario.gridPosition}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Driver Selector */}
             <div>
               <label className="section-label mb-2 block">Driver</label>
               <div className="relative">
@@ -624,6 +715,7 @@ const AIPage = () => {
           ) : null}
         </AnimatePresence>
       </div>
+    </div>
     </div>
   );
 };

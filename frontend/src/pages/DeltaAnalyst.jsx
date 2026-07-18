@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { GitCompare, Gauge, Timer, Ban, Brain } from "lucide-react";
+import { GitCompare, Gauge, Timer, Ban, Brain, BookOpen } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from "recharts";
@@ -10,6 +10,7 @@ import Button from "../components/common/Button";
 import { Select } from "../components/common/Select";
 import { Skeleton } from "../components/common/Skeleton";
 import { ErrorState } from "../components/common/StateViews";
+import GuideCard from "../components/common/GuideCard";
 import { useFetch } from "../hooks/useFetch";
 import usePageTitle from "../hooks/usePageTitle";
 import api from "../utils/axios";
@@ -32,6 +33,21 @@ const CustomTooltip = ({ active, payload, label }) => {
     </div>
   );
 };
+
+const guideSteps = [
+  {
+    title: "Select a session, two drivers, and one lap each",
+    description: "Choose from the dropdowns — sessions contain telemetry data for available drivers and their laps.",
+  },
+  {
+    title: "Click COMPARE LAPS",
+    description: "View sector-level deltas, speed comparison, and throttle/brake input overlays side by side.",
+  },
+  {
+    title: "Use AI Analysis for deeper insight",
+    description: "After comparing, click ANALYZE WITH AI to get a natural-language breakdown of driving differences.",
+  },
+];
 
 const DeltaAnalyst = () => {
   usePageTitle("Delta Analyst");
@@ -156,6 +172,12 @@ const DeltaAnalyst = () => {
 
   return (
     <div className="space-y-6">
+      <GuideCard
+        pageKey="delta_analyst"
+        title="How to use Delta Analyst"
+        steps={guideSteps}
+      />
+
       {/* Header */}
       <div className="flex items-center gap-4">
         <div className="flex h-12 w-12 items-center justify-center rounded-[var(--radius-lg)] bg-[var(--color-accent-500)]/10">

@@ -1,9 +1,29 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import api from "../services/api";
-import { BarChart3, Radio, Send, Mic, Activity } from "lucide-react";
+import { BarChart3, Radio, Send, Mic, Activity, BookOpen } from "lucide-react";
+import GuideCard from "../components/common/GuideCard";
 
 const LIVE_POLL_INTERVAL = 20000;
+
+const guideSteps = [
+  {
+    title: "Choose a mode: Manual, Live, or Replay",
+    description: "Manual lets you tweak race context freely. Live fetches real-time data from the current session. Replay lets you scrub through past sessions lap by lap.",
+  },
+  {
+    title: "Set or review the race context",
+    description: "In Manual mode, adjust lap, position, tyre, fuel, and weather. In Live/Replay, context is pulled from the session data.",
+  },
+  {
+    title: "Review scenario analysis",
+    description: "The panel automatically evaluates undercut, overcut, pit window, threat assessment, safety car, and championship impact based on the current context.",
+  },
+  {
+    title: "Talk to your engineer",
+    description: "Type a message or click a suggested question to get AI-powered strategic advice from the pit wall.",
+  },
+];
 
 const RaceEngineerPage = () => {
   const [mode, setMode] = useState("MANUAL");
@@ -281,6 +301,14 @@ const RaceEngineerPage = () => {
   return (
     <div className="min-h-screen bg-[var(--color-bg-base)] text-whitePrimary p-6">
       <div className="max-w-7xl mx-auto">
+        <div className="mb-6">
+          <GuideCard
+            pageKey="race_engineer"
+            title="How to use Race Engineer"
+            steps={guideSteps}
+          />
+        </div>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -507,14 +535,14 @@ const RaceEngineerPage = () => {
                   <div className="flex flex-col">
                     <label className="flex items-center gap-1 text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">
                       Fuel (kg)
-                      {isAutoMode && <span className="text-[8px] text-[var(--color-accent-gold)] font-normal normal-case tracking-normal">(est.)</span>}
+                      {isAutoMode && <span className="text-[9px] text-[var(--color-accent-gold)] font-normal normal-case tracking-normal">(est.)</span>}
                     </label>
                     <input type="number" name="fuelLoad" value={raceContext.fuelLoad} onChange={handleContextChange} step="0.1" className="surface-input font-mono" />
                   </div>
                   <div className="flex flex-col">
                     <label className="flex items-center gap-1 text-text-muted text-[11px] uppercase tracking-[0.2em] mb-1">
                       Weather
-                      {isAutoMode && <span className="text-[8px] text-[var(--color-accent-gold)] font-normal normal-case tracking-normal">(est.)</span>}
+                      {isAutoMode && <span className="text-[9px] text-[var(--color-accent-gold)] font-normal normal-case tracking-normal">(est.)</span>}
                     </label>
                     <select name="weather" value={raceContext.weather} onChange={handleContextChange} className="surface-input font-medium">
                       <option>Dry</option>
@@ -692,7 +720,7 @@ const RaceEngineerPage = () => {
               </span>
             )}
             {mode === "MANUAL" && (
-              <span className="text-[9px] text-text-muted font-normal normal-case tracking-normal">(est.)</span>
+              <span className="text-[9px] text-[var(--color-accent-gold)] font-normal normal-case tracking-normal">(est.)</span>
             )}
           </div>
 

@@ -5,6 +5,7 @@ export { default as AnimatedCount } from "./AnimatedCount";
 
 // Stat & Display Components
 export { default as StatCard } from "./StatCard";
+export { default as GuideCard } from "./GuideCard";
 
 export { default as Badge } from "./Badge";
 export { LoadingState, EmptyState, ErrorState } from "./StateViews";
