@@ -357,9 +357,9 @@ def run_prediction(input_data: Dict[str, Any]) -> Dict[str, Any]:
         rf_pred = float(models["rf"].predict(feature_values)[0])
         xgb_pred = float(models["xgb"].predict(feature_values)[0])
 
-        # Clamp predictions to valid F1 position range
-        rf_pred = max(1.0, min(20.0, rf_pred))
-        xgb_pred = max(1.0, min(20.0, xgb_pred))
+        # Clamp predictions to valid F1 position range (22 cars in 2026)
+        rf_pred = max(1.0, min(22.0, rf_pred))
+        xgb_pred = max(1.0, min(22.0, xgb_pred))
 
         # Extract feature importances from XGBoost model
         feature_names = [

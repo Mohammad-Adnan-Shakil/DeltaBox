@@ -147,10 +147,10 @@ public class PredictionServiceImpl implements PredictionService {
 
         // Map to PredictionResponseDTO with clamping to valid F1 position range
         PredictionResponseDTO response = new PredictionResponseDTO();
-        double rfClamped = Math.max(1.0, Math.min(20.0, mlResponse.getRfPrediction()));
-        double xgbClamped = Math.max(1.0, Math.min(20.0, mlResponse.getXgbPrediction()));
+        double rfClamped = Math.max(1.0, Math.min(22.0, mlResponse.getRfPrediction()));
+        double xgbClamped = Math.max(1.0, Math.min(22.0, mlResponse.getXgbPrediction()));
         double blended = (rfClamped + xgbClamped) / 2.0;
-        response.setPredictedPosition(Math.round(Math.max(1.0, Math.min(20.0, blended))));
+        response.setPredictedPosition(Math.round(Math.max(1.0, Math.min(22.0, blended))));
         response.setConfidence(mlResponse.getConfidence());
         response.setConfidenceLabel(mlResponse.getConfidenceLabel());
         response.setRfPrediction(rfClamped);

@@ -343,8 +343,8 @@ const AIPage = () => {
                 <label className="section-label">Grid Position</label>
                 <span className="text-xs text-text-muted font-mono">P{gridPosition}</span>
               </div>
-              <div className="grid grid-cols-5 gap-1 sm:grid-cols-10 md:grid-cols-5 lg:grid-cols-10">
-                {[...Array(20)].map((_, i) => (
+              <div className="grid grid-cols-5 gap-1 sm:grid-cols-11 md:grid-cols-5 lg:grid-cols-11">
+                {[...Array(22)].map((_, i) => (
                   <button
                     key={i}
                     type="button"
@@ -359,6 +359,11 @@ const AIPage = () => {
                   </button>
                 ))}
               </div>
+              {gridPosition >= 21 && (
+                <p className="mt-2 text-[10px] text-accentRed/80 leading-tight">
+                  Limited historical data for P{gridPosition} grid slot — the prediction model was trained on 20-car-grid seasons. Treat this result with extra caution.
+                </p>
+              )}
             </div>
 
             {actionError && !result ? <p className="text-sm text-accentRed">{actionError}</p> : null}
