@@ -75,7 +75,7 @@ public class RaceController {
                             Comparator.comparing((Race r) -> Objects.requireNonNullElse(r.getRound(), Integer.MAX_VALUE))
                                     .thenComparing(Race::getDate, Comparator.nullsLast(String::compareTo))
                     )
-                    .peek(race -> race.setStatus(resolveRaceStatus(race.getDate())))
+                    .peek(race -> race.setStatus(resolveRaceStatus(race.getDate(), race.getRound())))
                     .toList();
 
             logger.info("Returning {} unique races after deduplication", cleaned.size());
@@ -92,8 +92,10 @@ public class RaceController {
         try {
             Optional<Race> race = raceRepository.findById(raceId);
             if (race.isPresent()) {
-                logger.info("Race found: {}", race.get().getRaceName());
-                return ResponseEntity.ok(race.get());
+                Race r = race.get();
+                r.setStatus(resolveRaceStatus(r.getDate(), r.getRound()));
+                logger.info("Race found: {} (resolved status: {})", r.getRaceName(), r.getStatus());
+                return ResponseEntity.ok(r);
             } else {
                 logger.info("Race not found with ID: {}", raceId);
                 return ResponseEntity.status(404).body("Race not found");
@@ -183,10 +185,16 @@ public class RaceController {
         }
     }
 
-    private static String resolveRaceStatus(String raceDate) {
+    private String resolveRaceStatus(String raceDate, Integer round) {
         try {
             LocalDate parsed = LocalDate.parse(raceDate);
-            return parsed.isAfter(LocalDate.now()) ? "SCHEDULED" : "COMPLETED";
+            // Future date → definitely not completed
+            if (parsed.isAfter(LocalDate.now())) {
+                return "SCHEDULED";
+            }
+            // Today or past — check if actual race result rows exist for this round
+            boolean hasResults = round != null && !raceRepository.findByRoundAndDriverIdIsNotNullOrderByPositionAsc(round).isEmpty();
+            return hasResults ? "COMPLETED" : "SCHEDULED";
         } catch (Exception ex) {
             return "SCHEDULED";
         }
