@@ -74,6 +74,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return;
             }
 
+            if (!jwtService.isAccessToken(token)) {
+                logger.debug("JWT FILTER: Non-access token rejected for {} {}", method, path);
+                filterChain.doFilter(request, response);
+                return;
+            }
+
             // 🔍 Step 3: Extract username from token
             String email = jwtService.extractUsername(token);
 
