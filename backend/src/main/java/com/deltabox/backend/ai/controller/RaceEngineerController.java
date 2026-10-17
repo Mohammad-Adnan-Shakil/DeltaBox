@@ -109,6 +109,12 @@ public class RaceEngineerController {
         log.info("📡 [RaceEngineerController] Received strategy request for P{} Lap {}", 
                 raceContext.getPosition(), raceContext.getLap());
 
+        if (raceContext.getDriverMessage() != null && raceContext.getDriverMessage().length() > 500) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "driverMessage must not exceed 500 characters"
+            ));
+        }
+
         try {
             // Build user message from race context
             String userMessage = String.format(
