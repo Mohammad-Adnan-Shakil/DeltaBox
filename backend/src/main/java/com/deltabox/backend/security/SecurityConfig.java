@@ -78,8 +78,8 @@ public class SecurityConfig {
                         // Public endpoints - Race Engineer
                         .requestMatchers("/api/race-engineer/**").permitAll()
                         
-                        // Debug endpoints (no login required)
-                        .requestMatchers("/api/debug/**").permitAll()
+                        // Debug endpoints (admin only)
+                        .requestMatchers("/api/debug/**").hasRole("ADMIN")
                         
                         // Protected endpoints - Admin only
                         .requestMatchers("/api/admin/**").authenticated()
