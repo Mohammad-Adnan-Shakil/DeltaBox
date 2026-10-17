@@ -56,8 +56,9 @@ public class LlmRateLimitFilter extends OncePerRequestFilter {
 
         String clientIp = clientIp(request);
         String rejectedMessage;
-        synchronized (clientWindows.computeIfAbsent(clientIp, ignored -> new ClientWindow())) {
-            ClientWindow window = clientWindows.get(clientIp);
+        ClientWindow window = clientWindows.computeIfAbsent(
+                clientIp, ignored -> new ClientWindow(clock.getAsLong()));
+        synchronized (window) {
             long now = clock.getAsLong();
             window.resetIfExpired(now);
             if (window.minuteCount.incrementAndGet() > perMinuteLimit) {
@@ -127,10 +128,6 @@ public class LlmRateLimitFilter extends OncePerRequestFilter {
         private long dayWindowStart = minuteWindowStart;
         private final AtomicInteger minuteCount = new AtomicInteger();
         private final AtomicInteger dayCount = new AtomicInteger();
-
-        private ClientWindow() {
-            this(System.currentTimeMillis());
-        }
 
         ClientWindow(long windowStart) {
             this.minuteWindowStart = windowStart;
