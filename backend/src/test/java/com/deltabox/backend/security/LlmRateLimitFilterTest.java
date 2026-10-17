@@ -11,18 +11,19 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 class LlmRateLimitFilterTest {
 
     private FilterChain filterChain;
     private LlmRateLimitFilter filter;
+    private long now;
 
     @BeforeEach
     void setUp() {
         filterChain = mock(FilterChain.class);
-        filter = new LlmRateLimitFilter(10, 50, 500);
+        now = System.currentTimeMillis();
+        filter = new LlmRateLimitFilter(10, 50, 500, () -> now);
     }
 
     @Test
@@ -59,16 +60,28 @@ class LlmRateLimitFilterTest {
     }
 
     @Test
-    void firstForwardedIpIsUsedForRateLimiting() throws Exception {
+    void rightmostForwardedIpIsUsedForRateLimiting() throws Exception {
         for (int i = 0; i < 10; i++) {
-            runRequest("/api/telemetry/analyze", "203.0.113.99", "203.0.113.10, 10.0.0.1");
+            String leftmostIp = i % 2 == 0 ? "1.1.1.1" : "2.2.2.2";
+            runRequest("/api/telemetry/analyze", "203.0.113.99", leftmostIp + ", 203.0.113.10");
         }
 
         HttpServletResponse response = runRequest(
-                "/api/telemetry/analyze", "203.0.113.99", "203.0.113.10, 10.0.0.1");
+                "/api/telemetry/analyze", "203.0.113.99", "2.2.2.2, 203.0.113.10");
 
         verify(filterChain, times(10)).doFilter(any(), any());
         verify(response).setStatus(429);
+    }
+
+    @Test
+    void evictsExpiredClientWindows() {
+        filter.clientWindows.put("203.0.113.10",
+                new LlmRateLimitFilter.ClientWindow(now - 86_400_001L));
+
+        filter.evictStaleClients();
+
+        verifyNoInteractions(filterChain);
+        org.assertj.core.api.Assertions.assertThat(filter.clientWindows).isEmpty();
     }
 
     private HttpServletResponse runRequest(String path, String remoteAddress, String forwardedFor)

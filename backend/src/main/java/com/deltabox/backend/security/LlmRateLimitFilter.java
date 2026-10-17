@@ -4,11 +4,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.function.LongSupplier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,17 +24,25 @@ public class LlmRateLimitFilter extends OncePerRequestFilter {
     private final int perMinuteLimit;
     private final int perDayLimit;
     private final int globalPerDayLimit;
-    private final ConcurrentHashMap<String, ClientWindow> clientWindows = new ConcurrentHashMap<>();
+    final ConcurrentHashMap<String, ClientWindow> clientWindows = new ConcurrentHashMap<>();
+    private final LongSupplier clock;
     private final AtomicInteger globalCount = new AtomicInteger();
-    private volatile long globalWindowStart = System.currentTimeMillis();
+    private volatile long globalWindowStart;
 
+    @Autowired
     public LlmRateLimitFilter(
             @Value("${ratelimit.llm.per-minute:10}") int perMinuteLimit,
             @Value("${ratelimit.llm.per-day:50}") int perDayLimit,
             @Value("${ratelimit.llm.global-per-day:500}") int globalPerDayLimit) {
+        this(perMinuteLimit, perDayLimit, globalPerDayLimit, System::currentTimeMillis);
+    }
+
+    LlmRateLimitFilter(int perMinuteLimit, int perDayLimit, int globalPerDayLimit, LongSupplier clock) {
         this.perMinuteLimit = perMinuteLimit;
         this.perDayLimit = perDayLimit;
         this.globalPerDayLimit = globalPerDayLimit;
+        this.clock = clock;
+        this.globalWindowStart = clock.getAsLong();
     }
 
     @Override
@@ -47,7 +58,7 @@ public class LlmRateLimitFilter extends OncePerRequestFilter {
         String rejectedMessage;
         synchronized (clientWindows.computeIfAbsent(clientIp, ignored -> new ClientWindow())) {
             ClientWindow window = clientWindows.get(clientIp);
-            long now = System.currentTimeMillis();
+            long now = clock.getAsLong();
             window.resetIfExpired(now);
             if (window.minuteCount.incrementAndGet() > perMinuteLimit) {
                 rejectedMessage = "per-minute limit exceeded";
@@ -56,12 +67,15 @@ public class LlmRateLimitFilter extends OncePerRequestFilter {
             } else if (!allowGlobal(now)) {
                 rejectedMessage = "global daily limit exceeded";
             } else {
-                filterChain.doFilter(request, response);
-                return;
+                rejectedMessage = null;
             }
         }
 
-        writeRateLimitedResponse(response, rejectedMessage);
+        if (rejectedMessage == null) {
+            filterChain.doFilter(request, response);
+        } else {
+            writeRateLimitedResponse(response, rejectedMessage);
+        }
     }
 
     private boolean isLlmEndpoint(HttpServletRequest request) {
@@ -75,7 +89,13 @@ public class LlmRateLimitFilter extends OncePerRequestFilter {
     private String clientIp(HttpServletRequest request) {
         String forwardedFor = request.getHeader("X-Forwarded-For");
         if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",", 2)[0].trim();
+            String[] values = forwardedFor.split(",");
+            for (int i = values.length - 1; i >= 0; i--) {
+                String value = values[i].trim();
+                if (!value.isBlank()) {
+                    return value;
+                }
+            }
         }
         return request.getRemoteAddr();
     }
@@ -88,6 +108,13 @@ public class LlmRateLimitFilter extends OncePerRequestFilter {
         return globalCount.incrementAndGet() <= globalPerDayLimit;
     }
 
+    @Scheduled(fixedDelay = 600_000)
+    void evictStaleClients() {
+        long now = clock.getAsLong();
+        clientWindows.entrySet().removeIf(entry ->
+                now - entry.getValue().dayWindowStart >= DAY_WINDOW_MS);
+    }
+
     private void writeRateLimitedResponse(HttpServletResponse response, String message) throws IOException {
         response.setStatus(429);
         response.setHeader("Retry-After", "60");
@@ -95,11 +122,20 @@ public class LlmRateLimitFilter extends OncePerRequestFilter {
         response.getWriter().write("{\"error\":\"rate_limited\",\"message\":\"" + message + "\"}");
     }
 
-    private static final class ClientWindow {
-        private long minuteWindowStart = System.currentTimeMillis();
+    static final class ClientWindow {
+        private long minuteWindowStart;
         private long dayWindowStart = minuteWindowStart;
         private final AtomicInteger minuteCount = new AtomicInteger();
         private final AtomicInteger dayCount = new AtomicInteger();
+
+        private ClientWindow() {
+            this(System.currentTimeMillis());
+        }
+
+        ClientWindow(long windowStart) {
+            this.minuteWindowStart = windowStart;
+            this.dayWindowStart = windowStart;
+        }
 
         private void resetIfExpired(long now) {
             if (now - dayWindowStart >= DAY_WINDOW_MS) {
