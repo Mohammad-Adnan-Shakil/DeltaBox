@@ -1,6 +1,7 @@
 package com.deltabox.backend;
 
 import com.deltabox.backend.dto.AuthResponse;
+import com.deltabox.backend.dto.RefreshTokenRequest;
 import com.deltabox.backend.model.User;
 import com.deltabox.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,11 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -108,6 +114,38 @@ public class AuthIntegrationTest {
     }
 
     @Test
+    void garbageRefreshTokenReturnsUnauthorized() throws Exception {
+        HttpResponse<String> response = refresh("not-a-token");
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.body()).contains("\"error\":\"invalid_refresh_token\"");
+    }
+
+    @Test
+    void accessTokenUsedAsRefreshTokenReturnsUnauthorized() throws Exception {
+        AuthResponse auth = registerAndLogin("access-as-refresh-user");
+
+        HttpResponse<String> response = refresh(auth.getToken());
+
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.UNAUTHORIZED.value());
+        assertThat(response.body()).contains("\"error\":\"invalid_refresh_token\"");
+    }
+
+    @Test
+    void validRefreshTokenReturnsNewWorkingAccessToken() {
+        AuthResponse auth = registerAndLogin("valid-refresh-user");
+
+        ResponseEntity<AuthResponse> response = restTemplate.postForEntity(
+                "/api/auth/refresh", refreshRequest(auth.getRefreshToken()), AuthResponse.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().getToken()).isNotBlank();
+        assertThat(getWithBearer("/api/user/profile", response.getBody().getToken()).getStatusCode())
+                .isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
     void adminCanAccessAdminEndpoint() {
         User admin = new User();
         admin.setUsername("admin-endpoint-user");
@@ -159,6 +197,22 @@ public class AuthIntegrationTest {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
         return restTemplate.exchange(path, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+    }
+
+    private HttpResponse<String> refresh(String token) throws Exception {
+        String body = "{\"refreshToken\":\"" + token + "\"}";
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + port + "/api/auth/refresh"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private RefreshTokenRequest refreshRequest(String token) {
+        RefreshTokenRequest request = new RefreshTokenRequest();
+        request.setRefreshToken(token);
+        return request;
     }
 
     private static class AuthRequest {

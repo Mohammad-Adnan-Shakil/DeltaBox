@@ -3,6 +3,7 @@ package com.deltabox.backend.service.impl;
 import com.deltabox.backend.dto.AuthRequest;
 import com.deltabox.backend.dto.AuthResponse;
 import com.deltabox.backend.exception.UserAlreadyExistsException;
+import com.deltabox.backend.exception.InvalidRefreshTokenException;
 import com.deltabox.backend.model.User;
 import com.deltabox.backend.repository.UserRepository;
 import com.deltabox.backend.security.JwtService;
@@ -137,14 +138,14 @@ public class AuthServiceImpl implements AuthService {
 
         if (!jwtService.validateRefreshToken(refreshToken)) {
             logger.error("Invalid or expired refresh token");
-            throw new RuntimeException("Invalid refresh token");
+            throw new InvalidRefreshTokenException("Invalid refresh token");
         }
 
         String email = jwtService.extractUsername(refreshToken);
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> {
                     logger.error("User not found for refresh token: {}", email);
-                    return new UsernameNotFoundException("User not found");
+                    return new InvalidRefreshTokenException("User not found");
                 });
 
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
