@@ -66,6 +66,69 @@ public class AuthIntegrationTest {
         assertThat(protectedResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
+    @Test
+    void userCannotAccessAdminEndpoint() {
+        AuthResponse auth = registerAndLogin("admin-endpoint-user");
+
+        ResponseEntity<String> response = getWithBearer("/api/admin/ingest/status", auth.getToken());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void userCannotAccessDebugEndpoint() {
+        AuthResponse auth = registerAndLogin("debug-endpoint-user");
+
+        ResponseEntity<String> response = getWithBearer("/api/debug/race-stats", auth.getToken());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void unauthenticatedAdminEndpointRequestIsUnauthorized() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "/api/admin/ingest/status", String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void refreshTokenCannotAccessProtectedEndpoint() {
+        AuthResponse auth = registerAndLogin("refresh-endpoint-user");
+
+        ResponseEntity<String> response = getWithBearer(
+                "/api/user/profile", auth.getRefreshToken());
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    private AuthResponse registerAndLogin(String username) {
+        AuthRequest authRequest = new AuthRequest();
+        authRequest.setUsername(username);
+        authRequest.setIdentifier(username + "@example.com");
+        authRequest.setPassword("1234");
+
+        ResponseEntity<AuthResponse> registerResponse = restTemplate.postForEntity(
+                "/api/auth/register", authRequest, AuthResponse.class);
+        assertThat(registerResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        ResponseEntity<AuthResponse> loginResponse = restTemplate.postForEntity(
+                "/api/auth/login", authRequest, AuthResponse.class);
+        assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(loginResponse.getBody()).isNotNull();
+        assertThat(loginResponse.getBody().getToken()).isNotNull();
+        AuthResponse auth = loginResponse.getBody();
+        assertThat(getWithBearer("/api/user/profile", auth.getToken()).getStatusCode())
+                .isEqualTo(HttpStatus.OK);
+        return auth;
+    }
+
+    private ResponseEntity<String> getWithBearer(String path, String token) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(token);
+        return restTemplate.exchange(path, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+    }
+
     private static class AuthRequest {
         private String username;
         private String identifier;

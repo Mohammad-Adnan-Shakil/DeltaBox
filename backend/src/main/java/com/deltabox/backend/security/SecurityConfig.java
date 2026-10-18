@@ -82,7 +82,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/debug/**").hasRole("ADMIN")
                         
                         // Protected endpoints - Admin only
-                        .requestMatchers("/api/admin/**").authenticated()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         
                         // Protected endpoints - AI Predictions (authenticated users)
                         .requestMatchers("/api/ai/**").authenticated()
