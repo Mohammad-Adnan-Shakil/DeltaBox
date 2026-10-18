@@ -1,6 +1,7 @@
 package com.deltabox.backend;
 
 import com.deltabox.backend.dto.AuthResponse;
+import com.deltabox.backend.model.User;
 import com.deltabox.backend.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,6 +29,9 @@ public class AuthIntegrationTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @BeforeEach
     void cleanup() {
@@ -72,7 +77,7 @@ public class AuthIntegrationTest {
 
         ResponseEntity<String> response = getWithBearer("/api/admin/ingest/status", auth.getToken());
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -81,7 +86,7 @@ public class AuthIntegrationTest {
 
         ResponseEntity<String> response = getWithBearer("/api/debug/race-stats", auth.getToken());
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -100,6 +105,33 @@ public class AuthIntegrationTest {
                 "/api/user/profile", auth.getRefreshToken());
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void adminCanAccessAdminEndpoint() {
+        User admin = new User();
+        admin.setUsername("admin-endpoint-user");
+        admin.setEmail("admin-endpoint-user@example.com");
+        admin.setPassword(passwordEncoder.encode("1234"));
+        admin.setRole("ADMIN");
+        userRepository.save(admin);
+
+        AuthRequest authRequest = new AuthRequest();
+        authRequest.setUsername(admin.getUsername());
+        authRequest.setIdentifier(admin.getEmail());
+        authRequest.setPassword("1234");
+
+        ResponseEntity<AuthResponse> loginResponse = restTemplate.postForEntity(
+                "/api/auth/login", authRequest, AuthResponse.class);
+        assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(loginResponse.getBody()).isNotNull();
+
+        ResponseEntity<String> response = getWithBearer(
+                "/api/admin/ingest/status", loginResponse.getBody().getToken());
+
+        assertThat(response.getStatusCode()).isNotEqualTo(HttpStatus.UNAUTHORIZED);
+        assertThat(response.getStatusCode()).isNotEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
     private AuthResponse registerAndLogin(String username) {

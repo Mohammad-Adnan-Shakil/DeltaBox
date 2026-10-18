@@ -62,6 +62,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Permit error dispatches so authorization failures retain their 403 status
+                        .requestMatchers("/error").permitAll()
                         
                         // Public endpoints - F1 Stats (no login required)
                         .requestMatchers("/api/drivers/**").permitAll()
