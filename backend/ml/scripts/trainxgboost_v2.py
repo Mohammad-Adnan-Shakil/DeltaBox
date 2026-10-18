@@ -20,11 +20,15 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from utils.feature_engineering_v2 import build_training_dataset, get_feature_names
 
 # Configuration
-DB_HOST = "localhost"
-DB_NAME = "deltabox"
-DB_USER = "postgres"
-DB_PASS = "adnanshakil20"
-DB_PORT = 5432
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_NAME = os.getenv("DB_NAME", "deltabox")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASS = os.getenv("DB_PASS")
+DB_PORT = os.getenv("DB_PORT", "5432")
+
+if not DB_PASS:
+    print("Set the DB_PASS environment variable", file=sys.stderr)
+    sys.exit(1)
 
 MODEL_DIR = os.path.join(os.path.dirname(__file__), '..', 'models')
 os.makedirs(MODEL_DIR, exist_ok=True)

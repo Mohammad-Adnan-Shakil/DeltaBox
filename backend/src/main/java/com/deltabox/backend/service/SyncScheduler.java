@@ -13,7 +13,7 @@ public class SyncScheduler {
         this.syncService = syncService;
     }
 
-    @Scheduled(fixedDelayString = "3600000")
+    @Scheduled(cron = "${sync.cron:0 0 6 * * *}", zone = "UTC")
     public void syncAllAutomatically() {
         syncService.syncTeams();
         syncService.syncDrivers();

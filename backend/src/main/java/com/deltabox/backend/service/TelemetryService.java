@@ -20,16 +20,32 @@ public class TelemetryService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final long sessionRequestDelayMs;
+    private final long requestDelayMs;
 
     private List<Map<String, Object>> cachedSessions;
     private Instant sessionsCacheTime;
 
     public TelemetryService() {
+        this(createRestTemplate(), 400, 500);
+    }
+
+    public TelemetryService(RestTemplate restTemplate) {
+        this(restTemplate, 400, 500);
+    }
+
+    TelemetryService(RestTemplate restTemplate, long sessionRequestDelayMs, long requestDelayMs) {
+        this.restTemplate = restTemplate;
+        this.objectMapper = new ObjectMapper();
+        this.sessionRequestDelayMs = sessionRequestDelayMs;
+        this.requestDelayMs = requestDelayMs;
+    }
+
+    private static RestTemplate createRestTemplate() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setReadTimeout(60_000);
         factory.setConnectTimeout(15_000);
-        this.restTemplate = new RestTemplate(factory);
-        this.objectMapper = new ObjectMapper();
+        return new RestTemplate(factory);
     }
 
     public List<Map<String, Object>> getSessions() {
@@ -47,7 +63,7 @@ public class TelemetryService {
                 for (String sessionType : List.of("Race", "Qualifying")) {
                     if (callIndex > 0) {
                         try {
-                            Thread.sleep(400);
+                            Thread.sleep(sessionRequestDelayMs);
                         } catch (InterruptedException e) {
                             Thread.currentThread().interrupt();
                         }
@@ -165,7 +181,7 @@ public class TelemetryService {
 
             // Respect OpenF1 rate limit (max 3 req/s)
             try {
-                Thread.sleep(500);
+                Thread.sleep(requestDelayMs);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
             }

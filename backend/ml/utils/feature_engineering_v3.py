@@ -9,17 +9,20 @@ import numpy as np
 from datetime import datetime
 import psycopg2
 from psycopg2.extras import RealDictCursor
+import os
 
 
 def get_db_connection():
     """Get PostgreSQL connection using environment variables or defaults"""
-    import os
+    db_pass = os.getenv('DB_PASS')
+    if not db_pass:
+        raise RuntimeError("Set the DB_PASS environment variable")
     return psycopg2.connect(
         host=os.getenv('DB_HOST', 'localhost'),
         port=os.getenv('DB_PORT', '5432'),
         database=os.getenv('DB_NAME', 'deltabox'),
         user=os.getenv('DB_USER', 'postgres'),
-        password=os.getenv('DB_PASSWORD', 'adnanshakil20')
+        password=db_pass
     )
 
 

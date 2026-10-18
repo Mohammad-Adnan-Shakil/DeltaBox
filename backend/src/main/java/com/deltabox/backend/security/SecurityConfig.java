@@ -62,6 +62,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        // Permit error dispatches so authorization failures retain their 403 status
+                        .requestMatchers("/error").permitAll()
                         
                         // Public endpoints - F1 Stats (no login required)
                         .requestMatchers("/api/drivers/**").permitAll()
@@ -78,11 +80,11 @@ public class SecurityConfig {
                         // Public endpoints - Race Engineer
                         .requestMatchers("/api/race-engineer/**").permitAll()
                         
-                        // Debug endpoints (no login required)
-                        .requestMatchers("/api/debug/**").permitAll()
+                        // Debug endpoints (admin only)
+                        .requestMatchers("/api/debug/**").hasRole("ADMIN")
                         
                         // Protected endpoints - Admin only
-                        .requestMatchers("/api/admin/**").authenticated()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         
                         // Protected endpoints - AI Predictions (authenticated users)
                         .requestMatchers("/api/ai/**").authenticated()

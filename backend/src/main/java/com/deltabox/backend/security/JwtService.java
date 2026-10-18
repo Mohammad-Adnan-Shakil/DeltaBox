@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Service
@@ -23,7 +24,14 @@ public class JwtService {
 
     public JwtService(@Value("${jwt.secret}") String secretString,
                       @Value("${jwt.expiration}") long accessExpiration) {
-        this.SECRET_KEY = Keys.hmacShaKeyFor(secretString.getBytes());
+        if (secretString == null || secretString.isBlank()) {
+            throw new IllegalStateException("JWT secret must not be null or blank");
+        }
+        byte[] secretBytes = secretString.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < 32) {
+            throw new IllegalStateException("JWT secret must be at least 32 bytes long");
+        }
+        this.SECRET_KEY = Keys.hmacShaKeyFor(secretBytes);
         this.ACCESS_EXPIRATION = accessExpiration;
     }
 
