@@ -8,6 +8,7 @@ import os
 import sys
 import json
 import math
+import hmac
 import logging
 from typing import Dict, Any, List, Optional
 from flask import Flask, request, jsonify
@@ -36,6 +37,15 @@ for script_dir in SCRIPT_DIRS:
 
 # Initialize Flask app
 app = Flask(__name__)
+ml_service_token = os.getenv("ML_SERVICE_TOKEN")
+ml_auth_disabled = os.getenv("ML_AUTH_DISABLED", "").lower() == "true"
+if ml_service_token:
+    logger.warning("ML service internal token authentication is enabled")
+elif ml_auth_disabled:
+    logger.warning("ML service internal token authentication is disabled for local development")
+else:
+    logger.warning("ML_SERVICE_TOKEN is not configured; protected ML routes will return 503")
+
 CORS(app, resources={
     r"/*": {
         "origins": "*",
@@ -43,6 +53,19 @@ CORS(app, resources={
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
+
+
+@app.before_request
+def require_internal_token():
+    if request.method == "GET" and request.path == "/health":
+        return None
+    if not ml_service_token:
+        if ml_auth_disabled:
+            return None
+        return jsonify({"error": "ml_service_token_not_configured"}), 503
+    if not hmac.compare_digest(request.headers.get("X-Internal-Token", ""), ml_service_token):
+        return jsonify({"error": "unauthorized"}), 401
+    return None
 
 # Global model cache
 models = {}
