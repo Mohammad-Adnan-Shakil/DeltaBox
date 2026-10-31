@@ -126,4 +126,4 @@ PORT=8080
 **Mohammad Adnan Shakil**
 CSE Student, Presidency University, Bengaluru
 
-[GitHub](https://github.com/Mohammad-Adnan-Shakil) · [LinkedIn](https://linkedin.com/in/mohammad-adnan-shakil)
+[GitHub](https://github.com/Mohammad-Adnan-Shakil) · [LinkedIn](https://www.linkedin.com/in/mohammadadnanshakil/)
