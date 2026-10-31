@@ -53,3 +53,77 @@ Real problems solved during hardening, not tutorial-shaped ones:
 ---
 
 ## Architecture
+
+React Frontend (Vercel)
+↓ REST + JWT (access + refresh tokens)
+Spring Boot Backend (Render, Docker)
+↓ REST/HTTP ↓ REST/HTTP
+Flask ML Microservice OpenF1 / Jolpica / Groq
+(Render, separate deploy)
+├── XGBoost model (.pkl)
+├── Random Forest model (.pkl)
+└── Blended ensemble output
+↓
+Neon Postgres (pooled connection)
+
+
+Backend, frontend, and ML service each deploy independently — a change to the ML model doesn't require redeploying the API, and vice versa. The real cost of this choice: three separate services to keep alive, three separate cold-start behaviors to manage on free-tier hosting, and one very real bug where two of them got out of sync on which one was "live."
+
+---
+
+## Tech Stack
+
+**Backend** — Java 21, Spring Boot 3.2.5, custom JWT + RBAC (not Spring Security defaults), JPA/Hibernate, Neon Postgres (pooled), deployed via Docker on Render.
+
+**Frontend** — React 19, Tailwind CSS, Framer Motion, deployed on Vercel.
+
+**ML Service** — Python 3.11, Flask + Gunicorn, XGBoost + Random Forest ensemble, deployed as a standalone Render service.
+
+**External APIs** — Jolpica (race/standings data), OpenF1 (telemetry + live/historical race state), Groq (AI chat).
+
+**Infra** — Render (backend + ML, Docker), Vercel (frontend), GitHub Actions + UptimeRobot (redundant keep-alive to prevent free-tier idle spin-down).
+
+---
+
+## Local Setup
+
+### Prerequisites
+Java 21+, Node.js 18+, Python 3.11+, a PostgreSQL connection (Neon or local).
+
+### Backend
+```bash
+cd backend
+./mvnw spring-boot:run
+```
+
+### ML Service
+```bash
+cd ml-service
+pip install -r requirements.txt --break-system-packages
+python app.py
+```
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Environment Variables
+```env
+SPRING_DATASOURCE_URL=jdbc:postgresql://...
+JWT_SECRET_KEY=...
+ML_SERVICE_URL=http://localhost:5000
+GROQ_API_KEY=...
+PORT=8080
+```
+
+---
+
+## Author
+
+**Mohammad Adnan Shakil**
+CSE Student, Presidency University, Bengaluru
+
+[GitHub](https://github.com/Mohammad-Adnan-Shakil) · [LinkedIn](https://linkedin.com/in/mohammad-adnan-shakil)
