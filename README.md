@@ -11,7 +11,7 @@
 ![Render](https://img.shields.io/badge/Deployed-Render-46E3B7?style=flat-square&logo=render&logoColor=white)
 ![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
 
-> DeltaBox is a full-stack F1 intelligence platform — live standings, telemetry comparison, live-data race strategy, and ML-driven race predictions. The Spring Boot backend, the React frontend, and the Python ML engine are three independently deployed services, a deliberate architectural choice with real operational tradeoffs documented below.
+> DeltaBox is a full-stack F1 intelligence platform — live standings, telemetry comparison, live-data race strategy, and ML-driven race predictions. Three independently deployed services (Spring Boot backend, React frontend, Python ML engine) with real architectural tradeoffs documented below.
 
 🔗 **Live:** [delta-box.vercel.app](https://delta-box.vercel.app) · **Repo:** [github.com/Mohammad-Adnan-Shakil/DeltaBox](https://github.com/Mohammad-Adnan-Shakil/DeltaBox)
 
@@ -23,17 +23,17 @@
 |---|---|
 | 🧠 **Apex Intelligence** | AI race outcome prediction — blended XGBoost + Random Forest ensemble, with confidence scoring and explicit model-disagreement flagging. Curated preset scenarios for first-time users. |
 | 🛠️ **Race Engineer** | Live-paddock strategy tool — pulls real race state from OpenF1 (Live sessions or Replay mode against any past race, with a lap scrubber), runs a 6-scenario rule-based engine (undercut, overcut, optimal pit window, threat assessment, safety car contingency, championship impact), and layers a Groq-powered chat (`llama-3.1-8b-instant`) on top for natural-language strategy Q&A. |
-| 🔀 **Delta Analyst** | Lap-by-lap telemetry comparison between two drivers (speed, throttle, brake), sourced live from OpenF1 |
-| 🏆 **Live Standings & Driver Pages** | Driver and constructor standings synced from Jolpica, with individual driver detail pages showing real career stats |
-| 📅 **Race Calendar** | Full season with completed/upcoming status and team-colored podium results |
-| 📜 **Activity History** | Persistent, per-user history (capped at 20 entries) across Apex Intelligence, Race Engineer, and Delta Analyst, surfaced on Profile |
-| 🔐 **Auth** | Custom JWT + RBAC with refresh tokens, safe under concurrent requests (see below) |
+| 🔀 **Delta Analyst** | Lap-by-lap telemetry comparison between two drivers (speed, throttle, brake), sourced live from OpenF1. |
+| 🏆 **Live Standings & Driver Pages** | Driver and constructor standings synced from Jolpica, with individual driver detail pages showing real career stats. |
+| 📅 **Race Calendar** | Full season with completed/upcoming status and team-colored podium results. |
+| 📜 **Activity History** | Persistent, per-user history (capped at 20 entries) across Apex Intelligence, Race Engineer, and Delta Analyst, surfaced on Profile. |
+| 🔐 **Auth** | Custom JWT + RBAC with refresh tokens, safe under concurrent requests (see below). |
 
 ---
 
 ## Model Performance
 
-- **R² = 0.66**, **MAE = ±2.19 positions** — blended XGBoost + Random Forest ensemble
+- **R² = 0.66**, **MAE = ±2.19 positions**, **inference = 13.4ms** — blended XGBoost + Random Forest ensemble
 - Trained on **1,951 samples** of real F1 race data sourced from Jolpica
 - These are the live numbers rendered in the app itself, not a separate marketing figure
 
@@ -53,75 +53,3 @@ Real problems solved during hardening, not tutorial-shaped ones:
 ---
 
 ## Architecture
-React Frontend (Vercel)
-↓ REST + JWT (access + refresh tokens)
-Spring Boot Backend (Render, Docker)
-↓ REST/HTTP                    ↓ REST/HTTP
-Flask ML Microservice          OpenF1 / Jolpica / Groq
-(Render, separate deploy)
-├── XGBoost model (.pkl)
-├── Random Forest model (.pkl)
-└── Blended ensemble output
-↓
-Neon Postgres (pooled connection)
-
-Backend, frontend, and ML service each deploy independently — a change to the ML model doesn't require redeploying the API, and vice versa. The real cost of this choice: three separate services to keep alive, three separate cold-start behaviors to manage on free-tier hosting, and one very real bug where two of them got out of sync on which one was "live."
-
----
-
-## Tech Stack
-
-**Backend** — Java 21, Spring Boot 3.2.5, custom JWT + RBAC (not Spring Security defaults), JPA/Hibernate, Neon Postgres (pooled), deployed via Docker on Render.
-
-**Frontend** — React 19, Tailwind CSS, Framer Motion, deployed on Vercel.
-
-**ML Service** — Python 3.11, Flask + Gunicorn, XGBoost + Random Forest ensemble, deployed as a standalone Render service.
-
-**External APIs** — Jolpica (race/standings data), OpenF1 (telemetry + live/historical race state), Groq (AI chat).
-
-**Infra** — Render (backend + ML, Docker), Vercel (frontend), GitHub Actions + UptimeRobot (redundant keep-alive to prevent free-tier idle spin-down).
-
----
-
-## Local Setup
-
-### Prerequisites
-Java 21+, Node.js 18+, Python 3.11+, a PostgreSQL connection (Neon or local).
-
-### Backend
-```bash
-cd backend
-./mvnw spring-boot:run
-```
-
-### ML Service
-```bash
-cd ml-service
-pip install -r requirements.txt --break-system-packages
-python app.py
-```
-
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-### Environment Variables
-```env
-SPRING_DATASOURCE_URL=jdbc:postgresql://...          # Neon pooled connection string
-JWT_SECRET_KEY=...
-ML_SERVICE_URL=http://localhost:5000
-GROQ_API_KEY=...
-PORT=8080
-```
-
----
-
-## Author
-
-**Mohammad Adnan Shakil**
-CSE Student, Presidency University, Bengaluru
-
-[GitHub](https://github.com/Mohammad-Adnan-Shakil) · [LinkedIn](https://linkedin.com/in/mohammadadnanshakil)
